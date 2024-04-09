@@ -1,27 +1,33 @@
 {
   "pages": {
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/page.css",
-      "static/chunks/app/page.js"
-    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/(dashboard)/layout": [
+    "/(views)/wall-view/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/(dashboard)/layout.css",
-      "static/chunks/app/(dashboard)/layout.js"
+      "static/css/app/(views)/wall-view/page.css",
+      "static/chunks/app/(views)/wall-view/page.js"
     ],
-    "/(dashboard)/players/page": [
+    "/(views)/performer-view/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/(dashboard)/players/page.js"
+      "static/css/app/(views)/performer-view/page.css",
+      "static/chunks/app/(views)/performer-view/page.js"
+    ],
+    "/(views)/table-view/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/(views)/table-view/page.css",
+      "static/chunks/app/(views)/table-view/page.js"
+    ],
+    "/add-song/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/add-song/page.js"
     ]
   }
 }

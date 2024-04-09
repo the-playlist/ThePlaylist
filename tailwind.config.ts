@@ -13,9 +13,15 @@ const config: Config = {
   },
   theme: {
     extend: {
+      borderWidth:{
+      "1":'1px'
+      },
       colors:{
         'dashbord-bg':'#FCFCFC',
-        'option':'#F7F7F7'
+        'option':'#F7F7F7',
+        'top-queue-bg':'#EFC440',
+        'active-tab':'#fdf7ea',
+        "add-bg":"#f2d065"
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
