@@ -1,5 +1,5 @@
 import React from "react";
-import { OptionButton } from "../../components";
+import { OptionButton } from "../../_components";
 
 const Players = () => {
   const users = [
