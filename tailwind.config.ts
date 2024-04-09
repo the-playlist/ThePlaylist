@@ -11,10 +11,16 @@ const config: Config = {
   },
   theme: {
     extend: {
+      borderWidth: {
+        "1": "1px",
+      },
       colors: {
+        primary: "#E6A92C",
         "dashbord-bg": "#FCFCFC",
         option: "#F7F7F7",
-        primary: "#E6A92C",
+        "top-queue-bg": "#EFC440",
+        "active-tab": "#fdf7ea",
+        "add-bg": "#f2d065",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

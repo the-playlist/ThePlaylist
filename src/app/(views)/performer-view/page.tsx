@@ -1,7 +1,31 @@
-import React from "react";
+"use client";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
+import { toggleFullScreen } from "../wall-view/page";
+import { RiFullscreenFill } from "react-icons/ri";
+import { MdOutlineFullscreenExit } from "react-icons/md";
 
 const PerformerView = () => {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [fontSize, setFontSize] = useState("text-3xl");
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1076) {
+        setFontSize("text-3xl");
+      } else {
+        setFontSize("text-xl");
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   const performer = [
     { id: 0, songName: "Imagine", artistName: "John Lennon", intro: 20 },
     { id: 1, songName: "Born to run", artistName: "Savannah R.", intro: 15 },
@@ -11,35 +35,49 @@ const PerformerView = () => {
     { id: 5, songName: "Hey Ya!", artistName: "Tom M.", intro: 5 },
     { id: 6, songName: "Hey Ya!", artistName: "Tom M.", intro: 10 },
   ];
+
   return (
-    <div className="overflow-x-auto max-w-4xl mx-auto p-4">
+    <div className="overflow-x-auto mx-auto p-10 bg-white " ref={ref}>
+      <div className=" float-right">
+        <button
+          onClick={() => {
+            toggleFullScreen(ref, isFullScreen, setIsFullScreen);
+          }}
+        >
+          {!isFullScreen ? (
+            <RiFullscreenFill size={30} />
+          ) : (
+            <MdOutlineFullscreenExit size={40} />
+          )}
+        </button>
+      </div>
       <div className="  flex items-center justify-center m-5">
         <Logo />
       </div>
       <table className="table table-lg border-separate border-spacing-y-2 ">
-        <thead className="">
-          <tr className=" text-black  text-base">
-            <th>#Sr</th>
-            <th>Songs</th>
-            <th>Players</th>
-            <th>Intro</th>
+        {/* <thead className="">
+          <tr className="text-black">
+            <th className={`${fontSize} text-start w-1/12`}>#Sr</th>
+            <th className={`${fontSize} text-start`}>Songs</th>
+            <th className={`${fontSize} text-end`}> Players</th>
+            <th className={`${fontSize} text-end`}>Intro</th>
           </tr>
-        </thead>
+        </thead> */}
         {performer?.map((item: any, index: number) => (
           <tbody
-            className={`h-20  text-base rounded-tl-lg    
+            className={`h-20 text-black text-base rounded-tl-lg    
               ${
                 index < 2
-                  ? "bg-yellow-400 text-white font-medium"
-                  : "bg-gray-200 text-black font-medium"
+                  ? "bg-yellow-400 font-medium"
+                  : "bg-gray-200 font-medium"
               }`}
           >
             <tr>
-              <td>{index + 1}</td>
-              <td>{item?.songName}</td>
-              <td>{item?.artistName}</td>
-              <td className="text-black">
-                <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex">
+              <td className={`${fontSize} text-start`}>{index + 1}</td>
+              <td className={`${fontSize}  text-start`}>{item?.songName}</td>
+              <td className={`${fontSize} text-end`}>{item?.artistName}</td>
+              <td className="text-black text-3xl text-end w-1/12">
+                <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
                   {item?.intro}
                 </div>
               </td>
