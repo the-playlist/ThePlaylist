@@ -5,12 +5,6 @@ import { GenericButton, InputField } from "..";
 import { IoSearchOutline } from "react-icons/io5";
 import { IoMdCloseCircle } from "react-icons/io";
 
-type PropType = {
-  show: boolean;
-  handleClose: () => {};
-  size: any;
-};
-
 const songs_ = [
   "Hey Jude",
   "Bohemian Rhapsody",
@@ -24,7 +18,7 @@ const songs_ = [
   "Purple Haze",
 ];
 
-function AddEditPlayer({ show, handleClose, size }: PropType) {
+function AddEditPlayer({ show, handleClose, size }) {
   const [selectedSongsList, setSelectedSongsList] = useState([]);
   const [songs, setSongs] = useState(songs_);
   const [filteredsongs, setFilteredsongs] = useState(songs);
@@ -84,7 +78,7 @@ function AddEditPlayer({ show, handleClose, size }: PropType) {
               />
             </div>
             <div className="border-3 border-red overflow-y-auto  max-h-36">
-              {filteredsongs.map((i: string) => {
+              {filteredsongs.map((i) => {
                 return (
                   <div
                     onClick={() => {
