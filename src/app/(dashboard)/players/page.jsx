@@ -59,7 +59,7 @@ const Players = () => {
             </tr>
           </thead>
           <tbody>
-            {users?.map((item: any, index: number) => (
+            {users?.map((item, index) => (
               <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
                 <th>{index + 1}</th>
                 <td>{item?.firstName}</td>
