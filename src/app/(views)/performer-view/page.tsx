@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
-import { toggleFullScreen } from "../wall-view/page";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
+import { ToggleFullScreen } from "@/app/_components";
 
 const PerformerView = () => {
   const ref = useRef<HTMLDivElement>(null);
@@ -41,7 +41,7 @@ const PerformerView = () => {
       <div className=" float-right">
         <button
           onClick={() => {
-            toggleFullScreen(ref, isFullScreen, setIsFullScreen);
+            ToggleFullScreen(ref, isFullScreen, setIsFullScreen);
           }}
         >
           {!isFullScreen ? (

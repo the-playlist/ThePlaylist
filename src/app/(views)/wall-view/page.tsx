@@ -4,32 +4,8 @@ import { useOrientation } from "react-use";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
+import { ToggleFullScreen } from "@/app/_components";
 
-export const toggleFullScreen = (
-  elementRef: any,
-  isFullScreen: boolean,
-  setIsFullScreen: any
-) => {
-  const element = elementRef.current;
-  if (element) {
-    if (!isFullScreen) {
-      if (element.requestFullscreen) {
-        element.requestFullscreen();
-      } else if (element.mozRequestFullScreen) {
-        element.mozRequestFullScreen();
-      } else if (element.webkitRequestFullscreen) {
-        element.webkitRequestFullscreen();
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-      } else if ((document as any).mozCancelFullScreen) {
-        (document as any).mozCancelFullScreen();
-      }
-    }
-    setIsFullScreen(!isFullScreen);
-  }
-};
 const WallView = () => {
   const elementRef = useRef<HTMLDivElement>(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -64,7 +40,7 @@ const WallView = () => {
       <div className=" float-right">
         <button
           onClick={() => {
-            toggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
+            ToggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
           }}
         >
           {!isFullScreen ? (
