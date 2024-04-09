@@ -37,6 +37,11 @@
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/add-song/page.js"
+    ],
+    "/(views)/performer-view/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(views)/performer-view/page.js"
     ]
   }
 }
