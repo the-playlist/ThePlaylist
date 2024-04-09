@@ -3,7 +3,7 @@ import React from "react";
 
 const NavBar = () => {
   return (
-    <nav className="flex justify-between items-center bg-green-500 px-5 py-3 shadow-md rounded-2xl">
+    <nav className="flex justify-between items-center px-5 py-3 shadow-md rounded-2xl">
       <Link
         className="text-black font-bold hover:cursor-pointer"
         href={"/players"}

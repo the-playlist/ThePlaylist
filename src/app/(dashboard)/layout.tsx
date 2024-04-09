@@ -21,7 +21,7 @@ export default function RootLayout({
           <SideBar />
           <div className="flex flex-col flex-1">
             <NavBar />
-            <div>{children}</div>
+            <div className="bg-dashbord-bg flex-1 mt-2">{children}</div>
           </div>
         </div>
       </body>
