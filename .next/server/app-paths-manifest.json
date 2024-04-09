@@ -1,7 +1,1 @@
-{
-  "/(views)/wall-view/page": "app/(views)/wall-view/page.js",
-  "/(views)/performer-view/page": "app/(views)/performer-view/page.js",
-  "/(views)/table-view/page": "app/(views)/table-view/page.js",
-  "/page": "app/page.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js"
-}
+{}
