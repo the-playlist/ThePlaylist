@@ -84,7 +84,7 @@ function AddEditPlayer({ show, handleClose, size }: PropType) {
               />
             </div>
             <div className="border-3 border-red overflow-y-auto  max-h-36">
-              {filteredsongs.map((i) => {
+              {filteredsongs.map((i: string) => {
                 return (
                   <div
                     onClick={() => {

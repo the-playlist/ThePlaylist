@@ -40,7 +40,7 @@ const Players = () => {
       <div className="overflow-x-auto">
         <div className="flex border-3 justify-end">
           <button
-            onClick={() => document.getElementById("my_modal_3").showModal()}
+            onClick={() => document?.getElementById("my_modal_3")?.showModal()}
             className=" self-end btn btn-primary bg-primary border-none text-white "
           >
             Add New Player+
