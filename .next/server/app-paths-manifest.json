@@ -3,9 +3,9 @@
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(views)/performer-view/page": "app/(views)/performer-view/page.js",
   "/(views)/table-view/page": "app/(views)/table-view/page.js",
-  "/(views)/wall-view/page": "app/(views)/wall-view/page.js",
   "/page": "app/page.js",
   "/add-song/page": "app/add-song/page.js",
+  "/(views)/wall-view/page": "app/(views)/wall-view/page.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
   "/(dashboard)/players/page": "app/(dashboard)/players/page.js"
 }
