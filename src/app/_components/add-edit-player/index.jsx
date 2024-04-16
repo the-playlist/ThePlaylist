@@ -86,9 +86,18 @@ function AddEditPlayer({ show, handleClose, size }) {
                         setSelectedSongsList((prevList) => [...prevList, i]);
                       }
                     }}
-                    className=" cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2"
+                    className={`cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2 ${
+                      selectedSongsList.includes(i) &&
+                      `bg-primary rounded-lg my-1`
+                    }`}
                   >
-                    <span className="  font-semibold text-black">{i}</span>
+                    <span
+                      className={`font-semibold text-black ${
+                        selectedSongsList.includes(i) && `text-white`
+                      }`}
+                    >
+                      {i}
+                    </span>
                     <span>The Beatles </span>
                   </div>
                 );
