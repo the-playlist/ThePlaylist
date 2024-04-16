@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-"use client";
-import React from "react";
-import { OptionButton, SongIcon } from "../../_components";
-import AddEditPlayer from "@/app/_components/add-edit-player";
-
-const Players = () => {
-  const users = [
-=======
 import { OptionButton } from "../../_components";
 import AddEditPlayer from "@/app/_components/add-edit-player";
 
@@ -14,7 +5,6 @@ const Players = async () => {
   let playersList;
   const result = await fetch(
     "http://localhost:3000/api/players/getAllPlayers",
->>>>>>> 5044cec1231e456028fdfc8cfad5b89c0ff0c954
     {
       cache: "no-store",
     }
@@ -68,11 +58,7 @@ const Players = async () => {
         </table>
       </div>
       {<AddEditPlayer />}
-<<<<<<< HEAD
-    </>
-=======
     </div>
->>>>>>> 5044cec1231e456028fdfc8cfad5b89c0ff0c954
   );
 };
 
