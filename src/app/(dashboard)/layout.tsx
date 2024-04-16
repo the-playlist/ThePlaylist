@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <>
       <div className={inter.className} style={{ overflowY: "hidden" }}>
-        <div className="p-4  flex h-screen">
+        <div className="p-4 flex h-screen">
           <SideBar />
           <div className="flex flex-col flex-1">
             <NavBar />

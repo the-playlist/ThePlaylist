@@ -8,11 +8,8 @@ import Webcam from "react-webcam";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import Link from "next/link";
-import { ToggleFullScreen } from "@/app/_components";
 
 const TableView = () => {
-  const tableRef = useRef<HTMLDivElement>(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
   const [showCam, setShowCam] = useState(false);
   const [fontSize, setFontSize] = useState("text-lg");
   const [performer, setPerformers] = useState([
@@ -38,19 +35,6 @@ const TableView = () => {
     { id: 9, songName: "Billie Jean", artistName: "Outkast", isVote: null },
   ]);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && isFullScreen) {
-        setIsFullScreen(false);
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isFullScreen]);
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth > 1076) {
@@ -125,25 +109,8 @@ const TableView = () => {
       </div>
     );
   };
-
   return (
-    <div
-      className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-10 pt-10"
-      ref={tableRef}
-    >
-      <div className=" float-right">
-        <button
-          onClick={() => {
-            ToggleFullScreen(tableRef, isFullScreen, setIsFullScreen);
-          }}
-        >
-          {!isFullScreen ? (
-            <RiFullscreenFill size={30} />
-          ) : (
-            <MdOutlineFullscreenExit size={40} />
-          )}
-        </button>
-      </div>
+    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-10 pt-5">
       <div className=" flex items-center justify-center m-5">
         <Logo />
       </div>
@@ -160,7 +127,7 @@ const TableView = () => {
           <Webcam />
         </>
       ) : (
-        <div className="mb-20">
+        <div className="mb-30">
           {performer?.map((item, index) => {
             return (
               <div
