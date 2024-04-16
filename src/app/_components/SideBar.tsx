@@ -1,45 +1,11 @@
 "use client";
 import Link from "next/link";
 import React from "react";
-
-import Icon from "./icon";
-import { DashboardLogo } from "../svgs";
+import { navlinks } from "./pathname";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 const SideBar = () => {
-  const navlinks = [
-    {
-      name: "Dashboard",
-      href: "/dashbard",
-      icon: "/dashboard.svg",
-    },
-    {
-      name: "Players",
-      href: "/players",
-      icon: "/player-logo.svg",
-    },
-    {
-      name: "Songs",
-      href: "/songs",
-      icon: "/song.svg",
-    },
-    {
-      name: "Duty",
-      href: "/duty",
-      icon: "/duty-icon.svg",
-    },
-    {
-      name: "Settings",
-      href: "/settings",
-      icon: "/setting.svg",
-    },
-    {
-      name: "Playlist",
-      href: "/playlist",
-      icon: "/playlist.svg",
-    },
-  ];
   const pathname = usePathname();
   return (
     <div className="drawer  w-1/6  shadow-xl rounded-2xl mr-5 lg:drawer-open">
