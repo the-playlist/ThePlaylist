@@ -1,12 +1,48 @@
+"use client";
 import Link from "next/link";
 import React from "react";
 
 import Icon from "./icon";
 import { DashboardLogo } from "../svgs";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 const SideBar = () => {
+  const navlinks = [
+    {
+      name: "Dashboard",
+      href: "/dashbard",
+      icon: "/dashboard.svg",
+    },
+    {
+      name: "Players",
+      href: "/players",
+      icon: "/player-logo.svg",
+    },
+    {
+      name: "Songs",
+      href: "/songs",
+      icon: "/song.svg",
+    },
+    {
+      name: "Duty",
+      href: "/duty",
+      icon: "/duty-icon.svg",
+    },
+    {
+      name: "Settings",
+      href: "/settings",
+      icon: "/setting.svg",
+    },
+    {
+      name: "Playlist",
+      href: "/playlist",
+      icon: "/playlist.svg",
+    },
+  ];
+  const pathname = usePathname();
   return (
-    <div className="drawer  w-1/6 bg-yellow-500 shadow-md rounded-2xl mr-5 lg:drawer-open">
+    <div className="drawer  w-1/6  shadow-xl rounded-2xl mr-5 lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content  flex flex-col items-center ">
         <label htmlFor="my-drawer-2" className="btn  drawer-button lg:hidden">
@@ -32,38 +68,29 @@ const SideBar = () => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <ul className="menu p-4 w-60 text-base-content ">
-          <li className="hover:bg-yellow-200 h-12 ">
-            <Link href={"/"} className="text-black">
-              <DashboardLogo />
-              Dashboard
-            </Link>
-          </li>
-          <li className="">
-            <Link href={"/players"} className="text-black">
-              Players
-            </Link>
-          </li>
-          <li className="">
-            <Link href={"/"} className="text-black">
-              Songs
-            </Link>
-          </li>
-          <li className="">
-            <Link href={"/"} className="text-black">
-              Duty
-            </Link>
-          </li>
-          <li className="">
-            <Link href={"/"} className="text-black">
-              Settings
-            </Link>
-          </li>
-          <li className="">
-            <Link href={"/"} className="text-black">
-              Playlist
-            </Link>
-          </li>
+
+        <ul className="menu p-4  text-base-content ">
+          <div className="flex items-start  justify-center flex-1">
+            <img src="/assets/logo.png" className="h-6 w-100 my-2 " />
+          </div>
+
+          {navlinks.map((i) => {
+            const isActive = pathname?.startsWith(i.href);
+            return (
+              <li className={isActive ? "rounded  bg-primary my-3" : "my-3"}>
+                <Link href={i.href} className="text-black">
+                  <Image
+                    src={i.icon}
+                    className="mr-2  cursor-pointer"
+                    width={20}
+                    height={20}
+                    alt="Picture of the author"
+                  />
+                  {i.name}
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

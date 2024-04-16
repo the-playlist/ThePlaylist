@@ -7,8 +7,8 @@ import { IoIosArrowUp, IoIosArrowDown, IoIosCloseCircle } from "react-icons/io";
 import Webcam from "react-webcam";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
-import { toggleFullScreen } from "../wall-view/page";
 import Link from "next/link";
+import { ToggleFullScreen } from "@/app/_components";
 
 const TableView = () => {
   const tableRef = useRef<HTMLDivElement>(null);
@@ -134,7 +134,7 @@ const TableView = () => {
       <div className=" float-right">
         <button
           onClick={() => {
-            toggleFullScreen(tableRef, isFullScreen, setIsFullScreen);
+            ToggleFullScreen(tableRef, isFullScreen, setIsFullScreen);
           }}
         >
           {!isFullScreen ? (
