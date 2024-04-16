@@ -1,4 +1,4 @@
-// File: /Users/sly/Documents/Next Js/theplaylist/src/app/(dashboard)/players/page.jsx
+// File: /Users/macbook/Documents/next-js/Playlist/thePlaylist/src/app/(dashboard)/players/page.jsx
 import * as entry from '../../../../../src/app/(dashboard)/players/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

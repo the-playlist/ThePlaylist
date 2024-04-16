@@ -1,52 +1,34 @@
-"use client";
-import React, { useState } from "react";
 import { OptionButton } from "../../_components";
 import AddEditPlayer from "@/app/_components/add-edit-player";
 
-const Players = () => {
-  const [addEditEmplyee, setAddEditEmplyee] = useState(false);
-  const users = [
+const Players = async () => {
+  let playersList;
+  const result = await fetch(
+    "http://localhost:3000/api/players/getAllPlayers",
     {
-      id: 0,
-      firstName: "John Lennon",
-      lastName: "Lennon",
-      email: "johnLennon@gmail.com",
-      phone: "+1 1234 456 789",
-    },
-    {
-      id: 1,
-      firstName: "Aretha",
-      lastName: "Franklin",
-      email: "johnLennon@gmail.com",
-      phone: "+1 1122 333 456",
-    },
-    {
-      id: 2,
-      firstName: "Michael",
-      lastName: "Jackson",
-      email: "johnLennon@gmail.com",
-      phone: "+1 3344 567 899",
-    },
-    {
-      id: 3,
-      firstName: "Van",
-      lastName: "Morrison",
-      email: "johnLennon@gmail.com",
-      phone: "+1 4445 678 990",
-    },
-  ];
+      cache: "no-store",
+    }
+  );
+
+  if (result.ok) {
+    const {
+      response: { content },
+    } = await result.json();
+
+    playersList = content;
+  }
   return (
-    <>
+    <div>
       <div className="overflow-x-auto">
         <div className="flex border-3 justify-end">
-          <button
+          {/* <button
             onClick={() => document?.getElementById("my_modal_3")?.showModal()}
             className=" self-end btn btn-primary bg-primary border-none text-white "
           >
             Add New Player+
-          </button>
+          </button> */}
         </div>
-        <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
+        <table className="table border-separate border-spacing-y-5 rounded-2xl px-1 ">
           <thead>
             <tr className="text-black text-lg font-thin">
               <th></th>
@@ -59,13 +41,13 @@ const Players = () => {
             </tr>
           </thead>
           <tbody>
-            {users?.map((item, index) => (
-              <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
+            {playersList?.map((item, index) => (
+              <tr className="h-20 text-black text-lg shadow-lg  rounded-2xl ">
                 <th>{index + 1}</th>
                 <td>{item?.firstName}</td>
                 <td>{item?.lastName}</td>
                 <td>{item?.email}</td>
-                <td>{item?.phone}</td>
+                <td>{`+1${item?.phone}`}</td>
                 <td>
                   <div className="w-15 h-15">
                     <div className="bg-yellow-600 w-10 h-10  rounded-full flex  items-center justify-center ">
@@ -90,8 +72,8 @@ const Players = () => {
           </tbody>
         </table>
       </div>
-      {<AddEditPlayer show={addEditEmplyee} />}
-    </>
+      {<AddEditPlayer />}
+    </div>
   );
 };
 
