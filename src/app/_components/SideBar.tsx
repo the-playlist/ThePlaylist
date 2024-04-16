@@ -33,9 +33,7 @@ const SideBar = () => {
           htmlFor="my-drawer-2"
           aria-label="close sidebar"
           className="drawer-overlay"
-        >
-          {" "}
-        </label>
+        ></label>
 
         <ul className="menu p-4  text-base-content ">
           <div className="flex items-start  justify-center flex-1">
@@ -43,7 +41,7 @@ const SideBar = () => {
           </div>
 
           {navlinks.map((i) => {
-            const isActive = pathname.startsWith(i.href);
+            const isActive = pathname?.startsWith(i.href);
             return (
               <li className={isActive ? "rounded  bg-primary my-3" : "my-3"}>
                 <Link href={i.href} className="text-black">
