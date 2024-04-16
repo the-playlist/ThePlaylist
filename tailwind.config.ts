@@ -20,6 +20,7 @@ const config: Config = {
         option: "#F7F7F7",
         "top-queue-bg": "#EFC440",
         "active-tab": "#fdf7ea",
+        "deactivate-color": "#F0F0F0",
         "add-bg": "#f2d065",
       },
       backgroundImage: {
