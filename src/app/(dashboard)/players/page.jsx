@@ -3,20 +3,28 @@ import AddEditPlayer from "@/app/_components/add-edit-player";
 
 const Players = async () => {
   let playersList;
-  const result = await fetch(
-    "http://localhost:3000/api/players/getAllPlayers",
-    {
-      cache: "no-store",
+  try {
+    const result = await fetch(
+      `${process.env.DEPLOYMENT_URL}api/players/getAllPlayers`,
+      {
+        cache: "no-store",
+      }
+    );
+  
+    if (result.ok) {
+      const {
+        response: { content },
+      } = await result.json();
+  
+      playersList = content;
+    } else {
+      // Handle unsuccessful response
     }
-  );
-
-  if (result.ok) {
-    const {
-      response: { content },
-    } = await result.json();
-
-    playersList = content;
+  } catch (error) {
+    console.error("Fetch failed:", error);
+    
   }
+  
   return (
     <div>
       <div className="overflow-x-auto">
