@@ -23,7 +23,9 @@
     "react-webcam": "^7.2.0",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
-    "url-loader": "^4.1.1"
+    "url-loader": "^4.1.1",
+    "react-bootstrap": "^2.7.0",
+    "react-icons": "^4.7.1"
   },
   "devDependencies": {
     "@types/node": "^20",
