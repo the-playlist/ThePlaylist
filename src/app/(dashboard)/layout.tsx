@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={inter.className} style={{ overflowY: "hidden" }}>
+    <>
+      <div className={inter.className} style={{ overflowY: "hidden" }}>
         <div className="p-4  flex h-screen">
           <SideBar />
           <div className="flex flex-col flex-1">
@@ -24,7 +24,7 @@ export default function RootLayout({
             <div className="bg-dashbord-bg flex-1 mt-2">{children}</div>
           </div>
         </div>
-      </body>
-    </html>
+      </div>
+    </>
   );
 }
