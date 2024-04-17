@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const playerSchema = new mongoose.Schema(
   {
     firstName: {
@@ -18,11 +17,13 @@ const playerSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please enter Phone"],
     },
-    assignSongs: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "song",
-    },
-
+    assignSongs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "song",
+        default: [],
+      },
+    ],
     onDuty: {
       type: Boolean,
       default: false,
@@ -32,8 +33,5 @@ const playerSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-
-const Players =
-  mongoose.models.player || mongoose.model("player", playerSchema);
-
-export default Players;
+const player = mongoose.models.player || mongoose.model("player", playerSchema);
+export default player;

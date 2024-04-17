@@ -58,7 +58,7 @@ export const getAllSongs = async (req, res, next) => {
     if (keyword) {
       data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
     } else {
-      data = await Songs.find();
+      data = await Songs.find().lean();
     }
 
     const response = new ResponseModel(

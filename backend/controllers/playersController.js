@@ -1,22 +1,16 @@
 import Players from "../models/players";
-import Songs from "../models/songs";
+import song from "../models/songs";
 import ResponseModel from "./responseModel";
 
 export const addNewPlayer = async (req, res, next) => {
-  const { firstName } = await req.body;
   try {
-    const existingPlayer = await Players.findOne({ firstName });
-    if (existingPlayer) {
-      res.status(400).json({
-        message: "Player already exists",
-      });
-    } else {
-      const players = await Players.create(req.body);
-      res.status(200).json({
-        players,
-        message: "Player added successfully",
-      });
-    }
+    const players = await Players.create(req.body);
+    const response = new ResponseModel(
+      true,
+      "Players added successfully",
+      players
+    );
+    res.status(200).json(response);
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -50,7 +44,10 @@ export const addUpdatePlayer = async (req, res, next) => {
 
 export const getAllPlayers = async (req, res, next) => {
   try {
-    const players = await Players.find().populate("assignSongs", "title ,_id");
+    const players = await Players.find().populate(
+      "assignSongs",
+      "title , artist , _id"
+    );
     const response = new ResponseModel(
       true,
       "Players fetched successfully",
@@ -66,7 +63,6 @@ export const getAllPlayers = async (req, res, next) => {
     });
   }
 };
-
 export const deletePlayerById = async (req, res, next) => {
   const id = req.query.id;
   if (!id) {

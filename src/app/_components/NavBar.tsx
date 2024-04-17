@@ -13,7 +13,7 @@ const NavBar = () => {
         className="text-black font-bold hover:cursor-pointer"
         href={"/players"}
       >
-        {screenName[0].name}
+        {screenName[0]?.name || ""}
       </Link>
       <Link className="bg-red-500 rounded-full" href={"/addTopic"}>
         <img
