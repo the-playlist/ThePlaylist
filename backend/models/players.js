@@ -18,10 +18,12 @@ const playerSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please enter Phone"],
     },
-    assignSongs: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "song",
-    },
+    assignSongs: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Songs",
+      },
+    ],
 
     onDuty: {
       type: Boolean,
@@ -34,6 +36,6 @@ const playerSchema = new mongoose.Schema(
 );
 
 const Players =
-  mongoose.models.player || mongoose.model("player", playerSchema);
+  mongoose.models.Players || mongoose.model("Players", playerSchema);
 
 export default Players;

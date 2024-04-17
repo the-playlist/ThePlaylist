@@ -18,7 +18,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // "@/*":["../../../../../*"]
     }
   },
   "include": [
@@ -27,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/(dashboard)/players/page.jsx"
-  ],
+, "src/pages/api/songs/addUpdateSong/index.js"  ],
   "exclude": ["node_modules"]
 }
