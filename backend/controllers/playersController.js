@@ -33,7 +33,8 @@ export const addUpdatePlayer = async (req, res, next) => {
 export const getAllPlayers = async (req, res, next) => {
   const players = await Players.find().populate(
     "assignSongs",
-    "title , artist , _id"
+    "title , artist , _id",
+    Songs
   );
   const response = new ResponseModel(
     true,

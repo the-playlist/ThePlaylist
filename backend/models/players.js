@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-
 const playerSchema = new mongoose.Schema(
   {
     firstName: {
@@ -22,6 +21,7 @@ const playerSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Songs",
+        default: [],
       },
     ],
 

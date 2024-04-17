@@ -1,9 +1,17 @@
 import { title } from "process";
 import React from "react";
 
-const GenericButton = ({ text }: { text: string }) => {
+const GenericButton = ({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick: () => void;
+}) => {
   return (
-    <button className="flex w-full btn bg-primary text-white">{text}</button>
+    <button onClick={onClick} className="flex w-full btn bg-primary text-white">
+      {text}
+    </button>
   );
 };
 
