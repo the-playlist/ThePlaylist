@@ -5,6 +5,8 @@ import { selectToken } from "../reducer/mainSlice";
 const endPoints = {
   GET_SONGS_LIST: `api/songs/getAllSongs`,
   ADD_UPDATE_PLAYER: `api/players/addUpdatePlayer`,
+  GET_STAFF_LIST: "api/duty/getAllStaff",
+  UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus?id=",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -32,6 +34,17 @@ export const emptySplitApi = createApi({
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
     }),
+
+    getStaffList: builder.query({
+      query: () => endPoints.GET_STAFF_LIST,
+    }),
+    updateDutyStatus: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.UPDATE_DUTY_STATUS}${body.id}`,
+        method: "POST",
+        body: body.status,
+      }),
+    }),
     addUpdatePlayer: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_PLAYER,
@@ -45,5 +58,9 @@ export const emptySplitApi = createApi({
   tagTypes: [],
 });
 
-export const { useLazyGetSongsListQuery, useAddUpdatePlayerMutation } =
-  emptySplitApi;
+export const {
+  useLazyGetSongsListQuery,
+  useAddUpdatePlayerMutation,
+  useLazyGetStaffListQuery,
+  useUpdateDutyStatusMutation,
+} = emptySplitApi;
