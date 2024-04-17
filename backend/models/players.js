@@ -20,10 +20,11 @@ const playerSchema = new mongoose.Schema(
     assignSongs: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "song",
+        ref: "Songs",
         default: [],
       },
     ],
+
     onDuty: {
       type: Boolean,
       default: false,
@@ -33,5 +34,8 @@ const playerSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
-const player = mongoose.models.player || mongoose.model("player", playerSchema);
-export default player;
+
+const Players =
+  mongoose.models.Players || mongoose.model("Players", playerSchema);
+
+export default Players;

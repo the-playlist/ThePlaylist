@@ -1,7 +1,7 @@
 import React from "react";
 import { FaUser } from "react-icons/fa";
 
-const SongIcon = ({ count, isUser, onClick }) => {
+const SongIcon = ({ count, isUser, onClick, }) => {
   return (
     <div onClick={onClick} className="w-15 h-15 cursor-pointer">
       <div className="bg-yellow-600 w-10 h-10  rounded-full flex relative items-center justify-center ">

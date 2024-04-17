@@ -8,6 +8,7 @@ import ToggleFullScreen from "./toggle-view";
 import SongIcon from "./song-icon";
 import AddEditSong from "./add-edit-song";
 import ShowQualifiedList from "./qualified";
+import SongModal from "./song-modal";
 
 export {
   NavBar,
@@ -20,4 +21,5 @@ export {
   SongIcon,
   AddEditSong,
   ShowQualifiedList,
+  SongModal,
 };
