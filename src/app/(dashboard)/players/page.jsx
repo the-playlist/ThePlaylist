@@ -13,7 +13,7 @@ const Players = async () => {
   const [assignSongs, setAssignSongs] = useState([]);
   try {
     const result = await fetch(
-      `${process.env.DEPLOYMENT_URL}api/players/getAllPlayers`
+      `${process.env.LOCAL_URL}api/players/getAllPlayers`
     );
 
     if (result.ok) {

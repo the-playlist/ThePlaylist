@@ -6,14 +6,16 @@ import { navlinks } from "./pathname";
 
 const NavBar = () => {
   const pathname: any = usePathname();
+
   const screenName = navlinks.filter((item) => pathname.includes(item.href));
+
   return (
     <nav className="flex justify-between items-center px-5 py-3 shadow-md rounded-2xl">
       <Link
         className="text-black font-bold hover:cursor-pointer"
         href={"/players"}
       >
-        {screenName[0].name}
+        {screenName[0]?.name || "Dashboard"}
       </Link>
       <Link className="bg-red-500 rounded-full" href={"/addTopic"}>
         <img
