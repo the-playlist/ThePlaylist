@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+import { type } from "os";
 const playerSchema = new mongoose.Schema(
   {
     firstName: {
@@ -22,12 +22,22 @@ const playerSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Songs",
+        default: [],
       },
     ],
-
-    onDuty: {
-      type: Boolean,
-      default: false,
+    duty: {
+      status: {
+        type: Boolean,
+        default: false,
+      },
+      startTime: {
+        type: String,
+        default: null,
+      },
+      endTime: {
+        type: String,
+        default: null,
+      },
     },
   },
   {
