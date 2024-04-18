@@ -6,7 +6,9 @@ import { navlinks } from "./pathname";
 
 const NavBar = () => {
   const pathname: any = usePathname();
+
   const screenName = navlinks.filter((item) => pathname.includes(item.href));
+
   return (
     <nav className="flex justify-between items-center px-5 py-3 shadow-md rounded-2xl">
       <Link

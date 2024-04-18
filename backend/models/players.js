@@ -25,10 +25,19 @@ const playerSchema = new mongoose.Schema(
         default: [],
       },
     ],
-
-    onDuty: {
-      type: Boolean,
-      default: false,
+    duty: {
+      status: {
+        type: Boolean,
+        default: false,
+      },
+      startTime: {
+        type: String,
+        default: null,
+      },
+      endTime: {
+        type: String,
+        default: null,
+      },
     },
   },
   {

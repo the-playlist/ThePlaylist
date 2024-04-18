@@ -14,19 +14,6 @@ import {
   useLazyGetSongsListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 
-const songs_ = [
-  "Hey Jude",
-  "Bohemian Rhapsody",
-  "Hotel California",
-  "Imagine",
-  "Stairway to Heaven",
-  "Yesterday",
-  "Like a Rolling Stone",
-  "Let It Be",
-  "Smells Like Teen Spirit",
-  "Purple Haze",
-];
-
 function AddEditPlayer({ openModal, closeModal }) {
   const {
     register,

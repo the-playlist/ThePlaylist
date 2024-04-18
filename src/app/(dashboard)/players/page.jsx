@@ -15,10 +15,11 @@ const Players = () => {
   useEffect(() => {
     fetchPlayers();
   }, []);
+
   const fetchPlayers = async (second) => {
     try {
       const result = await fetch(
-        `${process.env.LOCAL_URL}api/players/getAllPlayers`,
+        `${process.env.DEPLOYMENT_URL}api/players/getAllPlayers`,
         {
           cache: "no-store",
         }
