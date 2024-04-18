@@ -1,26 +1,33 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { FaQuestion } from "react-icons/fa";
-import { useLazyGetStaffListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useLazyGetStaffListQuery,
+  useUpdateDutyStatusMutation,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import CircularProgress from "@mui/joy/CircularProgress";
+import { toast } from "react-toastify";
+import { CustomLoader } from "@/app/_components";
 
-interface Staff {
-  firstName: String;
-  lastname: String;
-  _id: String;
-  duty: {
-    startTime: null;
-    endTime: null;
-    status: Boolean;
-  };
-}
+// interface Staff {
+//   firstName: String;
+//   lastname: String;
+//   _id: String;
+//   duty: {
+//     startTime: null,
+//     endTime: null,
+//     status: Boolean,
+//   };
+// }
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
   const [showModal, setShowModal] = useState(false);
-  const popUpRef = useRef<HTMLDialogElement>(null);
-  const [staffList, setStaffList] = useState<Staff[]>([]);
+  const popUpRef = useRef(null);
+  const [staffList, setStaffList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checked, setIsChecked] = useState(false);
+  const [currentPlayerInfo, setCurrentPlayerInfo] = useState(null);
+  const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
 
   useEffect(() => {
     if (showModal) {
@@ -30,37 +37,37 @@ const DutyScreen = () => {
     }
   }, [showModal]);
 
-  const toggleButton = (isTrue: boolean, index: any) => {
-    setStaffList((prevStaffList: Staff[]) => {
-      const updatedStaff: Staff[] = [...prevStaffList];
-      const updatedDuty = { ...updatedStaff[index].duty, status: isTrue };
-      updatedStaff[index] = { ...updatedStaff[index], duty: updatedDuty };
-      return updatedStaff;
-    });
-  };
+  // const toggleButton = (isTrue: boolean, index: any) => {
+  //   setStaffList((prevStaffList: Staff[]) => {
+  //     const updatedStaff: Staff[] = [...prevStaffList];
+  //     const updatedDuty = { ...updatedStaff[index].duty, status: isTrue };
+  //     updatedStaff[index] = { ...updatedStaff[index], duty: updatedDuty };
+  //     return updatedStaff;
+  //   });
+  // };
 
-  const toggleAllPlayersStatus = () => {
-    setStaffList((prevStaffList: any) => {
-      if (checked) {
-        return prevStaffList.map((staff: any) => ({
-          ...staff,
-          duty: { ...staff.duty, status: false },
-        }));
-      } else {
-        return prevStaffList.map((staff: any) => ({
-          ...staff,
-          duty: { ...staff.duty, status: true },
-        }));
-      }
-    });
-  };
+  // const toggleAllPlayersStatus = () => {
+  //   setStaffList((prevStaffList: any) => {
+  //     if (checked) {
+  //       return prevStaffList.map((staff: any) => ({
+  //         ...staff,
+  //         duty: { ...staff.duty, status: false },
+  //       }));
+  //     } else {
+  //       return prevStaffList.map((staff: any) => ({
+  //         ...staff,
+  //         duty: { ...staff.duty, status: true },
+  //       }));
+  //     }
+  //   });
+  // };
 
-  const handleSearch = (event: any) => {
+  const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
   const filteredPlayers = staffList.filter(
-    (player: any) =>
+    (player) =>
       player?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       player?.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -79,12 +86,25 @@ const DutyScreen = () => {
     }
   };
 
+  const onUpdateStatusHandler = async (id, status) => {
+    let payload = {
+      id: id,
+      status: status,
+    };
+
+    let response = await updateStatusAPI(payload);
+    if (response && !response.error) {
+      toast(response?.data?.description);
+      fetchStaffList();
+    } else {
+      toast.error(response?.data?.description || "Something Went Wrong...");
+    }
+  };
+
   return (
     <div className="overflow-x-auto">
       {getStaffListResponse?.isFetching ? (
-        <div className="flex items-center justify-center">
-          <CircularProgress color="warning" variant="outlined" />
-        </div>
+        <CustomLoader />
       ) : (
         <>
           <dialog ref={popUpRef} className="modal ">
@@ -127,7 +147,14 @@ const DutyScreen = () => {
 
                   <button
                     onClick={() => {
-                      toggleAllPlayersStatus();
+                      onUpdateStatusHandler(
+                        null,
+                        filteredPlayers.every(
+                          (player) => player.duty.status === true
+                        )
+                          ? false
+                          : true
+                      );
                       setIsChecked(checked ? false : true);
                       setShowModal(false);
                     }}
@@ -143,7 +170,9 @@ const DutyScreen = () => {
           {filteredPlayers?.length > 0 && (
             <>
               <div className="px-2">
-                <h2 className="font-medium my-5">On Duty Players (5)</h2>
+                <h2 className="font-medium my-5">
+                  On Duty Players ({filteredPlayers?.length})
+                </h2>
                 <div className="relative w-1/4 mb-8 flex items-center ">
                   <input
                     type="text"
@@ -185,7 +214,7 @@ const DutyScreen = () => {
                           defaultChecked={false}
                           checked={
                             filteredPlayers.every(
-                              (player: any) => player.duty.status === true
+                              (player) => player.duty.status === true
                             ) || false
                           }
                           className="checkbox mr-2 checkbox-success"
@@ -197,7 +226,7 @@ const DutyScreen = () => {
                     </td>
                   </tr>
                 </thead>
-                {filteredPlayers?.map((item: any, index) => (
+                {filteredPlayers?.map((item, index) => (
                   <tbody className="  shadow-lg rounded-2xl h-20 ">
                     <tr className="">
                       <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
@@ -216,9 +245,13 @@ const DutyScreen = () => {
                       <td className="rounded-e-2xl ">
                         <div className="flex justify-end">
                           <input
-                            onClick={() =>
-                              toggleButton(!item.duty.status, index)
-                            }
+                            onClick={() => {
+                              // toggleButton(!item.duty.status, index);
+                              onUpdateStatusHandler(
+                                item._id,
+                                !item.duty.status
+                              );
+                            }}
                             type="checkbox"
                             className="toggle toggle-success mr-2 "
                             checked={item.duty.status}

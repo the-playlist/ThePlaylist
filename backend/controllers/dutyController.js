@@ -15,11 +15,12 @@ export const updateDutyStatus = async (req, res, next) => {
   const id = req.query.id;
   const { status } = req.body;
 
-  const player = await Players.findByIdAndUpdate(
-    id,
-    { $set: { "duty.status": status } },
-    { new: true }
-  );
+  let filter = {};
+  if (id) {
+    filter = { _id: id };
+  }
+  const update = { $set: { "duty.status": status } };
+  await Players.updateMany(filter, update, { new: true });
   const response = new ResponseModel(true, "Status updated successfully");
   res.status(200).json(response);
 };

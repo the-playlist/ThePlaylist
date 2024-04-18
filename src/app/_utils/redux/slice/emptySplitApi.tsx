@@ -7,7 +7,8 @@ const endPoints = {
   ADD_UPDATE_PLAYER: `api/players/addUpdatePlayer`,
   DELETE_PLAYER: `api/players/deletePlayerById?id=`,
   GET_STAFF_LIST: "api/duty/getAllStaff",
-  UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus?id=",
+  UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus",
+  GET_ONDUTY_PLAYER_SONGS: "api/songs/getOnDutyPlayerSongs",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -35,15 +36,21 @@ export const emptySplitApi = createApi({
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
     }),
-
     getStaffList: builder.query({
       query: () => endPoints.GET_STAFF_LIST,
     }),
+    getOnDutyPlayerSongList: builder.query({
+      query: () => endPoints.GET_ONDUTY_PLAYER_SONGS,
+    }),
     updateDutyStatus: builder.mutation({
-      query: (body) => ({
-        url: `${endPoints.UPDATE_DUTY_STATUS}${body.id}`,
+      query: (body: any) => ({
+        url: `${
+          body?.id != null
+            ? `${endPoints.UPDATE_DUTY_STATUS}?id=${body.id}`
+            : endPoints.UPDATE_DUTY_STATUS
+        }`,
         method: "POST",
-        body: body.status,
+        body: body,
       }),
     }),
     addUpdatePlayer: builder.mutation({
@@ -71,4 +78,5 @@ export const {
   useDeletePlayerByIdMutation,
   useLazyGetStaffListQuery,
   useUpdateDutyStatusMutation,
+  useLazyGetOnDutyPlayerSongListQuery,
 } = emptySplitApi;
