@@ -1,7 +1,7 @@
 export const navlinks = [
   {
     name: "Dashboard",
-    href: "/dashbard",
+    href: "/home",
     icon: "/dashboard.svg",
   },
   {

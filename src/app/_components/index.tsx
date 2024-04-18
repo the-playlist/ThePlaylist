@@ -11,6 +11,7 @@ import ShowQualifiedList from "./qualified";
 import SongModal from "./song-modal";
 import ConfirmationModal from "./confirmation-popup";
 import { Loader } from "./loader";
+import CustomLoader from "./custom_loader";
 
 export {
   NavBar,
@@ -26,4 +27,5 @@ export {
   AddEditSong,
   ShowQualifiedList,
   SongModal,
+  CustomLoader,
 };

@@ -103,6 +103,59 @@ export const getAllSongs = async (req, res, next) => {
   res.status(200).json(response);
 };
 
+export const getOnDutyPlayerSongs = async (req, res, next) => {
+  let data;
+  const { keyword, id } = req.query;
+  if (keyword) {
+    data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
+  } else {
+    let pipeline = [
+      {
+        $lookup: {
+          from: "players",
+          localField: "_id",
+          foreignField: "assignSongs",
+          as: "player_info",
+        },
+      },
+      {
+        $addFields: {
+          duty: { $arrayElemAt: ["$player_info.duty", 0] },
+        },
+      },
+      {
+        $match: {
+          "duty.status": true,
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          songName: 1,
+          artist: 1,
+          title: 1,
+          isFav: 1,
+          introSec: 1,
+          songDuration: 1,
+          duty: 1,
+          qualifiedCount: 1,
+        },
+      },
+    ];
+    if (id) {
+      if (id) {
+        pipeline.push({
+          $match: { _id: new mongoose.Types.ObjectId(id) },
+        });
+      }
+    }
+
+    data = await Songs.aggregate(pipeline);
+  }
+  const response = new ResponseModel(true, "Songs fetched successfully.", data);
+  res.status(200).json(response);
+};
+
 export const deleteSongById = async (req, res, next) => {
   const id = req.query.id;
   if (!id) {
