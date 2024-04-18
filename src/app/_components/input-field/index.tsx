@@ -19,12 +19,12 @@ function InputField({
       <label htmlFor="">{title}</label>
       <input
         className=" border-gray-400 border-2 my-1 p-2 rounded"
-        { ...register(name, validate)}
+        {...register(name, validate)}
         {...props}
       />
       {error && (
         <span className=" text-red-900 text-xs font-medium">
-          This is required
+          {error?.message || "Error"}
         </span>
       )}
     </div>

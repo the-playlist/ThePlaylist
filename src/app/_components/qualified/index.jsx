@@ -1,7 +1,6 @@
 import React from "react";
-import { GenericButton } from "..";
 
-const ShowQualifiedList = ({ title }) => {
+const ShowQualifiedList = ({ title, currentInfo }) => {
   return (
     <dialog id="my_modal_5" className="modal">
       <div className="modal-box  w-11/12 max-w-2xl">
@@ -16,18 +15,16 @@ const ShowQualifiedList = ({ title }) => {
           </button>
         </form>
         <div className=" flex flex-col justify-evenly max-h-60 overflow-y-auto border p-1 rounded">
-          {[1, 2, 3, 45, 6, 7, 8, 9, 0].map((i) => (
+          {currentInfo?.map((i) => (
             <div
               className={`cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2 `}
             >
-              <span className={`font-semibold text-black `}>{"John Doe"}</span>
-              <span>The Beatles </span>
+              <span className={`font-semibold text-black `}>
+                {i?.fullname || i?.title}
+              </span>
+              <span className={`text-black `}>{i?.artist}</span>
             </div>
           ))}
-        </div>
-
-        <div className=" mt-2">
-          <GenericButton text="OK" />
         </div>
       </div>
     </dialog>

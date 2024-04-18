@@ -18,6 +18,11 @@ const songsSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter song duration"],
     },
+    category: {
+      type: String,
+      required: [true, "Please enter song category"],
+    },
+
     qualifiedPlayer: Boolean,
     isFav: { type: Boolean, default: false },
   },
