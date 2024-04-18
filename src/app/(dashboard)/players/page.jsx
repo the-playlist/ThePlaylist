@@ -18,9 +18,12 @@ const Players = () => {
 
   const fetchPlayers = async (second) => {
     try {
-      const result = await fetch(`/api/players/getAllPlayers`, {
-        cache: "no-store",
-      });
+      const result = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/players/getAllPlayers`,
+        {
+          cache: "no-store",
+        }
+      );
       if (result.ok) {
         const {
           response: { content },
