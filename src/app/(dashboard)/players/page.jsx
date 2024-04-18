@@ -1,5 +1,10 @@
 "use client";
-import { ConfirmationModal, OptionButton, SongIcon } from "../../_components";
+import {
+  ConfirmationModal,
+  OptionButton,
+  ShowQualifiedList,
+  SongIcon,
+} from "../../_components";
 import AddEditPlayer from "@/app/_components/add-edit-player";
 import { AddPlayerButton } from "./add-player-button";
 import { useEffect, useState } from "react";
@@ -51,7 +56,12 @@ const Players = () => {
     <div>
       <div className="overflow-x-auto">
         <div className="flex border-3 justify-end">
-          <AddPlayerButton onClick={() => setAddModalOpens(true)} />
+          <AddPlayerButton
+            onClick={() => {
+              setCurrentPlayerInfo(null);
+              setAddModalOpens(true);
+            }}
+          />
         </div>
         <div className=" max-h-[80vh] overflow-y-auto">
           <table className="table border-separate border-spacing-y-5 rounded-2xl px-1 ">
@@ -75,12 +85,22 @@ const Players = () => {
                   <td>{item?.email}</td>
                   <td>{`+1${item?.phone}`}</td>
                   <td>
-                    <SongIcon count={item?.assignSongs?.length} />
+                    <SongIcon
+                      onClick={() => {
+                        setCurrentPlayerInfo(item);
+                        document?.getElementById("my_modal_5")?.showModal();
+                      }}
+                      count={item?.assignSongs?.length}
+                    />
                   </td>
                   <td>
                     <OptionButton
                       item={item}
                       index={index}
+                      onEditPeess={() => {
+                        setCurrentPlayerInfo(item);
+                        setAddModalOpens(true);
+                      }}
                       onDeletePress={() => {
                         setCurrentPlayerInfo(item);
                         setDeletePlayerModal(true);
@@ -95,7 +115,9 @@ const Players = () => {
       </div>
       {addModalOpens && (
         <AddEditPlayer
+          currentInfo={currentPlayerInfo}
           openModal={addModalOpens}
+          fetchPlayerList={fetchPlayers}
           closeModal={() => {
             setAddModalOpens(false);
           }}
@@ -111,6 +133,10 @@ const Players = () => {
           onYesPress={onPlayerDeleteHandler}
         />
       )}
+      <ShowQualifiedList
+        title={"Songs"}
+        currentInfo={currentPlayerInfo?.assignSongs}
+      />
     </div>
   );
 };

@@ -1,17 +1,28 @@
 "use client";
 import {
   AddEditSong,
+  ConfirmationModal,
   Loader,
   OptionButton,
   ShowQualifiedList,
   SongIcon,
-} from "@/app/_components";
-import { useLazyGetSongsListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+} from "../../_components";
+import {
+  useDeleteSongByIdMutation,
+  useLazyGetSongsListQuery,
+  useMarkSongFavMutation,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const SongsManagment = () => {
   const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
+  const [deleteSongModal, setDeleteSongModal] = useState(false);
+  const [addNewSongModal, setAddNewSongModal] = useState(false);
+  const [deleteSongAPI, deleteSongResponse] = useDeleteSongByIdMutation();
+  const [currentSongInfo, setCurrentSongInfo] = useState(null);
+
   const [songsList, setSongsList] = useState([]);
 
   useEffect(() => {
@@ -24,65 +35,148 @@ const SongsManagment = () => {
       setSongsList(response.data?.content);
     }
   };
+  const onSongDeleteHandler = async () => {
+    let response = await deleteSongAPI(currentSongInfo._id);
+    if (response && !response.error) {
+      setDeleteSongModal(false);
+      toast(response?.data?.description);
+      fetchSongsList();
+    } else {
+      toast.error(response?.data?.description || "Something Went Wrong...");
+    }
+  };
 
   return (
     <>
-      <div className="flex border-3 justify-end">
-        <button
-          onClick={() => document?.getElementById("my_modal_4")?.showModal()}
-          className=" self-end btn btn-primary bg-primary border-none text-white "
-        >
-          Add New Song+
-        </button>
-      </div>
-      <div className=" max-h-[80vh] overflow-y-auto">
-        {songsListResponse?.isFetching && <Loader />}
-        <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
-          <thead>
-            <tr className="text-black text-lg font-thin">
-              <th></th>
-              <th>Title</th>
-              <th>Artist</th>
-              <th className=" text-center">Qualified</th>
-              <th className=" text-center">Intro Sec</th>
-              <th className=" text-center">Category</th>
-              <th className=" text-center"> Mark as Fav</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {songsList?.map((item, index) => (
-              <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
-                <th>{index + 1}</th>
-                <td>{item?.title}</td>
-                <td>{item?.artist}</td>
-                <td className=" text-center flex justify-center  items-center h-20">
-                  <SongIcon
-                    onClick={() =>
-                      document?.getElementById("my_modal_5")?.showModal()
-                    }
-                    isUser
-                    count={item.qualifiedCount}
-                  />
-                </td>
-                <td className=" text-center">{`:${item?.introSec}`}</td>
-                <td className=" text-center">{item?.category || "N/A"}</td>
-                <td className=" text-center flex justify-center  items-center h-20">
-                  {item?.isFav ? (
-                    <FaHeart className="text-primary" />
-                  ) : (
-                    <FaRegHeart />
-                  )}
-                </td>
-                <td>{<OptionButton item={item} index={index} />}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <AddEditSong />
-      <ShowQualifiedList title={"Qualified"} />
+      {songsListResponse?.isFetching ? (
+        <div className=" h-full flex items-center justify-center">
+          <Loader />
+        </div>
+      ) : (
+        <>
+          <div className="flex border-3 justify-end">
+            <button
+              onClick={() => {
+                setCurrentSongInfo(null);
+                setAddNewSongModal(true);
+              }}
+              className=" self-end btn btn-primary bg-primary border-none text-white "
+            >
+              Add New Song+
+            </button>
+          </div>
+          <div className=" max-h-[80vh] overflow-y-auto">
+            <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
+              <thead>
+                <tr className="text-black text-lg font-thin">
+                  <th></th>
+                  <th>Title</th>
+                  <th>Artist</th>
+                  <th className=" text-center">Qualified</th>
+                  <th className=" text-center">Intro Sec</th>
+                  <th className=" text-center">Category</th>
+                  <th className=" text-center"> Mark as Fav</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {songsList?.map((item, index) => (
+                  <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
+                    <th>{index + 1}</th>
+                    <td>{item?.title}</td>
+                    <td>{item?.artist}</td>
+                    <td className=" text-center flex justify-center  items-center h-20">
+                      <SongIcon
+                        onClick={() => {
+                          setCurrentSongInfo(item);
+                          document?.getElementById("my_modal_5")?.showModal();
+                        }}
+                        isUser
+                        count={item?.qualifiedCount}
+                      />
+                    </td>
+                    <td className=" text-center">{`:${item?.introSec}`}</td>
+                    <td className=" text-center">{item?.category || "N/A"}</td>
+                    <td className=" text-center flex justify-center  items-center h-20">
+                      <FavIcon id={item._id} isFav_={item.isFav} />
+                    </td>
+                    <td>
+                      {
+                        <OptionButton
+                          item={item}
+                          index={index}
+                          onEditPeess={() => {
+                            setCurrentSongInfo(item);
+                            setAddNewSongModal(true);
+                          }}
+                          onDeletePress={() => {
+                            setCurrentSongInfo(item);
+                            setDeleteSongModal(true);
+                          }}
+                        />
+                      }
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {addNewSongModal && (
+            <AddEditSong
+              currentInfo={currentSongInfo}
+              fetchList={fetchSongsList}
+              openModal={addNewSongModal}
+              closeModal={() => {
+                setAddNewSongModal(false);
+              }}
+            />
+          )}
+          {deleteSongModal && (
+            <ConfirmationModal
+              title={"Are you Sure to delete this Song"}
+              closeModal={() => {
+                setDeleteSongModal(false);
+              }}
+              openModal={deleteSongModal}
+              onYesPress={onSongDeleteHandler}
+            />
+          )}
+          <ShowQualifiedList
+            title={"Qualified Player"}
+            currentInfo={currentSongInfo?.qualifiedPlayers}
+          />
+        </>
+      )}
     </>
+  );
+};
+
+const FavIcon = ({ isFav_, id }) => {
+  const [isFav, setIsFav] = useState(isFav_);
+  const [markSongFavApi] = useMarkSongFavMutation();
+
+  const markSong = async () => {
+    let response = await markSongFavApi({ id: id, isFav: !isFav });
+    if (response && !response.isError) {
+      toast(response?.data?.description);
+    }
+  };
+  return isFav ? (
+    <FaHeart
+      onClick={() => {
+        setIsFav(!isFav);
+        markSong();
+      }}
+      className="text-primary cursor-pointer"
+    />
+  ) : (
+    <FaRegHeart
+      onClick={() => {
+        setIsFav(!isFav);
+        markSong();
+      }}
+      className="cursor-pointer"
+    />
   );
 };
 

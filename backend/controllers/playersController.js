@@ -3,7 +3,7 @@ import Songs from "../models/songs";
 import ResponseModel from "./responseModel";
 
 export const addUpdatePlayer = async (req, res, next) => {
-  const id = req.query.id;
+  const id = req?.body?.id;
   if (!id) {
     const players = await Players.create(req.body);
     let response = new ResponseModel(
@@ -11,9 +11,7 @@ export const addUpdatePlayer = async (req, res, next) => {
       "Player added successfully",
       players
     );
-    res.status(200).json({
-      response,
-    });
+    res.status(200).json(response);
   } else {
     let player = await Players.findByIdAndUpdate(id, req.body, { new: true });
     if (!player) {
@@ -24,9 +22,7 @@ export const addUpdatePlayer = async (req, res, next) => {
       "Player updated successfully",
       player
     );
-    res.status(200).json({
-      response,
-    });
+    res.status(200).json(response);
   }
 };
 

@@ -4,7 +4,7 @@ import Songs from "../models/songs";
 import ResponseModel from "./responseModel";
 
 export const addUpdateSong = async (req, res, next) => {
-  const id = req.query.id;
+  const id = req?.body?.id;
   if (!id) {
     const songs = await Songs.create(req.body);
     res.status(201).json({
@@ -20,6 +20,25 @@ export const addUpdateSong = async (req, res, next) => {
       song,
       message: "Song updated successfully",
     });
+  }
+};
+export const markSongAsFav = async (req, res, next) => {
+  const id = req?.body?.id;
+  const isFav = req?.body?.isFav;
+  if (id) {
+    let song = await Songs.findByIdAndUpdate(
+      id,
+      { $set: { isFav: isFav } },
+      { new: true }
+    );
+    let response = new ResponseModel(
+      true,
+      isFav ? "Song marked as favourite" : "Song unmarked as favourite",
+      null
+    );
+    res.status(200).json(response);
+  } else {
+    return res.status(404).json({ message: "Song not found" });
   }
 };
 
@@ -52,6 +71,7 @@ export const getAllSongs = async (req, res, next) => {
           artist: 1, // Include other song details you want
           title: 1,
           isFav: 1,
+          category: 1,
           introSec: 1,
           songDuration: 1,
           qualifiedPlayers: {
@@ -91,10 +111,8 @@ export const deleteSongById = async (req, res, next) => {
 
   await Songs.findByIdAndDelete(id);
   const songs = await Songs.find();
-  res.status(200).json({
-    songs,
-    message: "Song deleted successfully",
-  });
+  const response = new ResponseModel(true, "Song Deleted Successfully.", null);
+  res.status(200).json(response);
 };
 
 export const getSongByPlayerId = async (req, res, next) => {

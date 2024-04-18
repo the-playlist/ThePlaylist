@@ -5,7 +5,7 @@ import { Menu, MenuItem, MenuButton } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/index.css";
 import "@szhsin/react-menu/dist/transitions/slide.css";
 
-const OptionButton = ({ item, index, onDeletePress }: any) => {
+const OptionButton = ({ item, index, onDeletePress, onEditPeess }: any) => {
   return (
     <>
       <Menu
@@ -16,7 +16,7 @@ const OptionButton = ({ item, index, onDeletePress }: any) => {
         }
         transition
       >
-        <MenuItem>
+        <MenuItem onClick={onEditPeess}>
           <div className="flex flex-row justify-between items-center">
             <svg
               width="16"

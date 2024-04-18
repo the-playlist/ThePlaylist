@@ -6,7 +6,6 @@ import { IoSearchOutline } from "react-icons/io5";
 import { IoMdCloseCircle } from "react-icons/io";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import { ENDPOINTS } from "../../../pages/api/endpoints";
 import CircularProgress from "@mui/joy/CircularProgress";
 import _ from "lodash";
 import {
@@ -14,14 +13,32 @@ import {
   useLazyGetSongsListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 
-function AddEditPlayer({ openModal, closeModal }) {
+function AddEditPlayer({
+  openModal,
+  closeModal,
+  currentInfo,
+  fetchPlayerList,
+}) {
+  const { _id, firstName, lastName, email, phone, assignSongs } =
+    currentInfo || {};
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
     reset,
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      fName: currentInfo ? firstName : "",
+      lName: currentInfo ? lastName : "",
+      email: currentInfo ? email : "",
+      phone: currentInfo ? phone : "",
+    },
+  });
+  const selectedSongsListPrev = _.map(assignSongs, ({ _id, title }) => ({
+    _id,
+    title,
+  }));
   const reff = useRef();
   const [getSongsListApi, getSongsListResponse] = useLazyGetSongsListQuery();
   const [addPlayerApi, addPlayerResponse] = useAddUpdatePlayerMutation();
@@ -37,7 +54,9 @@ function AddEditPlayer({ openModal, closeModal }) {
     addPlayerHandler(data);
   };
 
-  const [selectedSongsList, setSelectedSongsList] = useState([]);
+  const [selectedSongsList, setSelectedSongsList] = useState(
+    currentInfo ? selectedSongsListPrev : []
+  );
   const [songs, setSongs] = useState([]);
   const [filteredsongs, setFilteredsongs] = useState([]);
 
@@ -53,11 +72,12 @@ function AddEditPlayer({ openModal, closeModal }) {
         email: data?.email,
         phone: data?.phone,
         assignSongs: _.map(selectedSongsList, ({ _id }) => _id),
+        id: currentInfo ? _id : null,
       });
       if (response && !response.error) {
-        toast.success(response?.data?.description);
         closeModal();
-        fetchSongsList();
+        toast.success(response?.data?.description);
+        fetchPlayerList();
       }
     } catch (error) {
       toast.success(error?.message || "Something went wrong.");
@@ -88,7 +108,9 @@ function AddEditPlayer({ openModal, closeModal }) {
             method="dialog"
             className="flex  items-center justify-between flex-1 "
           >
-            <div className=" font-bold text-lg ">Add New Player</div>
+            <div className=" font-bold text-lg ">
+              {currentInfo ? "Edit Player" : "Add New Player"}
+            </div>
             {/* if there is a button in form, it will close the modal */}
             <button
               onClick={closeModal}
@@ -99,8 +121,8 @@ function AddEditPlayer({ openModal, closeModal }) {
           </form>
           <div className=" flex flex-row justify-evenly flex-wrap ">
             <InputField
-              placeholder="Enter First Name"
               title="First Name"
+              placeholder="Enter First Name"
               register={register}
               name="fName"
               error={errors.fName}
@@ -139,10 +161,10 @@ function AddEditPlayer({ openModal, closeModal }) {
                       prevList.filter((song) => song.title !== i.title)
                     );
                   }}
-                  className=" cursor-pointer border border-gray-500 flex flex-row items-center m-1 p-1 rounded-lg"
+                  className=" cursor-pointer  flex flex-row items-center m-1 p-1 rounded-lg bg-primary"
                 >
-                  <span>{i.title}</span>
-                  <IoMdCloseCircle />
+                  <span className=" text-white font-semibold">{i.title}</span>
+                  <IoMdCloseCircle className=" text-white  ml-1" />
                 </div>
               );
             })}
@@ -172,26 +194,32 @@ function AddEditPlayer({ openModal, closeModal }) {
             )}
             <div className="border-3 border-red overflow-y-auto  max-h-36">
               {filteredsongs?.map((i) => {
+                const isInclude = !selectedSongsList.some(
+                  (item) => item._id === i._id
+                );
                 return (
                   <div
                     onClick={() => {
-                      if (!selectedSongsList.includes(i)) {
+                      if (isInclude) {
                         setSelectedSongsList((prevList) => [...prevList, i]);
                       }
                     }}
                     className={`cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2 ${
-                      selectedSongsList.includes(i) &&
-                      `bg-primary rounded-lg my-1`
+                      !isInclude && `bg-primary rounded-lg my-1`
                     }`}
                   >
                     <span
                       className={`font-semibold text-black ${
-                        selectedSongsList.includes(i) && `text-white`
+                        !isInclude && `text-white`
                       }`}
                     >
                       {i?.title}
                     </span>
-                    <span> {i?.artist} </span>
+                    <span
+                      className={` text-black ${!isInclude && `text-white`}`}
+                    >
+                      {i?.artist}{" "}
+                    </span>
                   </div>
                 );
               })}
