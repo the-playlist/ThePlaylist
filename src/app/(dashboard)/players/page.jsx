@@ -18,12 +18,9 @@ const Players = () => {
 
   const fetchPlayers = async (second) => {
     try {
-      const result = await fetch(
-        `${process.env.DEPLOYMENT_URL}api/players/getAllPlayers`,
-        {
-          cache: "no-store",
-        }
-      );
+      const result = await fetch(`/api/players/getAllPlayers`, {
+        cache: "no-store",
+      });
       if (result.ok) {
         const {
           response: { content },
