@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Players from "../models/players";
 import Songs from "../models/songs";
 import ResponseModel from "./responseModel";
@@ -24,13 +25,61 @@ export const addUpdateSong = async (req, res, next) => {
 
 export const getAllSongs = async (req, res, next) => {
   let data;
-  const { keyword } = req.query;
+  const { keyword, id } = req.query;
   if (keyword) {
     data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
   } else {
-    data = await Songs.find();
+    let pipeline = [
+      {
+        $lookup: {
+          from: "players", // Assuming the collection name for players is "players"
+          localField: "_id",
+          foreignField: "assignSongs",
+          as: "qualifiedPlayers",
+        },
+      },
+      {
+        $addFields: {
+          qualifiedCount: { $size: "$qualifiedPlayers" },
+        },
+      },
+
+      {
+        $project: {
+          // This function is used to structure our resulted Document Object which fields should be included in Data set and which should be ignored 1 for inclusion and 0 for deletion
+          _id: 1, // Include the _id of the song
+          songName: 1, // Include the name of the song
+          artist: 1, // Include other song details you want
+          title: 1,
+          isFav: 1,
+          introSec: 1,
+          songDuration: 1,
+          qualifiedPlayers: {
+            $map: {
+              input: "$qualifiedPlayers",
+              as: "player",
+              in: {
+                fullname: {
+                  $concat: ["$$player.firstName", " ", "$$player.lastName"],
+                },
+              },
+            },
+          },
+          qualifiedCount: 1,
+        },
+      },
+    ];
+    if (id) {
+      if (id) {
+        pipeline.push({
+          $match: { _id: new mongoose.Types.ObjectId(id) },
+        });
+      }
+    }
+
+    data = await Songs.aggregate(pipeline);
   }
-  const response = new ResponseModel(true, "Songs fetched successfully", data);
+  const response = new ResponseModel(true, "Songs fetched successfully.", data);
   res.status(200).json(response);
 };
 

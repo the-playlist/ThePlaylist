@@ -5,6 +5,7 @@ import { selectToken } from "../reducer/mainSlice";
 const endPoints = {
   GET_SONGS_LIST: `api/songs/getAllSongs`,
   ADD_UPDATE_PLAYER: `api/players/addUpdatePlayer`,
+  DELETE_PLAYER: `api/players/deletePlayerById?id=`,
   GET_STAFF_LIST: "api/duty/getAllStaff",
   UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus?id=",
 };
@@ -52,6 +53,12 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    deletePlayerById: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_PLAYER}${body}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -61,6 +68,7 @@ export const emptySplitApi = createApi({
 export const {
   useLazyGetSongsListQuery,
   useAddUpdatePlayerMutation,
+  useDeletePlayerByIdMutation,
   useLazyGetStaffListQuery,
   useUpdateDutyStatusMutation,
 } = emptySplitApi;

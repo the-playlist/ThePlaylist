@@ -19,6 +19,7 @@ const songsSchema = new mongoose.Schema(
       required: [true, "Please enter song duration"],
     },
     qualifiedPlayer: Boolean,
+    isFav: { type: Boolean, default: false },
   },
   {
     timestamps: true,
