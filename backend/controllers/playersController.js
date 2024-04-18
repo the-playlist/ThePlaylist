@@ -53,8 +53,6 @@ export const deletePlayerById = async (req, res, next) => {
   }
   await Players.findByIdAndDelete(id);
   const players = await Players.find();
-  res.status(200).json({
-    players,
-    message: "Player deleted successfully",
-  });
+  const response = new ResponseModel(true, "Player deleted successfully", null);
+  res.status(200).json(response);
 };

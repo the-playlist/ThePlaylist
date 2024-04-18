@@ -5,6 +5,7 @@ import { selectToken } from "../reducer/mainSlice";
 const endPoints = {
   GET_SONGS_LIST: `api/songs/getAllSongs`,
   ADD_UPDATE_PLAYER: `api/players/addUpdatePlayer`,
+  DELETE_PLAYER: `api/players/deletePlayerById?id=`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -39,11 +40,20 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    deletePlayerById: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_PLAYER}${body}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 
   // tag use for invalidate api
   tagTypes: [],
 });
 
-export const { useLazyGetSongsListQuery, useAddUpdatePlayerMutation } =
-  emptySplitApi;
+export const {
+  useLazyGetSongsListQuery,
+  useAddUpdatePlayerMutation,
+  useDeletePlayerByIdMutation,
+} = emptySplitApi;

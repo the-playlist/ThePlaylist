@@ -9,9 +9,13 @@ import SongIcon from "./song-icon";
 import AddEditSong from "./add-edit-song";
 import ShowQualifiedList from "./qualified";
 import SongModal from "./song-modal";
+import ConfirmationModal from "./confirmation-popup";
+import { Loader } from "./loader";
 
 export {
   NavBar,
+  Loader,
+  ConfirmationModal,
   InputField,
   SideBar,
   Icon,

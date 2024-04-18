@@ -1,43 +1,30 @@
 "use client";
 import {
   AddEditSong,
+  Loader,
   OptionButton,
   ShowQualifiedList,
   SongIcon,
 } from "@/app/_components";
-import React from "react";
+import { useLazyGetSongsListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import React, { useEffect, useState } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 const SongsManagment = () => {
-  const songsList = [
-    {
-      id: 0,
-      title: "John Lennon",
-      Artist: "Lennon",
-      qualifiedCount: 2,
-      introSec: 23,
-    },
-    {
-      id: 1,
-      title: "Aretha",
-      Artist: "Franklin",
-      qualifiedCount: 2,
-      introSec: 11,
-    },
-    {
-      id: 2,
-      title: "Michael",
-      Artist: "Jackson",
-      qualifiedCount: 2,
-      introSec: 42,
-    },
-    {
-      id: 3,
-      title: "Van",
-      Artist: "Morrison",
-      qualifiedCount: 2,
-      introSec: 54,
-    },
-  ];
+  const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
+  const [songsList, setSongsList] = useState([]);
+
+  useEffect(() => {
+    fetchSongsList();
+  }, []);
+
+  const fetchSongsList = async () => {
+    let response = await songsListApi();
+    if (response && !response.isError) {
+      setSongsList(response.data?.content);
+    }
+  };
+
   return (
     <>
       <div className="flex border-3 justify-end">
@@ -48,38 +35,51 @@ const SongsManagment = () => {
           Add New Song+
         </button>
       </div>
-      <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
-        <thead>
-          <tr className="text-black text-lg font-thin">
-            <th></th>
-            <th>Title</th>
-            <th>Artist</th>
-            <th>Qualified</th>
-            <th>Intro Sec</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {songsList?.map((item, index) => (
-            <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
-              <th>{index + 1}</th>
-              <td>{item?.title}</td>
-              <td>{item?.Artist}</td>
-              <td>
-                <SongIcon
-                  onClick={() =>
-                    document?.getElementById("my_modal_5")?.showModal()
-                  }
-                  isUser
-                  count={item.qualifiedCount}
-                />
-              </td>
-              <td>{`:${item?.introSec}`}</td>
-              <td>{<OptionButton item={item} index={index} />}</td>
+      <div className=" max-h-[80vh] overflow-y-auto">
+        {songsListResponse?.isFetching && <Loader />}
+        <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
+          <thead>
+            <tr className="text-black text-lg font-thin">
+              <th></th>
+              <th>Title</th>
+              <th>Artist</th>
+              <th className=" text-center">Qualified</th>
+              <th className=" text-center">Intro Sec</th>
+              <th className=" text-center">Category</th>
+              <th className=" text-center"> Mark as Fav</th>
+              <th></th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {songsList?.map((item, index) => (
+              <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
+                <th>{index + 1}</th>
+                <td>{item?.title}</td>
+                <td>{item?.artist}</td>
+                <td className=" text-center flex justify-center  items-center h-20">
+                  <SongIcon
+                    onClick={() =>
+                      document?.getElementById("my_modal_5")?.showModal()
+                    }
+                    isUser
+                    count={item.qualifiedCount}
+                  />
+                </td>
+                <td className=" text-center">{`:${item?.introSec}`}</td>
+                <td className=" text-center">{item?.category || "N/A"}</td>
+                <td className=" text-center flex justify-center  items-center h-20">
+                  {item?.isFav ? (
+                    <FaHeart className="text-primary" />
+                  ) : (
+                    <FaRegHeart />
+                  )}
+                </td>
+                <td>{<OptionButton item={item} index={index} />}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <AddEditSong />
       <ShowQualifiedList title={"Qualified"} />
     </>
