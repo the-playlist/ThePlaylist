@@ -40,7 +40,7 @@ const Players = () => {
       toast(response?.data?.description);
       fetchPlayers();
     } else {
-      toast.error(response?.data?.description || "Something Went Wrong");
+      toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
 
