@@ -28,6 +28,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "src/app/(dashboard)/players/page.jsx"
-, "src/pages/api/songs/addUpdateSong/index.js"  ],
+, "src/pages/api/songs/addUpdateSong/index.js", "src/app/(dashboard)/duty/page.jsx", "src/app/add-song/page.jsx"  ],
   "exclude": ["node_modules"]
 }

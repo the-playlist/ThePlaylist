@@ -110,7 +110,7 @@ const TableView = () => {
     );
   };
   return (
-    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-10 pt-5">
+    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-5 pt-5">
       <div className=" flex items-center justify-center m-5">
         <Logo />
       </div>

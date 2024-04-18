@@ -37,7 +37,7 @@ const SongsManagment = () => {
       </div>
       <div className=" max-h-[80vh] overflow-y-auto">
         {songsListResponse?.isFetching && <Loader />}
-        <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
+        <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl">
           <thead>
             <tr className="text-black text-lg font-thin">
               <th></th>
@@ -52,7 +52,7 @@ const SongsManagment = () => {
           </thead>
           <tbody>
             {songsList?.map((item, index) => (
-              <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
+              <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl">
                 <th>{index + 1}</th>
                 <td>{item?.title}</td>
                 <td>{item?.artist}</td>
