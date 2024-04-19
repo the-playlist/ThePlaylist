@@ -119,13 +119,29 @@ export const getOnDutyPlayerSongs = async (req, res, next) => {
         },
       },
       {
+        $unwind: "$player_info",
+      },
+      {
         $addFields: {
-          duty: { $arrayElemAt: ["$player_info.duty", 0] },
+          duty: "$player_info.duty",
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          songName: { $first: "$songName" },
+          artist: { $first: "$artist" },
+          title: { $first: "$title" },
+          isFav: { $first: "$isFav" },
+          introSec: { $first: "$introSec" },
+          songDuration: { $first: "$songDuration" },
+          qualifiedCount: { $first: "$qualifiedCount" },
+          maxStatus: { $max: "$duty.status" }, // Determine the highest status within each song group
         },
       },
       {
         $match: {
-          "duty.status": true,
+          maxStatus: true, // Filter only songs with the highest status being true
         },
       },
       {
@@ -137,17 +153,14 @@ export const getOnDutyPlayerSongs = async (req, res, next) => {
           isFav: 1,
           introSec: 1,
           songDuration: 1,
-          duty: 1,
           qualifiedCount: 1,
         },
       },
     ];
     if (id) {
-      if (id) {
-        pipeline.push({
-          $match: { _id: new mongoose.Types.ObjectId(id) },
-        });
-      }
+      pipeline.push({
+        $match: { _id: new mongoose.Types.ObjectId(id) },
+      });
     }
 
     data = await Songs.aggregate(pipeline);

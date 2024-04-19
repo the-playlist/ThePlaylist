@@ -5,20 +5,10 @@ import {
   useLazyGetStaffListQuery,
   useUpdateDutyStatusMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import CircularProgress from "@mui/joy/CircularProgress";
+import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components";
 
-// interface Staff {
-//   firstName: String;
-//   lastname: String;
-//   _id: String;
-//   duty: {
-//     startTime: null,
-//     endTime: null,
-//     status: Boolean,
-//   };
-// }
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +16,6 @@ const DutyScreen = () => {
   const [staffList, setStaffList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checked, setIsChecked] = useState(false);
-  const [currentPlayerInfo, setCurrentPlayerInfo] = useState(null);
   const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
 
   useEffect(() => {
@@ -36,31 +25,6 @@ const DutyScreen = () => {
       popUpRef?.current?.close();
     }
   }, [showModal]);
-
-  // const toggleButton = (isTrue: boolean, index: any) => {
-  //   setStaffList((prevStaffList: Staff[]) => {
-  //     const updatedStaff: Staff[] = [...prevStaffList];
-  //     const updatedDuty = { ...updatedStaff[index].duty, status: isTrue };
-  //     updatedStaff[index] = { ...updatedStaff[index], duty: updatedDuty };
-  //     return updatedStaff;
-  //   });
-  // };
-
-  // const toggleAllPlayersStatus = () => {
-  //   setStaffList((prevStaffList: any) => {
-  //     if (checked) {
-  //       return prevStaffList.map((staff: any) => ({
-  //         ...staff,
-  //         duty: { ...staff.duty, status: false },
-  //       }));
-  //     } else {
-  //       return prevStaffList.map((staff: any) => ({
-  //         ...staff,
-  //         duty: { ...staff.duty, status: true },
-  //       }));
-  //     }
-  //   });
-  // };
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -117,7 +81,6 @@ const DutyScreen = () => {
               >
                 ✕
               </button>
-
               <div className="flex items-center mt-2 mb-5">
                 <div className=" h-20 w-20 mr-3 rounded-md bg-gray-100 flex items-center justify-center">
                   <FaQuestion size={30} color="#EFC440" />
@@ -133,7 +96,6 @@ const DutyScreen = () => {
                   </p>
                 </div>
               </div>
-
               <div className="">
                 <div className="w-full flex  justify-between">
                   <button
@@ -144,7 +106,6 @@ const DutyScreen = () => {
                   >
                     No, cancel
                   </button>
-
                   <button
                     onClick={() => {
                       onUpdateStatusHandler(
@@ -166,8 +127,7 @@ const DutyScreen = () => {
               </div>
             </div>
           </dialog>
-
-          {filteredPlayers?.length > 0 && (
+          {staffList?.length > 0 && (
             <>
               <div className="px-2">
                 <h2 className="font-medium my-5">
@@ -193,8 +153,11 @@ const DutyScreen = () => {
                     <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
                   </svg>
                   {searchTerm?.length > 0 && (
-                    <button onClick={() => setSearchTerm("")} className=" w-32">
-                      <span>Clear all</span>
+                    <button
+                      className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
+                      onClick={() => setSearchTerm("")}
+                    >
+                      <MdClear size={20} className="text-gray-400" />
                     </button>
                   )}
                 </div>
@@ -206,24 +169,26 @@ const DutyScreen = () => {
                     <td>Status</td>
                     <td>Shift start time</td>
                     <td>Shift End time</td>
-                    <td className=" float-right ">
-                      <div className="flex">
-                        <input
-                          onClick={() => setShowModal(true)}
-                          type="checkbox"
-                          defaultChecked={false}
-                          checked={
-                            filteredPlayers.every(
-                              (player) => player.duty.status === true
-                            ) || false
-                          }
-                          className="checkbox mr-2 checkbox-success"
-                        />
-                        <span>
-                          Mark all as {!checked ? "on Duty" : "Off Duty"}
-                        </span>
-                      </div>
-                    </td>
+                    {filteredPlayers?.length > 0 && (
+                      <td className=" float-right ">
+                        <div className="flex">
+                          <input
+                            onClick={() => setShowModal(true)}
+                            type="checkbox"
+                            defaultChecked={false}
+                            checked={
+                              filteredPlayers.every(
+                                (player) => player.duty.status === true
+                              ) || false
+                            }
+                            className="checkbox mr-2 checkbox-success"
+                          />
+                          <span>
+                            Mark all as {!checked ? "on Duty" : "Off Duty"}
+                          </span>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 </thead>
                 {filteredPlayers?.map((item, index) => (
@@ -246,7 +211,6 @@ const DutyScreen = () => {
                         <div className="flex justify-end">
                           <input
                             onClick={() => {
-                              // toggleButton(!item.duty.status, index);
                               onUpdateStatusHandler(
                                 item._id,
                                 !item.duty.status
@@ -262,6 +226,11 @@ const DutyScreen = () => {
                   </tbody>
                 ))}
               </table>
+              {filteredPlayers?.length == 0 && (
+                <div className="flex justify-center text-base items-center h-56 text-black w-full">
+                  No Players Found
+                </div>
+              )}
             </>
           )}
         </>

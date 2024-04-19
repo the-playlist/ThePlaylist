@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 
 const SideBar = () => {
   const pathname = usePathname();
+
   return (
     <div className="drawer  w-1/6  shadow-xl rounded-2xl mr-5 lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -34,12 +35,10 @@ const SideBar = () => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-
         <ul className="menu p-4  text-base-content ">
           <div className="flex items-start  justify-center flex-1">
             <img src="/assets/logo.png" className="h-6 w-100 my-2 " />
           </div>
-
           {navlinks.map((i) => {
             const isActive = pathname?.startsWith(i.href);
             return (
