@@ -17,7 +17,7 @@ const DutyScreen = () => {
   const [staffList, setStaffList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checked, setIsChecked] = useState(false);
-  const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
+  const [updateStatusAPI] = useUpdateDutyStatusMutation();
 
   useEffect(() => {
     if (showModal) {
@@ -37,6 +37,7 @@ const DutyScreen = () => {
       player?.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const countTrueDuty = _.countBy(filteredPlayers, "duty.status")[true] || 0;
+  debugger;
 
   useEffect(() => {
     fetchStaffList();
