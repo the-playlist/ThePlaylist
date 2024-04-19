@@ -27,7 +27,7 @@ const DutyScreen = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-    setSearchTerm(event.target.value.trim());
+    setSearchTerm(event.target.value);
   };
 
   const filteredPlayers = staffList.filter(
@@ -138,6 +138,9 @@ const DutyScreen = () => {
                     type="text"
                     placeholder="Search..."
                     value={searchTerm}
+                    onBlur={() => {
+                      setSearchTerm(searchTerm.trim());
+                    }}
                     onChange={handleSearch}
                     className="block w-full py-5 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
                   />
