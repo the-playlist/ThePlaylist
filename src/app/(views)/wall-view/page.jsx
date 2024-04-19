@@ -13,7 +13,7 @@ const WallView = () => {
     useLazyGetOnDutyPlayerSongListQuery();
   const [songList, setSongList] = useState([]);
 
-  const elementRef = useRef<HTMLDivElement>(null);
+  const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   const [fontSize, setFontSize] = useState("text-3xl");
@@ -76,7 +76,7 @@ const WallView = () => {
             <Logo />
           </div>
           <table className="table table-lg border-separate border-spacing-y-2 ">
-            {songList?.map((item: any, index: number) => (
+            {songList?.map((item, indexr) => (
               <tbody
                 className={` h-20 text-black rounded-tl-lg 
               ${

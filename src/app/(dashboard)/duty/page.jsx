@@ -27,7 +27,7 @@ const DutyScreen = () => {
   }, [showModal]);
 
   const handleSearch = (event) => {
-    setSearchTerm(event.target.value);
+    setSearchTerm(event.target.value.trim());
   };
 
   const filteredPlayers = staffList.filter(
