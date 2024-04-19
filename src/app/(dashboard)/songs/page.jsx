@@ -99,8 +99,8 @@ const SongsManagment = () => {
                       />
                     </td>
                     <td className=" text-center">{`:${item?.introSec}`}</td>
-                    <td>
-                      <span className=" text-center font-semibold bg-option p-2 rounded-lg">
+                    <td className=" text-center">
+                      <span className="text-center font-semibold bg-option p-2 rounded-lg">
                         {item?.category || "N/A"}
                       </span>
                     </td>

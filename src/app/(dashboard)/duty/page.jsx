@@ -169,70 +169,75 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <table className="table border-separate border-spacing-y-5 px-2">
-                <thead>
-                  <tr className="text-base font-medium text-black">
-                    <th className="font-medium">Players</th>
-                    <td>Status</td>
-                    <td>Shift start time</td>
-                    <td>Shift End time</td>
-                    {filteredPlayers?.length > 0 && (
-                      <td className=" float-right ">
-                        <div className="flex">
-                          <input
-                            onClick={() => setShowModal(true)}
-                            type="checkbox"
-                            defaultChecked={false}
-                            checked={
-                              filteredPlayers.every(
-                                (player) => player.duty.status === true
-                              ) || false
-                            }
-                            className="checkbox mr-2 checkbox-success"
-                          />
-                          <span>
-                            Mark all as {!checked ? "on Duty" : "Off Duty"}
-                          </span>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                </thead>
-                {filteredPlayers?.map((item, index) => (
-                  <tbody className="  shadow-lg rounded-2xl h-20 ">
-                    <tr className="">
-                      <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
-                      <td>
-                        <div className="flex items-center">
-                          <div
-                            className={`h-2 w-2 rounded-full mr-2 ${
-                              item?.duty.status ? "bg-green-700" : "bg-gray-400"
-                            }`}
-                          ></div>
-                          {item?.duty.status ? "on Duty" : "Off Duty"}
-                        </div>
-                      </td>
-                      <td>N/A</td>
-                      <td>N/A</td>
-                      <td className="rounded-e-2xl ">
-                        <div className="flex justify-end">
-                          <input
-                            onClick={() => {
-                              onUpdateStatusHandler(
-                                item._id,
-                                !item.duty.status
-                              );
-                            }}
-                            type="checkbox"
-                            className="toggle toggle-success mr-2 "
-                            checked={item.duty.status}
-                          />
-                        </div>
-                      </td>
+              <div className=" max-h-[80vh] overflow-y-auto">
+                <table className="table border-separate border-spacing-y-5 px-2">
+                  <thead>
+                    <tr className="text-base font-medium text-black">
+                      <th className="font-medium">Players</th>
+                      <td>Status</td>
+                      <td>Shift start time</td>
+                      <td>Shift End time</td>
+                      {filteredPlayers?.length > 0 && (
+                        <td className=" float-right ">
+                          <div className="flex">
+                            <input
+                              onClick={() => setShowModal(true)}
+                              type="checkbox"
+                              defaultChecked={false}
+                              checked={
+                                filteredPlayers.every(
+                                  (player) => player.duty.status === true
+                                ) || false
+                              }
+                              className="checkbox mr-2 checkbox-success"
+                            />
+                            <span>
+                              Mark all as {!checked ? "on Duty" : "Off Duty"}
+                            </span>
+                          </div>
+                        </td>
+                      )}
                     </tr>
-                  </tbody>
-                ))}
-              </table>
+                  </thead>
+                  {filteredPlayers?.map((item, index) => (
+                    <tbody className="  shadow-lg rounded-2xl h-20 ">
+                      <tr className="">
+                        <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
+                        <td>
+                          <div className="flex items-center">
+                            <div
+                              className={`h-2 w-2 rounded-full mr-2 ${
+                                item?.duty.status
+                                  ? "bg-green-700"
+                                  : "bg-gray-400"
+                              }`}
+                            ></div>
+                            {item?.duty.status ? "on Duty" : "Off Duty"}
+                          </div>
+                        </td>
+                        <td>N/A</td>
+                        <td>N/A</td>
+                        <td className="rounded-e-2xl ">
+                          <div className="flex justify-end">
+                            <input
+                              onClick={() => {
+                                onUpdateStatusHandler(
+                                  item._id,
+                                  !item.duty.status
+                                );
+                              }}
+                              type="checkbox"
+                              className="toggle toggle-success mr-2 "
+                              checked={item.duty.status}
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  ))}
+                </table>
+              </div>
+
               {filteredPlayers?.length == 0 && (
                 <div className="flex justify-center text-base items-center h-56 text-black w-full">
                   No Players Found
