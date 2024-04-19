@@ -32,15 +32,7 @@ const WallView = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  const performer = [
-    { id: 0, songName: "Imagine", artistName: "John Lennon" },
-    { id: 1, songName: "Born to run", artistName: "Savannah R." },
-    { id: 2, songName: "Hey Jude", artistName: "Shawn T." },
-    { id: 3, songName: "Respect", artistName: "Alice K." },
-    { id: 4, songName: "Hey Ya!", artistName: "Tom M." },
-    { id: 5, songName: "Hey Ya!", artistName: "Tom M." },
-    { id: 6, songName: "Hey Ya!", artistName: "Tom M." },
-  ];
+
   useEffect(() => {
     fetchSongsList();
   }, []);
@@ -76,7 +68,7 @@ const WallView = () => {
             <Logo />
           </div>
           <table className="table table-lg border-separate border-spacing-y-2 ">
-            {songList?.map((item, indexr) => (
+            {songList?.map((item, index) => (
               <tbody
                 className={` h-20 text-black rounded-tl-lg 
               ${
@@ -87,8 +79,12 @@ const WallView = () => {
               `}
               >
                 <tr>
-                  <td className={`${fontSize} text-start`}>{item?.title}</td>
-                  <td className={`${fontSize} text-end`}>{item?.artist}</td>
+                  <td className={`${fontSize} text-start rounded-l-lg `}>
+                    {item?.title}
+                  </td>
+                  <td className={`${fontSize} text-end rounded-r-lg`}>
+                    {item?.artist}
+                  </td>
                 </tr>
               </tbody>
             ))}

@@ -55,14 +55,6 @@ const PerformerView = () => {
         <Logo />
       </div>
       <table className="table table-lg border-separate border-spacing-y-2 ">
-        {/* <thead className="">
-          <tr className="text-black">
-            <th className={`${fontSize} text-start w-1/12`}>#Sr</th>
-            <th className={`${fontSize} text-start`}>Songs</th>
-            <th className={`${fontSize} text-end`}> Players</th>
-            <th className={`${fontSize} text-end`}>Intro</th>
-          </tr>
-        </thead> */}
         {performer?.map((item: any, index: number) => (
           <tbody
             className={`h-20 text-black text-base rounded-tl-lg    
@@ -72,11 +64,13 @@ const PerformerView = () => {
                   : "bg-gray-200 font-medium"
               }`}
           >
-            <tr>
-              <td className={`${fontSize} text-start`}>{index + 1}</td>
+            <tr className="rounded-l-lg">
+              <td className={`${fontSize} text-start rounded-l-lg`}>
+                {index + 1}
+              </td>
               <td className={`${fontSize}  text-start`}>{item?.songName}</td>
               <td className={`${fontSize} text-end`}>{item?.artistName}</td>
-              <td className="text-black text-3xl text-end w-1/12">
+              <td className="text-black text-3xl rounded-r-lg text-end w-1/12">
                 <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
                   {item?.intro}
                 </div>
