@@ -226,7 +226,10 @@ function AddEditPlayer({
             </div>
           </div>
           <div className=" mt-2">
-            <GenericButton text="Add" onClick={handleSubmit(onSubmit)} />
+            <GenericButton
+              text={currentInfo ? "Update" : "Add"}
+              onClick={handleSubmit(onSubmit)}
+            />
           </div>
         </div>
       </dialog>

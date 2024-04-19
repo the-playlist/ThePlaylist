@@ -2,6 +2,7 @@
 import {
   AddEditSong,
   ConfirmationModal,
+  CustomLoader,
   Loader,
   OptionButton,
   ShowQualifiedList,
@@ -49,8 +50,8 @@ const SongsManagment = () => {
   return (
     <>
       {songsListResponse?.isFetching ? (
-        <div className=" h-full flex items-center justify-center">
-          <Loader />
+        <div className=" h-full flex items-center justify-center bg-white">
+          <CustomLoader />
         </div>
       ) : (
         <>
@@ -88,15 +89,21 @@ const SongsManagment = () => {
                     <td className=" text-center flex justify-center  items-center h-20">
                       <SongIcon
                         onClick={() => {
-                          setCurrentSongInfo(item);
-                          document?.getElementById("my_modal_5")?.showModal();
+                          if (item?.qualifiedPlayers?.length > 0) {
+                            setCurrentSongInfo(item);
+                            document?.getElementById("my_modal_5")?.showModal();
+                          }
                         }}
                         isUser
                         count={item?.qualifiedCount}
                       />
                     </td>
                     <td className=" text-center">{`:${item?.introSec}`}</td>
-                    <td className=" text-center">{item?.category || "N/A"}</td>
+                    <td>
+                      <span className=" text-center font-semibold bg-option p-2 rounded-lg">
+                        {item?.category || "N/A"}
+                      </span>
+                    </td>
                     <td className=" text-center flex justify-center  items-center h-20">
                       <FavIcon id={item._id} isFav_={item.isFav} />
                     </td>

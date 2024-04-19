@@ -8,6 +8,7 @@ import {
 import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components";
+import _ from "lodash";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
@@ -35,6 +36,8 @@ const DutyScreen = () => {
       player?.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       player?.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  const countTrueDuty = _.countBy(filteredPlayers, "duty.status")[true] || 0;
+
   useEffect(() => {
     fetchStaffList();
   }, []);
@@ -131,7 +134,7 @@ const DutyScreen = () => {
             <>
               <div className="px-2">
                 <h2 className="font-medium my-5">
-                  On Duty Players ({filteredPlayers?.length})
+                  On Duty Players ({countTrueDuty})
                 </h2>
                 <div className="relative w-1/4 mb-8 flex items-center ">
                   <input
@@ -142,10 +145,10 @@ const DutyScreen = () => {
                       setSearchTerm(searchTerm.trim());
                     }}
                     onChange={handleSearch}
-                    className="block w-full py-5 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                    className="block w-full py-3 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
                   />
                   <svg
-                    className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
+                    className="absolute top-0 left-0 w-6 h-6 mt-3 ml-3 text-gray-400"
                     fill="none"
                     strokeLinecap="round"
                     strokeLinejoin="round"
