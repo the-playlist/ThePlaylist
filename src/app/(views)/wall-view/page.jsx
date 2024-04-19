@@ -79,8 +79,12 @@ const WallView = () => {
               `}
               >
                 <tr>
-                  <td className={`${fontSize} text-start`}>{item?.title}</td>
-                  <td className={`${fontSize} text-end`}>{item?.artist}</td>
+                  <td className={`${fontSize} text-start rounded-l-lg `}>
+                    {item?.title}
+                  </td>
+                  <td className={`${fontSize} text-end rounded-r-lg`}>
+                    {item?.artist}
+                  </td>
                 </tr>
               </tbody>
             ))}

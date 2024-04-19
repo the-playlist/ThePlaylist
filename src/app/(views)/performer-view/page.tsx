@@ -72,11 +72,13 @@ const PerformerView = () => {
                   : "bg-gray-200 font-medium"
               }`}
           >
-            <tr>
-              <td className={`${fontSize} text-start`}>{index + 1}</td>
+            <tr className="rounded-l-lg">
+              <td className={`${fontSize} text-start rounded-l-lg`}>
+                {index + 1}
+              </td>
               <td className={`${fontSize}  text-start`}>{item?.songName}</td>
               <td className={`${fontSize} text-end`}>{item?.artistName}</td>
-              <td className="text-black text-3xl text-end w-1/12">
+              <td className="text-black text-3xl rounded-r-lg text-end w-1/12">
                 <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
                   {item?.intro}
                 </div>
