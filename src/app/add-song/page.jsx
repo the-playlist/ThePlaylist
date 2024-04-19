@@ -1,10 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { MdClear } from "react-icons/md";
-import {
-  useLazyGetSongsListQuery,
-  useLazyGetOnDutyPlayerSongListQuery,
-} from "@/app/_utils/redux/slice/emptySplitApi";
+import { useLazyGetOnDutyPlayerSongListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 
 const Typeahead = () => {
@@ -40,7 +37,6 @@ const Typeahead = () => {
 
   const fetchSongsList = async () => {
     let response = await songsListApi();
-    console.log("response==>", response);
     if (response && !response.isError) {
       const songList = response.data?.content;
       setFilteredOptions(songList);
@@ -97,14 +93,12 @@ const Typeahead = () => {
                   setSelectedSong(option);
                 }}
               >
-                <input
-                  type="radio"
-                  name="radio-6"
-                  className={`radio border-${
+                <div
+                  className={` h-4 w-4 border-${
                     selectedSong == option ? "4" : "2"
-                  } border-${
+                  } rounded-full  border-${
                     selectedSong == option ? "white" : "gray-300"
-                  } h-4 w-4`}
+                  }`}
                 />
                 <li
                   key={option.id}

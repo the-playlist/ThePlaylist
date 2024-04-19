@@ -5,13 +5,11 @@ import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown, IoIosCloseCircle } from "react-icons/io";
 import Webcam from "react-webcam";
-import { RiFullscreenFill } from "react-icons/ri";
-import { MdOutlineFullscreenExit } from "react-icons/md";
 import Link from "next/link";
 
 const TableView = () => {
   const [showCam, setShowCam] = useState(false);
-  const [fontSize, setFontSize] = useState("text-lg");
+  const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([
     { id: 0, songName: "Imagine", artistName: "John Lennon", isVote: null },
     { id: 1, songName: "Born to run", artistName: "Savannah R.", isVote: null },
@@ -56,18 +54,18 @@ const TableView = () => {
       <div className="fixed bottom-0 left-0 w-full bg-white flex justify-end p-4">
         <Link
           href={"/add-song"}
-          className="flex w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-5 px-4 rounded-md justify-center"
+          className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
         >
           <div className="rounded-full bg-add-bg mr-2 p-1">
-            <IoAdd size={18} />
+            <IoAdd size={16} />
           </div>
           Add a Song
         </Link>
         <button
           onClick={onCamPress}
-          className="ml-4 w-full flex items-center bg-white border border-black  text-black font-bold py-5 px-4 rounded-md justify-center hover:bg-active-tab"
+          className="ml-4 w-full text-base flex items-center bg-white border border-black  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab"
         >
-          <FaVideo size={20} className="mr-2" /> Live Video
+          <FaVideo size={16} className="mr-2" /> Live Video
         </button>
       </div>
     );
@@ -137,13 +135,13 @@ const TableView = () => {
               >
                 <div className="w-1/2  text-start flex items-center">
                   {index < 2 ? (
-                    <p className="mx-5 font-extrabold text-xl  ">{`${
+                    <p className="mx-5 font-extrabold text-lg  ">{`${
                       index < 2 ? index + 1 : ""
                     }`}</p>
                   ) : (
                     <ActionButtons key={index} index={index} item={item} />
                   )}
-                  <p className={`font-semibold text-lg ${fontSize}`}>
+                  <p className={`font-semibold  ${fontSize}`}>
                     {item?.songName}
                   </p>
                 </div>
