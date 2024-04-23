@@ -7,7 +7,11 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
-import { CustomLoader } from "@/app/_components";
+import {
+  CustomLoader,
+  GenericButton,
+  SelectSongModal,
+} from "@/app/_components";
 import _ from "lodash";
 
 const DutyScreen = () => {
@@ -17,6 +21,7 @@ const DutyScreen = () => {
   const [staffList, setStaffList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checked, setIsChecked] = useState(false);
+  const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI] = useUpdateDutyStatusMutation();
 
   useEffect(() => {
@@ -70,7 +75,7 @@ const DutyScreen = () => {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="">
       {getStaffListResponse?.isFetching ? (
         <CustomLoader />
       ) : (
@@ -169,8 +174,8 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className=" max-h-[80vh] overflow-y-auto">
-                <table className="table border-separate border-spacing-y-5 px-2">
+              <div className="overflow-y-auto h-[900px]">
+                <table className="table border-separate  border-spacing-y-5 px-2">
                   <thead>
                     <tr className="text-base font-medium text-black">
                       <th className="font-medium">Players</th>
@@ -237,12 +242,25 @@ const DutyScreen = () => {
                   ))}
                 </table>
               </div>
-
               {filteredPlayers?.length == 0 && (
                 <div className="flex justify-center text-base items-center h-56 text-black w-full">
                   No Players Found
                 </div>
               )}
+              <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
+                <GenericButton
+                  text="Save"
+                  onClick={() => setSelectSongModal(true)}
+                />
+              </div>
+              <SelectSongModal
+                btnText={"Push to Que"}
+                title={"Push to Que"}
+                openModal={selectSongModal}
+                closeModal={() => {
+                  setSelectSongModal(false);
+                }}
+              />
             </>
           )}
         </>

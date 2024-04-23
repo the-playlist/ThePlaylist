@@ -1,5 +1,3 @@
-import React from "react";
-
 function ToggleButton(elementRef, isFullScreen, setIsFullScreen) {
   const element = elementRef.current;
 
