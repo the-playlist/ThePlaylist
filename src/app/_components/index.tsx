@@ -12,6 +12,8 @@ import SongModal from "./song-modal";
 import ConfirmationModal from "./confirmation-popup";
 import { Loader } from "./loader";
 import CustomLoader from "./custom_loader";
+import SelectSongModal from "./select-songs-modal";
+import SongCountdownTimer from "./song-countdown-timer";
 
 export {
   NavBar,
@@ -28,4 +30,6 @@ export {
   ShowQualifiedList,
   SongModal,
   CustomLoader,
+  SelectSongModal,
+  SongCountdownTimer,
 };

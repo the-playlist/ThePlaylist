@@ -8,7 +8,6 @@ import { useAddUpdateSongMutation } from "@/app/_utils/redux/slice/emptySplitApi
 import { toast } from "react-toastify";
 
 const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
-  console.log("current info", currentInfo);
   const [addUpdateSongAPI, addUpdateSongResponse] = useAddUpdateSongMutation();
   const { title, artist, introSec, songDuration, category, _id } =
     currentInfo || {};
@@ -38,8 +37,6 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
   }, [openModal]);
 
   const onSubmit = async (data) => {
-    console.log("Data", data);
-    debugger;
     const payload = {
       title: data.songTitle,
       artist: data.artist,

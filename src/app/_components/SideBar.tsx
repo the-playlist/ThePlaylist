@@ -11,7 +11,7 @@ const SideBar = () => {
   return (
     <div className="drawer  w-1/6  shadow-xl rounded-2xl mr-5 lg:drawer-open">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content  flex flex-col items-center ">
+      <div className="drawer-content  lg:hidden  flex flex-col items-center ">
         <label htmlFor="my-drawer-2" className="btn  drawer-button lg:hidden">
           <svg
             className="w-6 h-6"
@@ -29,24 +29,37 @@ const SideBar = () => {
         </label>
       </div>
 
-      <div className="drawer-side">
+      <div className="drawer-side   lg:w-[250px] items-start ">
         <label
           htmlFor="my-drawer-2"
           aria-label="close sidebar"
-          className="drawer-overlay"
+          className="drawer-overlay "
         ></label>
-        <ul className="menu p-4  text-base-content ">
-          <div className="flex items-start  justify-center flex-1">
-            <img src="/assets/logo.png" className="h-6 w-100 my-2 " />
+        <ul className="menu p-4  text-base-content   ">
+          <div className="flex lg:w-[250px] items-center justify-center">
+            <img src="/assets/logo.png" className="h-10 w-100 my-5 " />
           </div>
           {navlinks.map((i) => {
             const isActive = pathname?.startsWith(i.href);
             return (
-              <li className={isActive ? "rounded  bg-primary my-3" : "my-3"}>
-                <Link href={i.href} className="text-black">
+              <li
+                className={
+                  isActive
+                    ? "  bg-[#FEF9EB] my-3 border border-top-queue-bg py-2 rounded-xl"
+                    : "my-3 "
+                }
+              >
+                <Link
+                  href={i.href}
+                  className={
+                    isActive
+                      ? "text-top-queue-bg"
+                      : "text-black hover:bg-[#FEF9EB] py-3"
+                  }
+                >
                   <Image
                     src={i.icon}
-                    className="mr-2  cursor-pointer"
+                    className={`mr-2  cursor-pointer  `}
                     width={20}
                     height={20}
                     alt="Picture of the author"
