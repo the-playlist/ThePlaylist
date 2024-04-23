@@ -37,9 +37,7 @@ export const getAllPlayers = async (req, res, next) => {
     "Players fetched successfully",
     players
   );
-  res.status(200).json({
-    response,
-  });
+  res.status(200).json(response);
 };
 
 export const deletePlayerById = async (req, res, next) => {

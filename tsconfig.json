@@ -18,7 +18,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./src/*"]
       // "@/*":["../../../../../*"]
     }
   },
@@ -27,7 +27,11 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "src/app/(dashboard)/players/page.jsx"
-, "src/pages/api/songs/addUpdateSong/index.js", "src/app/(dashboard)/duty/page.jsx", "src/app/add-song/page.jsx", "src/app/(dashboard)/playlist/page.jsx"  ],
+    "src/app/(dashboard)/players/page.jsx",
+    "src/pages/api/songs/addUpdateSong/index.js",
+    "src/app/(dashboard)/duty/page.jsx",
+    "src/app/add-song/page.jsx",
+    "middleware.ts"
+  ],
   "exclude": ["node_modules"]
 }

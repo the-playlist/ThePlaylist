@@ -4,6 +4,7 @@ import { selectToken } from "../reducer/mainSlice";
 
 const endPoints = {
   GET_SONGS_LIST: `api/songs/getAllSongs`,
+  GET_ALL_PLAYERS: `api/players/getAllPlayers`,
   ADD_UPDATE_PLAYER: `api/players/addUpdatePlayer`,
   ADD_UPDATE_SONG: `api/songs/addUpdateSong`,
   DELETE_PLAYER: `api/players/deletePlayerById?id=`,
@@ -38,6 +39,9 @@ export const emptySplitApi = createApi({
   endpoints: (builder) => ({
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
+    }),
+    getAllPlayers: builder.query({
+      query: () => endPoints.GET_ALL_PLAYERS,
     }),
     getStaffList: builder.query({
       query: () => endPoints.GET_STAFF_LIST,
@@ -105,4 +109,5 @@ export const {
   useAddUpdateSongMutation,
   useMarkSongFavMutation,
   useLazyGetOnDutyPlayerSongListQuery,
+  useLazyGetAllPlayersQuery,
 } = emptySplitApi;
