@@ -13,7 +13,7 @@ export const addSongsToPlaylist = async (req, res, next) => {
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
-  const playlist = await Playlist.find();
+  const playlist = await Playlist.find({ isDeleted: false });
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
@@ -27,8 +27,8 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
-  await Playlist.findByIdAndDelete(id);
+  await Playlist.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   await Playlist.find();
-  const response = new ResponseModel(true, "Song Deleted Successfully.", null);
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

@@ -12,18 +12,21 @@ import {
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetAssignSongsWithPlayersQuery,
+  useDeleteSongFromPlaylistByIdMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
+import { toast } from "react-toastify";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
+  const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
+
   const [playlistSongList, setPlaylistSongList] = useState([]);
 
   useEffect(() => {
     fetchPlaylistSongList();
-    fetchAssignSongsList();
   }, []);
 
   const fetchPlaylistSongList = async () => {
@@ -37,107 +40,7 @@ const page = () => {
       console.error("Fetch failed:", error);
     }
   };
-  const dummyArray = [
-    {
-      id: 0,
-      title: "Imagine",
-      upVote: "40",
-      downVote: "10",
-      playerName: "John Lennon",
-      intro: "12",
-      category: "Standard",
-      isFav: true,
-      duration: "3:15",
-    },
-    {
-      id: 1,
-      title: "Born To Run",
-      upVote: "30",
-      downVote: "10",
-      playerName: "Bruce Springsteen",
-      intro: "20",
-      category: "Comedy",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 2,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 3,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 4,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 5,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 6,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 7,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 8,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-  ];
+
   const [arryList, setArrayList] = useState(playlistSongList);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [assignSongsList, setAssignSongsList] = useState([]);
@@ -153,6 +56,15 @@ const page = () => {
       console.error("Fetch failed:", error);
     }
   };
+  const deleteSongFromPlaylistHandler = async (id) => {
+    let response = await deleteSongByIdApi(id);
+    if (response && !response.error) {
+      toast(response?.data?.description);
+      fetchPlaylistSongList();
+    } else {
+      toast.error(response?.data?.description || "Something Went Wrong...");
+    }
+  };
   return (
     <div className="">
       {getPlaylistSongListResponse?.isFetching ? (
@@ -162,8 +74,7 @@ const page = () => {
           <div className="flex justify-between items-center mx-1 mt-5">
             <button
               onClick={() => {
-                const newArray = [...arryList.slice(1)];
-                setArrayList(newArray);
+                deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
               }}
               className="flex items-center hover:cursor-pointer bg-black hover:bg-blue-600 text-white font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
             >
@@ -253,7 +164,12 @@ const page = () => {
                                 size={20}
                               />
                             )}
-                            <button className="ml-5">
+                            <button
+                              onClick={() =>
+                                deleteSongFromPlaylistHandler(item?._id)
+                              }
+                              className="ml-5 hover:cursor-pointer"
+                            >
                               <FaTrashAlt className="text-red-500" size={20} />
                             </button>
                           </div>
@@ -266,7 +182,10 @@ const page = () => {
           </div>
           <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
             <button
-              onClick={() => setSelectSongModal(true)}
+              onClick={async () => {
+                await fetchAssignSongsList();
+                setSelectSongModal(true);
+              }}
               className="flex text-base w-1/2 items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
             >
               + Add a Song

@@ -28,6 +28,11 @@ const playlistSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter song category"],
     },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
+    isDeleted: { type: Boolean, default: false },
     isFav: { type: Boolean, default: false },
   },
   {

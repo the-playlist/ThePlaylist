@@ -16,6 +16,7 @@ const endPoints = {
   GET_ASSIGN_SONGS_WITH_PLAYERS: "api/songs/getAssignSongs",
   GET_SONGS_FROM_PLAYLIST: "api/playlist/getSongsFromPlaylist",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
+  DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -109,6 +110,12 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    deleteSongFromPlaylistById: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body}`,
+        method: "DELETE",
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -129,4 +136,5 @@ export const {
   useLazyGetAssignSongsWithPlayersQuery,
   useLazyGetSongsFromPlaylistQuery,
   useAddSongsToPlaylistMutation,
+  useDeleteSongFromPlaylistByIdMutation,
 } = emptySplitApi;
