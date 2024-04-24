@@ -13,6 +13,9 @@ const endPoints = {
   MARK_SONG_FAV: "api/songs/markAsFav",
   UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus",
   GET_ONDUTY_PLAYER_SONGS: "api/songs/getOnDutyPlayerSongs",
+  GET_ASSIGN_SONGS_WITH_PLAYERS: "api/songs/getAssignSongs",
+  GET_SONGS_FROM_PLAYLIST: "api/playlist/getSongsFromPlaylist",
+  ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -37,6 +40,12 @@ export const emptySplitApi = createApi({
   }),
   // just for testing
   endpoints: (builder) => ({
+    getSongsFromPlaylist: builder.query({
+      query: () => endPoints.GET_SONGS_FROM_PLAYLIST,
+    }),
+    getAssignSongsWithPlayers: builder.query({
+      query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS,
+    }),
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
     }),
@@ -63,6 +72,13 @@ export const emptySplitApi = createApi({
     addUpdatePlayer: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_PLAYER,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    addSongsToPlaylist: builder.mutation({
+      query: (body) => ({
+        url: endPoints.ADD_SONGS_TO_PLAYLIST,
         method: "POST",
         body: body,
       }),
@@ -110,4 +126,7 @@ export const {
   useMarkSongFavMutation,
   useLazyGetOnDutyPlayerSongListQuery,
   useLazyGetAllPlayersQuery,
+  useLazyGetAssignSongsWithPlayersQuery,
+  useLazyGetSongsFromPlaylistQuery,
+  useAddSongsToPlaylistMutation,
 } = emptySplitApi;

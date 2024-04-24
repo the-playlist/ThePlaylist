@@ -4,6 +4,7 @@ import { FaQuestion } from "react-icons/fa";
 import {
   useLazyGetStaffListQuery,
   useUpdateDutyStatusMutation,
+  useLazyGetAssignSongsWithPlayersQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
@@ -16,9 +17,14 @@ import _ from "lodash";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
+  const [getAssignSongsApi, getAssignSongsResponse] =
+    useLazyGetAssignSongsWithPlayersQuery();
+
   const [showModal, setShowModal] = useState(false);
   const popUpRef = useRef(null);
   const [staffList, setStaffList] = useState([]);
+  const [assignSongsList, setAssignSongsList] = useState([]);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [checked, setIsChecked] = useState(false);
   const [selectSongModal, setSelectSongModal] = useState(false);
@@ -42,7 +48,6 @@ const DutyScreen = () => {
       player?.lastName.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const countTrueDuty = _.countBy(filteredPlayers, "duty.status")[true] || 0;
-  debugger;
 
   useEffect(() => {
     fetchStaffList();
@@ -53,6 +58,17 @@ const DutyScreen = () => {
       let response = await getStaffListApi(null);
       if (response && !response.isError) {
         setStaffList(response?.data?.content);
+      }
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    }
+  };
+  const fetchAssignSongsList = async () => {
+    try {
+      let response = await getAssignSongsApi(null);
+
+      if (response && !response.isError) {
+        setAssignSongsList(response?.data?.content);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -250,17 +266,23 @@ const DutyScreen = () => {
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
                   text="Save"
-                  onClick={() => setSelectSongModal(true)}
+                  onClick={async () => {
+                    await fetchAssignSongsList();
+                    setSelectSongModal(true);
+                  }}
                 />
               </div>
-              <SelectSongModal
-                btnText={"Push to Que"}
-                title={"Push to Que"}
-                openModal={selectSongModal}
-                closeModal={() => {
-                  setSelectSongModal(false);
-                }}
-              />
+              {selectSongModal && (
+                <SelectSongModal
+                  items={assignSongsList}
+                  btnText={"Push to Que"}
+                  title={"Push to Que"}
+                  openModal={selectSongModal}
+                  closeModal={() => {
+                    setSelectSongModal(false);
+                  }}
+                />
+              )}
             </>
           )}
         </>

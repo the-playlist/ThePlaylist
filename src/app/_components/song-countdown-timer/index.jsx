@@ -39,8 +39,12 @@ const SongCountdownTimer = ({ duration }) => {
   };
 
   const convertTimeToSeconds = (timeString) => {
-    const [minutes, seconds] = timeString.split(":").map(Number);
-    return minutes * 60 + seconds;
+    if (timeString?.length < 3) {
+      return timeString;
+    } else {
+      const [minutes, seconds] = timeString.split(":").map(Number);
+      return minutes * 60 + seconds;
+    }
   };
   const [timeInSeconds, setTimeInSeconds] = useState(
     convertTimeToSeconds(duration)
