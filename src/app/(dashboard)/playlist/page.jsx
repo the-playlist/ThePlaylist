@@ -12,8 +12,10 @@ import {
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetAssignSongsWithPlayersQuery,
+  useDeleteSongFromPlaylistByIdMutation,
   useUpdateSortOrderOfSongsMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
+import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 const page = () => {
@@ -23,11 +25,12 @@ const page = () => {
     useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
+  const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
+
   const [playlistSongList, setPlaylistSongList] = useState([]);
 
   useEffect(() => {
     fetchPlaylistSongList();
-    fetchAssignSongsList();
   }, []);
 
   const fetchPlaylistSongList = async () => {
@@ -54,6 +57,15 @@ const page = () => {
       }
     } catch (error) {
       console.error("Fetch failed:", error);
+    }
+  };
+  const deleteSongFromPlaylistHandler = async (id) => {
+    let response = await deleteSongByIdApi(id);
+    if (response && !response.error) {
+      toast(response?.data?.description);
+      fetchPlaylistSongList();
+    } else {
+      toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
 
@@ -92,8 +104,7 @@ const page = () => {
           <div className="flex justify-between items-center mx-1 mt-5">
             <button
               onClick={() => {
-                const newArray = [...arryList.slice(1)];
-                setArrayList(newArray);
+                deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
               }}
               className="flex items-center hover:cursor-pointer bg-black hover:bg-blue-600 text-white font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
             >
@@ -224,7 +235,14 @@ const page = () => {
                                               size={20}
                                             />
                                           )}
-                                          <button className="ml-5">
+                                          <button
+                                            onClick={() => {
+                                              deleteSongFromPlaylistHandler(
+                                                item?._id
+                                              );
+                                            }}
+                                            className=" hover:cursor-pointer ml-5"
+                                          >
                                             <FaTrashAlt
                                               className="text-red-500"
                                               size={20}
@@ -249,7 +267,10 @@ const page = () => {
           </div>
           <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
             <button
-              onClick={() => setSelectSongModal(true)}
+              onClick={async () => {
+                await fetchAssignSongsList();
+                setSelectSongModal(true);
+              }}
               className="flex text-base w-1/2 items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
             >
               + Add a Song

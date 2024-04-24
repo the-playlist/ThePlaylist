@@ -104,6 +104,10 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                 },
               }}
             />
+            <div className="flex flex-col flex-grow mx-1">
+              <label htmlFor="">{"Song Duration"}</label>
+              <input className=" border-gray-400 border-2 my-1 p-2 rounded" />
+            </div>
             <InputField
               title="Song Duration"
               placeholder="Enter Duration in sec i.e 120"

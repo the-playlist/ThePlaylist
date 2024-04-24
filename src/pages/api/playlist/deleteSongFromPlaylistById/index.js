@@ -4,5 +4,6 @@ import { deleteSongFromPlaylistById } from "../../../../../backend/controllers/p
 import onError from "../../../../../backend/middlewares/errors";
 const router = createRouter();
 connectMongoDb();
-router.post(deleteSongFromPlaylistById);
+
+router.delete(deleteSongFromPlaylistById);
 export default router.handler({ onError });

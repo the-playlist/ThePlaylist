@@ -4,12 +4,18 @@ import React from "react";
 const GenericButton = ({
   text,
   onClick,
+  disabled = false,
 }: {
   text: string;
   onClick: () => void;
+  disabled?: boolean;
 }) => {
   return (
-    <button onClick={onClick} className="flex w-full btn bg-primary text-white">
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className="flex w-full btn bg-primary text-black"
+    >
       {text}
     </button>
   );

@@ -57,7 +57,13 @@ const DutyScreen = () => {
     try {
       let response = await getStaffListApi(null);
       if (response && !response.isError) {
-        setStaffList(response?.data?.content);
+        let data = response?.data?.content;
+        data.every((player) => {
+          if (player.duty.status === true) {
+            setIsChecked(true);
+          }
+        });
+        setStaffList(data);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -66,30 +72,35 @@ const DutyScreen = () => {
   const fetchAssignSongsList = async () => {
     try {
       let response = await getAssignSongsApi(null);
-
       if (response && !response.isError) {
-        setAssignSongsList(response?.data?.content);
+        let data = response?.data?.content;
+        setAssignSongsList(data);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
     }
   };
 
-  const onUpdateStatusHandler = async (id, status) => {
-    let payload = {
-      id: id,
-      status: status,
-    };
-
+  const onUpdateStatusHandler = async (payload) => {
     let response = await updateStatusAPI(payload);
     if (response && !response.error) {
       toast(response?.data?.description);
-      fetchStaffList();
+      await fetchAssignSongsList();
+      setSelectSongModal(true);
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
 
+  const changeStatus = (id) => {
+    setStaffList((prevStaffList) =>
+      prevStaffList.map((player) =>
+        player._id === id
+          ? { ...player, duty: { ...player.duty, status: !player.duty.status } }
+          : player
+      )
+    );
+  };
   return (
     <div className="">
       {getStaffListResponse?.isFetching ? (
@@ -115,9 +126,7 @@ const DutyScreen = () => {
                     Are you sure?
                   </h3>
                   <p className=" text-gray-400 text-sm">
-                    {`Are you sure you want to mark all players as ${
-                      !checked ? `"on Duty"` : `"Off Duty"`
-                    }?`}
+                    {`Are you sure you want to change the status?`}
                   </p>
                 </div>
               </div>
@@ -133,15 +142,15 @@ const DutyScreen = () => {
                   </button>
                   <button
                     onClick={() => {
-                      onUpdateStatusHandler(
-                        null,
-                        filteredPlayers.every(
-                          (player) => player.duty.status === true
-                        )
-                          ? false
-                          : true
-                      );
-                      setIsChecked(checked ? false : true);
+                      let payload = [];
+                      staffList?.forEach((item) => {
+                        payload.push({
+                          id: item?._id,
+                          status: item?.duty.status,
+                        });
+                      });
+
+                      onUpdateStatusHandler(payload);
                       setShowModal(false);
                     }}
                     className="btn w-[49%] bg-black text-white "
@@ -196,20 +205,26 @@ const DutyScreen = () => {
                     <tr className="text-base font-medium text-black">
                       <th className="font-medium">Players</th>
                       <td>Status</td>
-                      <td>Shift start time</td>
-                      <td>Shift End time</td>
+
                       {filteredPlayers?.length > 0 && (
                         <td className=" float-right ">
                           <div className="flex">
                             <input
-                              onClick={() => setShowModal(true)}
+                              onClick={() => {
+                                setStaffList((prevStaffList) =>
+                                  prevStaffList.map((player) => ({
+                                    ...player,
+                                    duty: {
+                                      ...player.duty,
+                                      status: checked ? false : true,
+                                    },
+                                  }))
+                                );
+                                setIsChecked(checked ? false : true);
+                              }}
                               type="checkbox"
                               defaultChecked={false}
-                              checked={
-                                filteredPlayers.every(
-                                  (player) => player.duty.status === true
-                                ) || false
-                              }
+                              checked={checked}
                               className="checkbox mr-2 checkbox-success"
                             />
                             <span>
@@ -220,42 +235,40 @@ const DutyScreen = () => {
                       )}
                     </tr>
                   </thead>
-                  {filteredPlayers?.map((item, index) => (
-                    <tbody className="  shadow-lg rounded-2xl h-20 ">
-                      <tr className="">
-                        <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
-                        <td>
-                          <div className="flex items-center">
-                            <div
-                              className={`h-2 w-2 rounded-full mr-2 ${
-                                item?.duty.status
-                                  ? "bg-green-700"
-                                  : "bg-gray-400"
-                              }`}
-                            ></div>
-                            {item?.duty.status ? "on Duty" : "Off Duty"}
-                          </div>
-                        </td>
-                        <td>N/A</td>
-                        <td>N/A</td>
-                        <td className="rounded-e-2xl ">
-                          <div className="flex justify-end">
-                            <input
-                              onClick={() => {
-                                onUpdateStatusHandler(
-                                  item._id,
-                                  !item.duty.status
-                                );
-                              }}
-                              type="checkbox"
-                              className="toggle toggle-success mr-2 "
-                              checked={item.duty.status}
-                            />
-                          </div>
-                        </td>
-                      </tr>
-                    </tbody>
-                  ))}
+                  {filteredPlayers?.map((item, index) => {
+                    return (
+                      <tbody className="  shadow-lg rounded-2xl h-20 ">
+                        <tr className="">
+                          <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
+                          <td>
+                            <div className="flex items-center">
+                              <div
+                                className={`h-2 w-2 rounded-full mr-2 ${
+                                  item?.duty.status
+                                    ? "bg-green-700"
+                                    : "bg-gray-400"
+                                }`}
+                              ></div>
+                              {item?.duty.status ? "on Duty" : "Off Duty"}
+                            </div>
+                          </td>
+
+                          <td className="rounded-e-2xl ">
+                            <div className="flex justify-end">
+                              <input
+                                onClick={() => {
+                                  changeStatus(item?._id);
+                                }}
+                                type="checkbox"
+                                className="toggle toggle-success mr-2 "
+                                checked={item.duty.status}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    );
+                  })}
                 </table>
               </div>
               {filteredPlayers?.length == 0 && (
@@ -265,10 +278,14 @@ const DutyScreen = () => {
               )}
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
+                  disabled={
+                    staffList.some((player) => player.duty.status === true)
+                      ? false
+                      : true
+                  }
                   text="Save"
-                  onClick={async () => {
-                    await fetchAssignSongsList();
-                    setSelectSongModal(true);
+                  onClick={() => {
+                    setShowModal(true);
                   }}
                 />
               </div>
