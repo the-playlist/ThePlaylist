@@ -13,12 +13,16 @@ import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetAssignSongsWithPlayersQuery,
   useDeleteSongFromPlaylistByIdMutation,
+  useUpdateSortOrderOfSongsMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
+import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [updateSortOrderApi, updateSortOrderResponse] =
+    useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
@@ -32,7 +36,6 @@ const page = () => {
   const fetchPlaylistSongList = async () => {
     try {
       let response = await getPlaylistSongListApi(null);
-
       if (response && !response.isError) {
         setPlaylistSongList(response?.data?.content);
       }
@@ -65,6 +68,33 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
+
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    const updatedPlaylist = [...playlistSongList];
+    const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
+    updatedPlaylist.splice(destinationIndex, 0, reorderedItem);
+    setPlaylistSongList([...updatedPlaylist]);
+
+    const updatedArr = updatedPlaylist.map((item, index) => ({
+      id: item._id,
+      newSortOrder: index,
+    }));
+    updateSongsOrderHandler(updatedArr);
+  };
+
+  const updateSongsOrderHandler = async (payload) => {
+    try {
+      await updateSortOrderApi({
+        songsList: payload,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <div className="">
       {getPlaylistSongListResponse?.isFetching ? (
@@ -97,87 +127,142 @@ const page = () => {
           </div>
           <div className="overflow-y-auto h-[900px] pb-10 ">
             <div className="border-separate border-spacing-y-5 mb-48 mx-1  ">
-              {playlistSongList?.length > 0 &&
-                playlistSongList?.map((item, index) => {
-                  return (
-                    <div
-                      key={index}
-                      className={` text-center ${
-                        index < 2 ? "bg-top-queue-bg" : "white"
-                      }  shadow-lg rounded-2xl h-20 flex items-center mb-4 px-5`}
-                    >
-                      <div className="w-1/12 text-start font-extrabold text-lg">
-                        {index < 2 ? (
-                          index + 1
-                        ) : (
-                          <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10">
-                            <HiOutlineArrowsUpDown />
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-2/12">{item.title}</div>
-                      <div className="w-1/12">
-                        {index > 1 && (
-                          <div className="flex items-center justify-center">
-                            <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                              <div className="flex items-center justify-center bg-green-500 rounded-full shadow-xl w-6 h-6 mr-2">
-                                <IoIosArrowUp size={18} color={"white"} />
-                              </div>
-                              {item.upVote}
-                            </div>
-                            <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
-                              <div className="flex items-center justify-center bg-red-500 rounded-full shadow-xl w-6 h-6 mr-2">
-                                <IoIosArrowDown size={18} color={"white"} />
-                              </div>
-                              {item.downVote}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-3/12">{item.playerName}</div>
-                      <div className="w-2/12 flex items-center justify-center">
-                        <div className="bg-white shadow-xl flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                          {item.introSec}
-                        </div>
-                      </div>
-                      <div
-                        className={`w-2/12 flex items-center justify-center `}
-                      >
-                        <div
-                          className={` ${
-                            index > 1 ? "bg-[#F7F7F7]" : "bg-white"
-                          } rounded-3xl px-5 py-2`}
-                        >
-                          {item.category}
-                        </div>
-                      </div>
-                      <div className="w-1/12 text-end">
-                        {index === 0 ? (
-                          <SongCountdownTimer duration={item.songDuration} />
-                        ) : index == 1 ? (
-                          ""
-                        ) : (
-                          <div className="flex items-center justify-end ">
-                            {item.isFav && (
-                              <FaHeart
-                                className="text-top-queue-bg"
-                                size={20}
-                              />
+              <DragDropContext
+                onDragEnd={(result) => {
+                  handleDragEnd(result);
+                }}
+              >
+                <Droppable droppableId="list">
+                  {(provided) => (
+                    <div {...provided?.droppableProps} ref={provided?.innerRef}>
+                      {playlistSongList.map((item, index) => {
+                        const {
+                          title,
+                          upVote,
+                          downVote,
+                          playerName,
+                          introSec,
+                          category,
+                          songDuration,
+                          isFav,
+                          sortOrder,
+                        } = item || {};
+                        return (
+                          <Draggable
+                            key={sortOrder}
+                            draggableId={sortOrder.toString()}
+                            index={index}
+                            isDragDisabled={index == 0 || index == 1}
+                          >
+                            {(provided) => (
+                              <>
+                                <div
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  ref={provided.innerRef}
+                                >
+                                  <div
+                                    key={index}
+                                    className={` text-center ${
+                                      index < 2 ? "bg-top-queue-bg" : "white"
+                                    }  shadow-lg rounded-2xl h-20 flex items-center mb-4 px-5`}
+                                  >
+                                    <div className="w-1/12 text-start font-extrabold text-lg">
+                                      {index < 2 ? (
+                                        index + 1
+                                      ) : (
+                                        <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
+                                          <HiOutlineArrowsUpDown />
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="w-2/12">{title}</div>
+                                    <div className="w-1/12">
+                                      {index > 1 && (
+                                        <div className="flex items-center justify-center">
+                                          <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
+                                            <div className="flex items-center justify-center bg-green-500 rounded-full shadow-xl w-6 h-6 mr-2">
+                                              <IoIosArrowUp
+                                                size={18}
+                                                color={"white"}
+                                              />
+                                            </div>
+                                            {upVote}
+                                          </div>
+                                          <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
+                                            <div className="flex items-center justify-center bg-red-500 rounded-full shadow-xl w-6 h-6 mr-2">
+                                              <IoIosArrowDown
+                                                size={18}
+                                                color={"white"}
+                                              />
+                                            </div>
+                                            {downVote}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="w-3/12">{playerName}</div>
+                                    <div className="w-2/12 flex items-center justify-center">
+                                      <div className="bg-white shadow-xl flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                                        {introSec}
+                                      </div>
+                                    </div>
+                                    <div
+                                      className={`w-2/12 flex items-center justify-center `}
+                                    >
+                                      <div
+                                        className={` ${
+                                          index > 1
+                                            ? "bg-[#F7F7F7]"
+                                            : "bg-white"
+                                        } rounded-3xl px-5 py-2`}
+                                      >
+                                        {category}
+                                      </div>
+                                    </div>
+                                    <div className="w-1/12 text-end">
+                                      {index === 0 ? (
+                                        <SongCountdownTimer
+                                          duration={songDuration}
+                                        />
+                                      ) : index == 1 ? (
+                                        ""
+                                      ) : (
+                                        <div className="flex items-center justify-end ">
+                                          {isFav && (
+                                            <FaHeart
+                                              className="text-top-queue-bg"
+                                              size={20}
+                                            />
+                                          )}
+                                          <button
+                                            onClick={() => {
+                                              deleteSongFromPlaylistHandler(
+                                                item?._id
+                                              );
+                                            }}
+                                            className=" hover:cursor-pointer ml-5"
+                                          >
+                                            <FaTrashAlt
+                                              className="text-red-500"
+                                              size={20}
+                                            />
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </>
                             )}
-                            <button
-                              onClick={() =>
-                                deleteSongFromPlaylistHandler(item?._id)
-                              }
-                              className="ml-5 hover:cursor-pointer"
-                            >
-                              <FaTrashAlt className="text-red-500" size={20} />
-                            </button>
-                          </div>
-                        )}
-                      </div>
+                          </Draggable>
+                        );
+                      })}
+                      {provided.placeholder}
                     </div>
-                  );
-                })}
+                  )}
+                </Droppable>
+              </DragDropContext>
             </div>
           </div>
           <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">

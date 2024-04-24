@@ -17,6 +17,7 @@ const endPoints = {
   GET_SONGS_FROM_PLAYLIST: "api/playlist/getSongsFromPlaylist",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
+  UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -66,6 +67,13 @@ export const emptySplitApi = createApi({
             ? `${endPoints.UPDATE_DUTY_STATUS}?id=${body.id}`
             : endPoints.UPDATE_DUTY_STATUS
         }`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    updateSortOrderOfSongs: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.UPDATE_SORT_ORDER_SONGS}`,
         method: "POST",
         body: body,
       }),
@@ -137,4 +145,5 @@ export const {
   useLazyGetSongsFromPlaylistQuery,
   useAddSongsToPlaylistMutation,
   useDeleteSongFromPlaylistByIdMutation,
+  useUpdateSortOrderOfSongsMutation,
 } = emptySplitApi;
