@@ -24,6 +24,10 @@ const playlistSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter song duration"],
     },
+    sortOrder: {
+      type: Number,
+      default: 0,
+    },
     category: {
       type: String,
       required: [true, "Please enter song category"],

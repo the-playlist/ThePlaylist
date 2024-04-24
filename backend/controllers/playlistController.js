@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import Playlist from "../models/playlist";
 import ResponseModel from "./responseModel";
 
@@ -13,11 +12,31 @@ export const addSongsToPlaylist = async (req, res, next) => {
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
-  const playlist = await Playlist.find();
+  const playlist = await Playlist.find().sort({ sortOrder: 1 }).lean();
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
     playlist
+  );
+  res.status(200).json(response);
+};
+
+export const updateSongsOrder = async (req, res, next) => {
+  const songsList = req?.body?.songsList;
+  for (const item of songsList) {
+    await Playlist.updateOne(
+      { _id: item.id },
+      {
+        $set: {
+          sortOrder: item.newSortOrder,
+        },
+      }
+    );
+  }
+  const response = new ResponseModel(
+    true,
+    "Order of Songs Updated Successfull",
+    null
   );
   res.status(200).json(response);
 };
