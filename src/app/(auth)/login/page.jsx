@@ -1,8 +1,19 @@
 "use client";
 import { Logo } from "@/app/svgs";
 import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const Login = () => {
+  const router = useRouter();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    reset,
+  } = useForm();
   const [width, setWidth] = useState("w-1/3");
   useEffect(() => {
     const handleResize = () => {
@@ -19,6 +30,24 @@ const Login = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const onSubmit = async (data) => {
+    try {
+      let response = await signIn("credentials", {
+        email: data?.email,
+        password: data?.password,
+        redirect: false,
+      });
+      if (response.error) {
+        alert("Invalid Credentials...");
+      } else {
+        router.replace("/players");
+      }
+    } catch (error) {
+      console.error("error", error);
+    }
+  };
+
   return (
     <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto ">
       <div className=" flex items-center justify-center m-14">
@@ -37,9 +66,16 @@ const Login = () => {
               type="email"
               id="email"
               className=" border border-gray-300 text-gray-900 text-sm rounded-md  focus:ring-top-queue-bg block w-full p-5  "
-              placeholder="john.doe@company.com"
-              required
+              placeholder="Enter Email"
+              {...register("email", {
+                required: "Please enter email.",
+              })}
             />
+            {errors.email && (
+              <span className=" text-red-900 text-xs font-medium">
+                {errors?.email?.message || "Error"}
+              </span>
+            )}
           </div>
           <div className="mb-16">
             <label className="block mb-2 text-base font-medium text-black ">
@@ -49,9 +85,16 @@ const Login = () => {
               type="password"
               id="password"
               className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-top-queue-bg  block w-full p-5 "
-              placeholder="•••••••••"
-              required
+              placeholder="Enter Password"
+              {...register("password", {
+                required: "Please enter password",
+              })}
             />
+            {errors.password && (
+              <span className=" text-red-900 text-xs font-medium">
+                {errors?.password?.message || "Error"}
+              </span>
+            )}
             <div>
               <span className="block my-5 text-base font-medium text-black float-right ">
                 Forgot Password?
@@ -61,6 +104,7 @@ const Login = () => {
 
           <button
             type="submit"
+            onClick={handleSubmit(onSubmit)}
             className="text-white w-full bg-top-queue-bg hover:bg-yellow-500   font-medium rounded-md text-sm   px-5 p-5 text-center  "
           >
             Sign In

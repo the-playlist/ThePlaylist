@@ -31,7 +31,8 @@
     "src/pages/api/songs/addUpdateSong/index.js",
     "src/app/(dashboard)/duty/page.jsx",
     "src/app/add-song/page.jsx",
-    "middleware.ts"
+    "middleware.ts",
+    "src/app/(auth)/login/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
