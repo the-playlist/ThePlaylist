@@ -147,6 +147,7 @@ const page = () => {
                           isFav,
                           sortOrder,
                         } = item || {};
+
                         return (
                           <Draggable
                             key={sortOrder}
