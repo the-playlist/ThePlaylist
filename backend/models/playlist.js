@@ -1,11 +1,17 @@
 import mongoose from "mongoose";
 
-const songsSchema = new mongoose.Schema(
+const playlistSchema = new mongoose.Schema(
   {
     title: {
       type: String,
       required: [true, "Please enter title"],
     },
+    playerName: {
+      type: String,
+      required: [true, "Please enter Player Name"],
+    },
+    upVote: { type: Number, default: 0 },
+    downVote: { type: Number, default: 0 },
     artist: {
       type: String,
       required: [true, "Please enter artist Name"],
@@ -22,7 +28,6 @@ const songsSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter song category"],
     },
-    qualifiedPlayer: Boolean,
     isFav: { type: Boolean, default: false },
   },
   {
@@ -30,6 +35,7 @@ const songsSchema = new mongoose.Schema(
   }
 );
 
-const Songs = mongoose.models.Songs || mongoose.model("Songs", songsSchema);
+const Playlist =
+  mongoose.models.Playlist || mongoose.model("Playlist", playlistSchema);
 
-export default Songs;
+export default Playlist;

@@ -2,17 +2,20 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { MdClear } from "react-icons/md";
-
+import _ from "lodash";
+import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
+import { toast } from "react-toastify";
 const SelectSongModal = ({
   title,
   openModal,
   closeModal,
   btnText,
   isCheckBoxes,
+  items,
 }) => {
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
-
+  const [playersList, setPlayersList] = useState([]);
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -24,113 +27,72 @@ const SelectSongModal = ({
       reff.current?.close();
     }
   }, [openModal]);
+  const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
+    useAddSongsToPlaylistMutation();
 
-  const dummyArray = [
-    {
-      id: 0,
-      title: "Imagine",
-      upVote: "40",
-      downVote: "10",
-      playerName: "John Lennon",
-      intro: "12",
-      category: "Standard",
-      isFav: true,
-      duration: "3:15",
-    },
-    {
-      id: 1,
-      title: "Born To Run",
-      upVote: "30",
-      downVote: "10",
-      playerName: "Bruce Springsteen",
-      intro: "20",
-      category: "Comedy",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 2,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 3,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 4,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 5,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 6,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-    {
-      id: 7,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: false,
-      duration: "2:00",
-    },
-    {
-      id: 8,
-      title: "Hey Jude",
-      upVote: "20",
-      downVote: "10",
-      playerName: "Aretha Franklin",
-      intro: "33",
-      category: "Ballad",
-      isFav: true,
-      duration: "2:00",
-    },
-  ];
-  const filteredResult = dummyArray.filter(
-    (player) =>
-      player?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      player?.playerName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    // let filteredResult = items.filter(
+    //   (player) =>
+    //     player?.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //     player?.playerName.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+    const tempArr = addSelectedPlayers(items);
+    setPlayersList(tempArr);
+  }, []);
+
+  function addSelectedPlayers(data) {
+    return data.map((item) => {
+      const selectedPlayer =
+        item.assignedPlayers && item.assignedPlayers.length > 0
+          ? item.assignedPlayers[0]
+          : {};
+      return {
+        ...item,
+        selectedPlayers: selectedPlayer,
+      };
+    });
+  }
+
+  function generateObjectByPlayerId(record, playerId) {
+    const assignedPlayer = record.assignedPlayers.find(
+      (player) => player._id == playerId
+    );
+    if (!assignedPlayer) {
+      return null;
+    }
+    return {
+      _id: assignedPlayer._id,
+      playerName: assignedPlayer.playerName,
+    };
+  }
+  const addSongsHandler = async (data) => {
+    try {
+      let response = await addSongToPlaylistApi(data);
+      if (response && !response.error) {
+        closeModal();
+        toast.success(response?.data?.description);
+      }
+    } catch (error) {
+      toast.success(error?.message || "Something went wrong.");
+    }
+  };
+  const getDesiredOuptut = (records) => {
+    const transformedRecords = records.map((record) => {
+      return {
+        title: record.title,
+        artist: record.artist,
+        introSec: parseInt(record.introSec),
+        songDuration: parseInt(record.songDuration),
+        category: record.category,
+        playerName: record?.selectedPlayers?.playerName,
+        upVote: record.upVote,
+        downVote: record.downVote,
+        isFav: record.isFav,
+      };
+    });
+    addSongsHandler(transformedRecords);
+    return transformedRecords;
+  };
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
@@ -197,10 +159,10 @@ const SelectSongModal = ({
             <div className="w-3/12">Intro Seconds</div>
           </div>
           <div className="overflow-y-auto">
-            {filteredResult.map((item, index) => {
+            {playersList?.map((item, index) => {
               return (
-                <div className="text-base bg-white  font-medium text-black text-center flex  mb-2  p-5 rounded-lg ">
-                  <div className="w-3/12 ">
+                <div className="text-base bg-white  font-medium text-black  items-center flex  mb-2  p-5 rounded-lg ">
+                  <div className="w-3/12 text-center ">
                     <div className="flex items-center">
                       {isCheckBoxes && (
                         <input
@@ -217,15 +179,29 @@ const SelectSongModal = ({
                       {item?.title}
                     </div>
                   </div>
-                  <div className="w-3/12">
-                    <select className="select select-bordered w-full max-w-xs">
-                      <option disabled selected>
-                        Normal
-                      </option>
-                      <option>Normal Apple</option>
-                      <option>Normal Orange</option>
-                      <option>Normal Tomato</option>
-                    </select>
+                  <div className="w-3/12 text-center">
+                    {item?.assignedPlayers?.length > 1 ? (
+                      <select
+                        // defaultValue={"66228a9eb230fc43ab7c864e"}
+                        onChange={(e) => {
+                          item.selectedPlayers = generateObjectByPlayerId(
+                            item,
+                            e.target.value
+                          );
+                        }}
+                        className="select select-bordered w-full max-w-xs"
+                      >
+                        {item?.assignedPlayers?.map((item) => {
+                          return (
+                            <option
+                              value={item?._id}
+                            >{`${item.playerName}`}</option>
+                          );
+                        })}
+                      </select>
+                    ) : (
+                      <div>{`${item?.assignedPlayers[0].playerName}`}</div>
+                    )}
                   </div>
                   <div className="w-3/12">
                     <div className="flex items-center justify-center">
@@ -234,14 +210,16 @@ const SelectSongModal = ({
                       </div>
                     </div>
                   </div>
-                  <div className="w-3/12">{item.intro}</div>
+                  <div className="w-3/12 text-center">{item.introSec}</div>
                 </div>
               );
             })}
           </div>
           <div className="sticky -bottom-5 w-full flex justify-end pb-4 bg-[#fafafa]">
             <button
-              onClick={closeModal}
+              onClick={() => {
+                getDesiredOuptut(playersList);
+              }}
               className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
             >
               {btnText}
