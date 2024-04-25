@@ -240,7 +240,7 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
 
                 getDesiredOuptut(selectedPlayers);
               }}
-              className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
+              className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
             >
               {btnText}
             </button>
