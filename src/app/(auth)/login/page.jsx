@@ -105,7 +105,7 @@ const Login = () => {
           <button
             type="submit"
             onClick={handleSubmit(onSubmit)}
-            className="text-white w-full bg-top-queue-bg hover:bg-yellow-500   font-medium rounded-md text-sm   px-5 p-5 text-center  "
+            className="text-black w-full bg-top-queue-bg hover:bg-yellow-500   font-medium rounded-md text-sm   px-5 p-5 text-center  "
           >
             Sign In
           </button>
