@@ -1,16 +1,15 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { useOrientation } from "react-use";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import { ToggleFullScreen } from "@/app/_components";
-import { useLazyGetOnDutyPlayerSongListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
+import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
 
 const WallView = () => {
-  const [songsListApi, songsListResponse] =
-    useLazyGetOnDutyPlayerSongListQuery();
+  const [getPlaylistSongListApi, getPlaylistSongListResponse] =
+    useLazyGetSongsFromPlaylistQuery();
   const [songList, setSongList] = useState([]);
 
   const elementRef = useRef(null);
@@ -34,19 +33,23 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
-    fetchSongsList();
+    fetchPlaylistSongList();
   }, []);
 
-  const fetchSongsList = async () => {
-    let response = await songsListApi();
-    if (response && !response.isError) {
-      const songList = response.data?.content;
-      setSongList(songList);
+  const fetchPlaylistSongList = async () => {
+    try {
+      let response = await getPlaylistSongListApi(null);
+      if (response && !response.isError) {
+        setSongList(response?.data?.content);
+      }
+    } catch (error) {
+      console.error("Fetch failed:", error);
     }
   };
+
   return (
     <div className="overflow-x-auto mx-auto p-10 bg-white " ref={elementRef}>
-      {songsListResponse?.isFetching ? (
+      {getPlaylistSongListResponse?.isFetching ? (
         <CustomLoader />
       ) : (
         <>
