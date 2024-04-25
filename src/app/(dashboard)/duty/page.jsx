@@ -126,7 +126,7 @@ const DutyScreen = () => {
                     Are you sure?
                   </h3>
                   <p className=" text-gray-400 text-sm">
-                    {`Are you sure you want to change the status?`}
+                    {`Are you sure you want to mark selected players on duty?`}
                   </p>
                 </div>
               </div>

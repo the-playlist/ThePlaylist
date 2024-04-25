@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { GenericButton, InputField } from "..";
+import { GenericButton, InputField, MinuteSecField } from "..";
 import { useForm } from "react-hook-form";
 import { Select, Option } from "@mui/base";
 import { useAddUpdateSongMutation } from "@/app/_utils/redux/slice/emptySplitApi";
@@ -11,6 +11,14 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
   const [addUpdateSongAPI, addUpdateSongResponse] = useAddUpdateSongMutation();
   const { title, artist, introSec, songDuration, category, _id } =
     currentInfo || {};
+  let minutes, seconds;
+  if (currentInfo) {
+    const [min, sec] = songDuration?.split(":");
+
+    minutes = min;
+    seconds = sec;
+  }
+
   const {
     register,
     handleSubmit,
@@ -22,8 +30,10 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       songTitle: currentInfo ? title : "",
       artist: currentInfo ? artist : "",
       introSec: currentInfo ? introSec : "",
-      duration: currentInfo ? songDuration : "",
+
       category: currentInfo ? category : "Standard",
+      minutes: currentInfo ? minutes : "",
+      seconds: currentInfo ? seconds : "00",
     },
   });
   const reff = useRef();
@@ -41,11 +51,12 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       title: data.songTitle,
       artist: data.artist,
       introSec: data.introSec,
-      songDuration: data.duration,
+      songDuration: `${data.minutes}:${data.seconds}`,
       category: data.category,
       qualifiedPlayer: true,
       id: currentInfo ? _id : null,
     };
+    console.log("payload", payload);
     let response = await addUpdateSongAPI({ data: payload });
     if (response && !response.isError) {
       closeModal();
@@ -104,18 +115,28 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                 },
               }}
             />
-            <div className="flex flex-col flex-grow mx-1">
+            {/* <div className="flex flex-col flex-grow mx-1">
               <label htmlFor="">{"Song Duration"}</label>
-              <input className=" border-gray-400 border-2 my-1 p-2 rounded" />
-            </div>
-            <InputField
+              <div className=" border-gray-400 rounded  border-2 my-1 p-2 flex w-full">
+                <input
+                  placeholder="Minutes"
+                  className="px-3   w-full   focus:outline-none"
+                />
+                <div className=" border-r-2 border-gray-400" />
+                <input
+                  placeholder="Seconds"
+                  className="px-2 w-full  focus:outline-none"
+                />
+              </div>
+            </div> */}
+            <MinuteSecField
               title="Song Duration"
-              placeholder="Enter Duration in sec i.e 120"
               register={register}
-              name="duration"
-              error={errors.duration}
+              name1="minutes"
+              name2="seconds"
+              error={errors.minutes}
               validate={{
-                required: "Duration is required",
+                required: "Song Duration is required",
                 pattern: {
                   value: /^[0-9]*$/,
                   message: "Please enter only numbers.",

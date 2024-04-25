@@ -67,7 +67,6 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
     }
   };
   const getDesiredOuptut = (records) => {
-    debugger;
     const transformedRecords = records.map((record, index) => {
       return {
         songData: record?._id,
