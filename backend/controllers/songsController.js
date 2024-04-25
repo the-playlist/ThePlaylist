@@ -194,6 +194,7 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
       {
         $group: {
           _id: "$_id",
+          isFav: { $first: "$isFav" },
           title: { $first: "$title" },
           artist: { $first: "$artist" },
           introSec: { $first: "$introSec" },
