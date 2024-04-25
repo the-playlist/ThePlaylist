@@ -64,9 +64,9 @@ const page = () => {
   const fetchAssignSongsList = async () => {
     try {
       let response = await getAssignSongsApi(null);
-
       if (response && !response.isError) {
-        setAssignSongsList(response?.data?.content);
+        let data = response?.data?.content;
+        setAssignSongsList(data);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -344,15 +344,18 @@ const page = () => {
               <IoArrowUndo />
               <span className="ml-2">Undo Action</span>
             </button> */}
-            <SelectSongModal
-              items={assignSongsList}
-              btnText={"Add"}
-              title={"Select songs"}
-              openModal={selectSongModal}
-              closeModal={() => {
-                setSelectSongModal(false);
-              }}
-            />
+
+            {selectSongModal && (
+              <SelectSongModal
+                items={assignSongsList}
+                btnText={"Add"}
+                title={"Select songs"}
+                openModal={selectSongModal}
+                closeModal={() => {
+                  setSelectSongModal(false);
+                }}
+              />
+            )}
           </div>
         </>
       )}
