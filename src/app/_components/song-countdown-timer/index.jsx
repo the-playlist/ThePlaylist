@@ -69,19 +69,17 @@ const SongCountdownTimer = ({
   };
 
   return (
-    <div>
-      <div className="    flex items-center justify-end ">
-        <div className="bg-[#F7F7F7] flex items-center  justify-center px-3 py-2 rounded-3xl">
-          <button
-            onClick={() => {
-              isStart ? pauseTimer() : startTimer();
-            }}
-            className="h-8 w-8 bg-white shadow-xl rounded-full flex items-center justify-center mr-2 "
-          >
-            {isStart ? <IoPause /> : <IoPlaySharp />}
-          </button>
-          {formatTime(timeInSeconds)}
-        </div>
+    <div className="flex items-center justify-end mr-2 ">
+      <div className="bg-[#F7F7F7] flex items-center  justify-center px-3 py-2 rounded-3xl">
+        <button
+          onClick={() => {
+            isRunning ? pauseTimer() : startTimer();
+          }}
+          className="h-8 w-8 bg-white shadow-xl rounded-full flex items-center justify-center mr-2 "
+        >
+          {isRunning ? <IoPause /> : <IoPlaySharp />}
+        </button>
+        {formatTime(timeInSeconds)}
       </div>
     </div>
   );

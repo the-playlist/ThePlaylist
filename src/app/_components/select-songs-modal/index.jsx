@@ -70,16 +70,8 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
   const getDesiredOuptut = (records) => {
     const transformedRecords = records.map((record, index) => {
       return {
-        title: record.title,
-        artist: record.artist,
-        introSec: record.introSec,
-        songDuration: record.songDuration,
-        category: record.category,
-        playerName: record?.selectedPlayers?.playerName,
-        upVote: record.upVote,
-        downVote: record.downVote,
-        isFav: record.isFav,
-        isDeleted: false,
+        songData: record?._id,
+        assignedPlayer: record?.selectedPlayers?._id,
         sortOrder: index,
       };
     });
