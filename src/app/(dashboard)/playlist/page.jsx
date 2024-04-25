@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
-import { IoArrowUndo } from "react-icons/io5";
+import { IoArrowBackOutline } from "react-icons/io5";
 import {
   CustomLoader,
   SelectSongModal,
@@ -22,10 +22,8 @@ const IS_FAV_SONGS = "IS_FAV_SONGS";
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
-  const [updateSortOrderApi, updateSortOrderResponse] =
-    useUpdateSortOrderOfSongsMutation();
-  const [getAssignSongsApi, getAssignSongsResponse] =
-    useLazyGetAssignSongsWithPlayersQuery();
+  const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
+  const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [playlistSongList, setPlaylistSongList] = useState([]);
@@ -129,37 +127,60 @@ const page = () => {
         <CustomLoader />
       ) : (
         <>
-          <div className="flex justify-between items-center mx-1 mt-5">
-            <button
-              onClick={() => {
-                deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
-              }}
-              className="flex items-center hover:cursor-pointer bg-black hover:bg-blue-600 text-white font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
-            >
-              <span className="mr-2">Advance the Queue</span>
-              <FaForward />
-            </button>
+          <div
+            className={`flex ${
+              playlistSongList.length > 0 ? "justify-between" : "justify-end"
+            } items-center mx-1 mt-5`}
+          >
+            {playlistSongList.length > 0 && (
+              <button
+                onClick={() => {
+                  deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+                }}
+                className="flex items-center hover:cursor-pointer bg-black hover:bg-blue-600 text-white font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
+              >
+                <span className="mr-2">Advance the Queue</span>
+                <FaForward />
+              </button>
+            )}
             <button
               onClick={toggleFavSongs}
-              className="flex items-center hover:cursor-pointer border border-top-queue-bg hover:bg-primary hover:text-white text-top-queue-bg font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
+              className={`flex items-center hover:cursor-pointer border ${
+                !isFavSongs ? "border-top-queue-bg" : "border-deactivate-color"
+              }  ${
+                !isFavSongs
+                  ? "hover:bg-primary hover:text-white text-top-queue-bg"
+                  : "text-gray-1"
+              }   font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded`}
             >
-              <FaHeart />
+              {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
               <span className="ml-2">
                 {isFavSongs ? "Back to Playlist" : "Play Favourite songs"}
               </span>
             </button>
           </div>
-          <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-            <div className="w-1/12"></div>
-            <div className="w-2/12 ">Title</div>
-            <div className="w-1/12"></div>
-            <div className="w-3/12">Player</div>
-            <div className="w-2/12">Intro</div>
-            <div className="w-2/12">Category</div>
-            <div className="w-1/12"></div>
-          </div>
+          {playlistSongList.length > 0 && (
+            <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+              <div className="w-1/12"></div>
+              <div className="w-2/12 ">Title</div>
+              <div className="w-1/12"></div>
+              <div className="w-3/12">Player</div>
+              <div className="w-2/12">Intro</div>
+              <div className="w-2/12">Category</div>
+              <div className="w-1/12"></div>
+            </div>
+          )}
           <div className="overflow-y-auto h-[900px] pb-10 ">
             <div className="border-separate border-spacing-y-5 mb-48 mx-1  ">
+              {playlistSongList.length === 0 &&
+                !getPlaylistSongListResponse.isFetching && (
+                  <div className="flex items-center justify-center mt-10">
+                    <span className=" text-black font-semibold ">
+                      Currently there is no songs available in the playlist
+                    </span>
+                  </div>
+                )}
+
               <DragDropContext
                 onDragEnd={(result) => {
                   handleDragEnd(result);
@@ -254,25 +275,24 @@ const page = () => {
                                         {category}
                                       </div>
                                     </div>
-                                    <div className="w-1/12 text-end">
-                                      {index === 0 && (
-                                        <SongCountdownTimer
-                                          duration={songDuration}
-                                        />
-                                      )}
-
-                                      {!isLockedSongs && (
-                                        <div className="flex items-center justify-end ">
-                                          {isFav && (
-                                            <FaHeart
-                                              className={`${
-                                                isLockedSongs
-                                                  ? "text-white"
-                                                  : "text-primary"
-                                              }`}
-                                              size={20}
-                                            />
-                                          )}
+                                    <div className="">
+                                      <div className="flex items-center justify-end">
+                                        {index === 0 && (
+                                          <SongCountdownTimer
+                                            duration={songDuration}
+                                          />
+                                        )}
+                                        {isFav && (
+                                          <FaHeart
+                                            className={`${
+                                              isLockedSongs
+                                                ? "text-white"
+                                                : "text-primary"
+                                            }`}
+                                            size={20}
+                                          />
+                                        )}
+                                        {!isLockedSongs && (
                                           <button
                                             onClick={() => {
                                               deleteSongFromPlaylistHandler(
@@ -286,8 +306,8 @@ const page = () => {
                                               size={20}
                                             />
                                           </button>
-                                        </div>
-                                      )}
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
@@ -303,20 +323,20 @@ const page = () => {
               </DragDropContext>
             </div>
           </div>
-          <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
+          <div className="sticky bottom-0 w-full flex  items-center justify-center py-4 bg-[#fafafa]">
             <button
               onClick={async () => {
                 await fetchAssignSongsList();
                 setSelectSongModal(true);
               }}
-              className="flex text-base w-1/2 items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
+              className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-white font-bold py-3 px-4 rounded-md justify-center"
             >
               + Add a Song
             </button>
-            <button className="ml-4 w-1/2  text-base flex items-center bg-white  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab">
+            {/* <button className="ml-4 w-1/2  text-base flex items-center bg-white  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab">
               <IoArrowUndo />
               <span className="ml-2">Undo Action</span>
-            </button>
+            </button> */}
             <SelectSongModal
               items={assignSongsList}
               isCheckBoxes={true}

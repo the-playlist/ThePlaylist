@@ -22,6 +22,7 @@ const config: Config = {
         "active-tab": "#fdf7ea",
         "deactivate-color": "#F0F0F0",
         "add-bg": "#f2d065",
+        "gray-1": "#ACACAC",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
