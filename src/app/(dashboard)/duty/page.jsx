@@ -278,11 +278,6 @@ const DutyScreen = () => {
               )}
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
-                  disabled={
-                    staffList.some((player) => player.duty.status === true)
-                      ? false
-                      : true
-                  }
                   text="Save"
                   onClick={() => {
                     setShowModal(true);
