@@ -61,9 +61,9 @@ const SongsManagment = () => {
                 setCurrentSongInfo(null);
                 setAddNewSongModal(true);
               }}
-              className=" self-end btn btn-primary bg-primary border-none text-white "
+              className=" self-end btn btn-primary bg-primary border-none text-black "
             >
-              Add New Song+
+              Add New Song +
             </button>
           </div>
           <div className=" max-h-[80vh] overflow-y-auto">

@@ -1,10 +1,5 @@
 export const navlinks = [
   {
-    name: "Dashboard",
-    href: "/home",
-    icon: "/dashboard.svg",
-  },
-  {
     name: "Players",
     href: "/players",
     icon: "/player-logo.svg",

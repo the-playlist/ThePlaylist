@@ -3,6 +3,7 @@ import React from "react";
 function MinuteSecField({
   title,
   error,
+  error2,
   register,
   name1,
   name2,
@@ -12,6 +13,7 @@ function MinuteSecField({
 }: {
   title: string;
   error: any;
+  error2: any;
   register: any;
   name1: string;
   validate: any;
@@ -35,11 +37,20 @@ function MinuteSecField({
           className="px-2 w-full  focus:outline-none"
         />
       </div>
-      {error && (
-        <span className=" text-red-900 text-xs font-medium">
-          {error?.message || "Error"}
-        </span>
-      )}
+      <div className="flex w-full justify-between items-center">
+        {error && (
+          <span className=" text-red-900 text-xs font-medium">
+            {error?.message || "Error"}
+          </span>
+        )}
+        {error2 && (
+          <div className="w1/2">
+            <span className=" text-red-900 text-start text-xs font-medium">
+              {error2?.message || "Error"}
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

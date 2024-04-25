@@ -26,6 +26,7 @@ const page = () => {
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
+  const [isStart, setIsStart] = useState(false);
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [playListFavSongs, setPlayListFavSongs] = useState([]);
 
@@ -280,6 +281,12 @@ const page = () => {
                                         {index === 0 && (
                                           <SongCountdownTimer
                                             duration={songDuration}
+                                            advanceTheQueue={
+                                              deleteSongFromPlaylistHandler
+                                            }
+                                            playlistSongList={playlistSongList}
+                                            isStart={isStart}
+                                            setIsStart={setIsStart}
                                           />
                                         )}
                                         {isFav && (
@@ -339,7 +346,6 @@ const page = () => {
             </button> */}
             <SelectSongModal
               items={assignSongsList}
-              isCheckBoxes={true}
               btnText={"Add"}
               title={"Select songs"}
               openModal={selectSongModal}

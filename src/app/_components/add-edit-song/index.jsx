@@ -135,12 +135,16 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               name1="minutes"
               name2="seconds"
               error={errors.minutes}
+              error2={errors.seconds}
               validate={{
                 required: "Song Duration is required",
                 pattern: {
                   value: /^[0-9]*$/,
                   message: "Please enter only numbers.",
                 },
+                validate: (value) =>
+                  parseInt(value) <= 60 ||
+                  "Value must be less than or equal to 60.",
               }}
             />
 

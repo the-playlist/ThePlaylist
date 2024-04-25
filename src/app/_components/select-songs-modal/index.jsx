@@ -5,6 +5,7 @@ import { MdClear } from "react-icons/md";
 import _ from "lodash";
 import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
+
 const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
   const reff = useRef();
   const [status, setStatus] = useState(true);
@@ -91,71 +92,71 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
         <div className="modal-box  w-1/2 max-w-4xl p-4 bg-[#fafafafa]">
-          <div className="flex justify-between items-center">
-            <div>{title}</div>
-            <button onClick={closeModal}>
-              <MdClear size={20} />
-            </button>
-          </div>
-
-          <div className="relative w-1/3 my-4 flex items-center ">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchTerm}
-              onBlur={() => {
-                setSearchTerm(searchTerm.trim());
-              }}
-              onChange={handleSearch}
-              className="block w-full py-5 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-            />
-            <svg
-              className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
-            </svg>
-            {searchTerm?.length > 0 && (
-              <button
-                className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
-                onClick={() => setSearchTerm("")}
-              >
-                <MdClear size={20} className="text-gray-400" />
+          <div className="sticky  bg-[#fafafafa] py-2 top-0">
+            <div className="flex justify-between items-center">
+              <div>{title}</div>
+              <button onClick={closeModal}>
+                <MdClear size={20} />
               </button>
-            )}
-          </div>
-
-          <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-            <div className="w-3/12 ">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  onClick={() => {
-                    setPlayersList((prevPlayerList) =>
-                      prevPlayerList.map((player) => ({
-                        ...player,
-                        isChecked: status ? false : true,
-                      }))
-                    );
-                    setStatus(!status);
-                  }}
-                  defaultChecked={false}
-                  checked={playersList.every(
-                    (player) => player.isChecked === true
-                  )}
-                  className="checkbox mr-3 checkbox-success"
-                />
-                Title
-              </div>
             </div>
-            <div className="w-3/12">Player</div>
-            <div className="w-3/12">Category</div>
-            <div className="w-3/12">Intro Seconds</div>
+            <div className="relative w-1/3 my-4 flex items-center ">
+              <input
+                type="text"
+                placeholder="Search by Title/PlayerName"
+                value={searchTerm}
+                onBlur={() => {
+                  setSearchTerm(searchTerm.trim());
+                }}
+                onChange={handleSearch}
+                className="block w-full py-5 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+              />
+              <svg
+                className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
+              </svg>
+              {searchTerm?.length > 0 && (
+                <button
+                  className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
+                  onClick={() => setSearchTerm("")}
+                >
+                  <MdClear size={20} className="text-gray-400" />
+                </button>
+              )}
+            </div>
+            <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+              <div className="w-3/12 ">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    onClick={() => {
+                      setPlayersList((prevPlayerList) =>
+                        prevPlayerList.map((player) => ({
+                          ...player,
+                          isChecked: status ? false : true,
+                        }))
+                      );
+                      setStatus(!status);
+                    }}
+                    defaultChecked={false}
+                    checked={playersList.every(
+                      (player) => player.isChecked === true
+                    )}
+                    className="checkbox mr-3 checkbox-success"
+                  />
+                  Title
+                </div>
+              </div>
+              <div className="w-3/12">Player</div>
+              <div className="w-3/12">Category</div>
+              <div className="w-3/12">Intro Seconds</div>
+            </div>
           </div>
           <div className="overflow-y-auto">
             {playersList?.map((item, index) => {
