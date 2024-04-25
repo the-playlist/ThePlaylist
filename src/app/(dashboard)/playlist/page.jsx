@@ -17,6 +17,7 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+const IS_FAV_SONGS = "IS_FAV_SONGS";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
@@ -26,8 +27,9 @@ const page = () => {
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
-
+  const [isFavSongs, setIsFavSongs] = useState(false);
   const [playlistSongList, setPlaylistSongList] = useState([]);
+  const [playListFavSongs, setPlayListFavSongs] = useState([]);
 
   useEffect(() => {
     fetchPlaylistSongList();
@@ -37,14 +39,26 @@ const page = () => {
     try {
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
-        setPlaylistSongList(response?.data?.content);
+        let isFavOrNot = [];
+        let isFav = localStorage.getItem(IS_FAV_SONGS) || false;
+        isFav = JSON.parse(isFav);
+        if (isFav) {
+          isFavOrNot = response?.data?.content?.filter(
+            (item) => item.isFav === true
+          );
+          setPlaylistSongList(isFavOrNot);
+        } else {
+          setPlaylistSongList(response?.data?.content);
+        }
+        setIsFavSongs(isFav);
+
+        setPlayListFavSongs(response?.data?.content);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
     }
   };
 
-  const [arryList, setArrayList] = useState(playlistSongList);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [assignSongsList, setAssignSongsList] = useState([]);
 
@@ -95,6 +109,20 @@ const page = () => {
     }
   };
 
+  const toggleFavSongs = () => {
+    if (!isFavSongs) {
+      const updatedPlaylist = [...playlistSongList];
+      const favSongsList = updatedPlaylist.filter(
+        (item) => item.isFav === true
+      );
+      setPlaylistSongList(favSongsList);
+    } else {
+      setPlaylistSongList(playListFavSongs);
+    }
+    localStorage.setItem(IS_FAV_SONGS, !isFavSongs);
+    setIsFavSongs(!isFavSongs);
+  };
+
   return (
     <div className="">
       {getPlaylistSongListResponse?.isFetching ? (
@@ -111,9 +139,14 @@ const page = () => {
               <span className="mr-2">Advance the Queue</span>
               <FaForward />
             </button>
-            <button className="flex items-center hover:cursor-pointer border border-top-queue-bg hover:bg-blue-500 hover:text-white text-top-queue-bg font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded">
+            <button
+              onClick={toggleFavSongs}
+              className="flex items-center hover:cursor-pointer border border-top-queue-bg hover:bg-primary hover:text-white text-top-queue-bg font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
+            >
               <FaHeart />
-              <span className="ml-2">Play Favourite songs</span>
+              <span className="ml-2">
+                {isFavSongs ? "Back to Playlist" : "Play Favourite songs"}
+              </span>
             </button>
           </div>
           <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
@@ -147,12 +180,13 @@ const page = () => {
                           isFav,
                           sortOrder,
                         } = item || {};
+                        const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable
                             key={sortOrder}
                             draggableId={sortOrder.toString()}
                             index={index}
-                            isDragDisabled={index == 0 || index == 1}
+                            isDragDisabled={isLockedSongs}
                           >
                             {(provided) => (
                               <>
@@ -221,17 +255,21 @@ const page = () => {
                                       </div>
                                     </div>
                                     <div className="w-1/12 text-end">
-                                      {index === 0 ? (
+                                      {index === 0 && (
                                         <SongCountdownTimer
                                           duration={songDuration}
                                         />
-                                      ) : index == 1 ? (
-                                        ""
-                                      ) : (
+                                      )}
+
+                                      {!isLockedSongs && (
                                         <div className="flex items-center justify-end ">
                                           {isFav && (
                                             <FaHeart
-                                              className="text-top-queue-bg"
+                                              className={`${
+                                                isLockedSongs
+                                                  ? "text-white"
+                                                  : "text-primary"
+                                              }`}
                                               size={20}
                                             />
                                           )}
