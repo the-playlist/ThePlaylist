@@ -14,6 +14,7 @@ import { Loader } from "./loader";
 import CustomLoader from "./custom_loader";
 import SelectSongModal from "./select-songs-modal";
 import SongCountdownTimer from "./song-countdown-timer";
+import MinuteSecField from "./minutes-sec-field";
 
 export {
   NavBar,
@@ -32,4 +33,5 @@ export {
   CustomLoader,
   SelectSongModal,
   SongCountdownTimer,
+  MinuteSecField,
 };

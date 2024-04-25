@@ -72,8 +72,8 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
       return {
         title: record.title,
         artist: record.artist,
-        introSec: parseInt(record.introSec),
-        songDuration: parseInt(record.songDuration),
+        introSec: record.introSec,
+        songDuration: record.songDuration,
         category: record.category,
         playerName: record?.selectedPlayers?.playerName,
         upVote: record.upVote,
