@@ -20,7 +20,9 @@ export const RegisterUser = async (req, res, next) => {
 };
 
 export const login = async (credentials) => {
-  const user = await User.findOne({ email: credentials?.email });
+  const user = await User.findOne({
+    email: { $regex: new RegExp(credentials?.email, "i") },
+  });
   if (!user) {
     throw new Error("User not exists");
   }
