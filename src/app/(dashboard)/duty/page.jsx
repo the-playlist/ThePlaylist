@@ -26,7 +26,6 @@ const DutyScreen = () => {
   const [assignSongsList, setAssignSongsList] = useState([]);
 
   const [searchTerm, setSearchTerm] = useState("");
-  const [checked, setIsChecked] = useState(false);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI] = useUpdateDutyStatusMutation();
 
@@ -58,11 +57,7 @@ const DutyScreen = () => {
       let response = await getStaffListApi(null);
       if (response && !response.isError) {
         let data = response?.data?.content;
-        data.every((player) => {
-          if (player.duty.status === true) {
-            setIsChecked(true);
-          }
-        });
+
         setStaffList(data);
       }
     } catch (error) {
@@ -209,34 +204,7 @@ const DutyScreen = () => {
                     <tr className="text-base font-medium text-black">
                       <th className="font-medium">Players</th>
                       <td>Status</td>
-
-                      {filteredPlayers?.length > 0 && (
-                        <td className=" float-right ">
-                          <div className="flex">
-                            <input
-                              onClick={() => {
-                                setStaffList((prevStaffList) =>
-                                  prevStaffList.map((player) => ({
-                                    ...player,
-                                    duty: {
-                                      ...player.duty,
-                                      status: checked ? false : true,
-                                    },
-                                  }))
-                                );
-                                setIsChecked(checked ? false : true);
-                              }}
-                              type="checkbox"
-                              defaultChecked={false}
-                              checked={checked}
-                              className="checkbox mr-2 checkbox-success"
-                            />
-                            <span>
-                              Mark all as {!checked ? "on Duty" : "Off Duty"}
-                            </span>
-                          </div>
-                        </td>
-                      )}
+                      <td className=" float-right ">Change Status</td>
                     </tr>
                   </thead>
                   {filteredPlayers?.map((item, index) => {
