@@ -1,7 +1,6 @@
 import Playlist from "../models/playlist";
-import Songs from "../models/songs";
-import Players from "../models/players";
 import ResponseModel from "./responseModel";
+import PlaylistType from "../models/playlistType";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const playlist = await Playlist.insertMany(req.body);
@@ -67,8 +66,11 @@ export const getSongsFromPlaylist = async (req, res, next) => {
       $sort: { sortOrder: 1 }, // Sort the results
     },
   ]);
+  const { isFavortiteListType } = await PlaylistType.findOne({
+    _id: "662b7a6e80f2c908c92a0b3d",
+  }).lean();
   // After populating, flatten the objects and rename properties
-  const flattenedPlaylist = playlist.map((item) => ({
+  let flattenedPlaylist = playlist.map((item) => ({
     _id: item._id,
     playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
     assignedPlayerId: item.assignedPlayer?._id,
@@ -84,11 +86,14 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     downVote: item.downVote,
     sortOrder: item.sortOrder,
   }));
-  const response = new ResponseModel(
-    true,
-    "Songs fetched successfully.",
-    flattenedPlaylist
-  );
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+  const response = new ResponseModel(true, "Songs fetched successfully.", {
+    list: flattenedPlaylist,
+    isFavortiteListType: isFavortiteListType,
+  });
   res.status(200).json(response);
 };
 
