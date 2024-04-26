@@ -79,6 +79,7 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
     addSongsHandler(transformedRecords);
     return transformedRecords;
   };
+
   useEffect(() => {
     const allStatus = playersList.every((player) => player.isChecked === true);
     if (allStatus) {

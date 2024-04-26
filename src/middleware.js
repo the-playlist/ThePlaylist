@@ -11,7 +11,7 @@ export const middleware = async (request) => {
   const isPublicPath = path === "/login" ? true : false;
 
   if ((isPublicPath && session) || (session && path === "/")) {
-    return NextResponse.redirect(new URL("/players", request.nextUrl));
+    return NextResponse.redirect(new URL("/playlist", request.nextUrl));
   }
   if (!isPublicPath && !session) {
     return NextResponse.redirect(new URL("/login", request.nextUrl));

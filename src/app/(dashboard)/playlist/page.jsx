@@ -76,10 +76,15 @@ const page = () => {
     let response = await deleteSongByIdApi(id);
     if (response && !response.error) {
       toast(response?.data?.description);
-      fetchPlaylistSongList();
+      removeItemById(id);
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
+  };
+  const removeItemById = (idToRemove) => {
+    setPlaylistSongList((prevItems) =>
+      prevItems.filter((item) => item._id !== idToRemove)
+    );
   };
 
   const handleDragEnd = (result) => {
@@ -130,10 +135,10 @@ const page = () => {
         <>
           <div
             className={`flex ${
-              playlistSongList.length > 0 ? "justify-between" : "justify-end"
+              playlistSongList?.length > 0 ? "justify-between" : "justify-end"
             } items-center mx-1 mt-5`}
           >
-            {playlistSongList.length > 0 && (
+            {playlistSongList?.length > 0 && (
               <button
                 onClick={() => {
                   deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
@@ -189,7 +194,11 @@ const page = () => {
               >
                 <Droppable droppableId="list">
                   {(provided) => (
-                    <div {...provided?.droppableProps} ref={provided?.innerRef}>
+                    <div
+                      {...provided?.droppableProps}
+                      className=" overflow-y-auto h-[900px]  pb-10"
+                      ref={provided?.innerRef}
+                    >
                       {playlistSongList.map((item, index) => {
                         const {
                           title,
@@ -202,6 +211,7 @@ const page = () => {
                           isFav,
                           sortOrder,
                         } = item || {};
+                        console.log(index);
                         const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable

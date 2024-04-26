@@ -9,7 +9,6 @@ const SongCountdownTimer = ({
   isStart,
   setIsStart,
 }) => {
-  const [isRunning, setIsRunning] = useState(false);
   let timer;
 
   useEffect(() => {
@@ -18,9 +17,9 @@ const SongCountdownTimer = ({
         setTimeInSeconds((prevTime) => {
           if (prevTime === 0) {
             clearInterval(timer);
-            setIsStart(false);
+
             handleTimeZero();
-            return convertTimeToSeconds("0:00");
+            return convertTimeToSeconds(duration);
           }
           return prevTime - 1;
         });
@@ -30,10 +29,10 @@ const SongCountdownTimer = ({
     }
 
     return () => clearInterval(timer);
-  }, [isStart, duration]);
+  }, [isStart, duration, playlistSongList[0]?._id]);
 
-  const handleTimeZero = async () => {
-    await advanceTheQueue(playlistSongList[0]?._id);
+  const handleTimeZero = () => {
+    advanceTheQueue(playlistSongList[0]?._id);
   };
 
   const startTimer = () => {
@@ -73,11 +72,11 @@ const SongCountdownTimer = ({
       <div className="bg-[#F7F7F7] flex items-center  justify-center px-3 py-2 rounded-3xl">
         <button
           onClick={() => {
-            isRunning ? pauseTimer() : startTimer();
+            isStart ? pauseTimer() : startTimer();
           }}
           className="h-8 w-8 bg-white shadow-xl rounded-full flex items-center justify-center mr-2 "
         >
-          {isRunning ? <IoPause /> : <IoPlaySharp />}
+          {isStart ? <IoPause /> : <IoPlaySharp />}
         </button>
         {formatTime(timeInSeconds)}
       </div>

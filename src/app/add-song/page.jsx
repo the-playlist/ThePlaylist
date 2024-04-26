@@ -1,10 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { MdClear } from "react-icons/md";
-import { useLazyGetOnDutyPlayerSongListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useLazyGetOnDutyPlayerSongListQuery,
+  useLazyGetAssignSongsWithPlayersQuery,
+  useAddSongsToPlaylistMutation,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 const Typeahead = () => {
+  const [getAssignSongsApi, getAssignSongsResponse] =
+    useLazyGetAssignSongsWithPlayersQuery();
+
+  const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
+    useAddSongsToPlaylistMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -33,6 +43,7 @@ const Typeahead = () => {
   };
   useEffect(() => {
     fetchSongsList();
+    fetchAssignSongsList();
   }, []);
 
   const fetchSongsList = async () => {
@@ -43,7 +54,33 @@ const Typeahead = () => {
       setSongList(songList);
     }
   };
-
+  const fetchAssignSongsList = async () => {
+    try {
+      let response = await getAssignSongsApi(null);
+      if (response && !response.isError) {
+        let data = response?.data?.content;
+        setFilteredOptions(data);
+        setSongList(data);
+      }
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    }
+  };
+  const addSongsHandler = async () => {
+    let payload = {
+      songData: selectedSong?._id,
+      assignedPlayer: record?.selectedPlayers?._id,
+      sortOrder: index,
+    };
+    // try {
+    //   let response = await addSongToPlaylistApi(data);
+    //   if (response && !response.error) {
+    //     toast.success(response?.data?.description);
+    //   }
+    // } catch (error) {
+    //   toast.success(error?.message || "Something went wrong.");
+    // }
+  };
   return (
     <>
       <div className="fixed top-0 left-0  bg-white right-0 flex  p-4">
@@ -76,7 +113,7 @@ const Typeahead = () => {
           )}
         </div>
       </div>
-      {songsListResponse?.isFetching ? (
+      {getAssignSongsResponse?.isFetching ? (
         <div className="mt-10 flex items-center justify-center">
           <span className="loading loading-spinner loading-md"></span>
         </div>
@@ -94,12 +131,20 @@ const Typeahead = () => {
                 }}
               >
                 <div
-                  className={` h-4 w-4 border-${
-                    selectedSong == option ? "4" : "2"
-                  } rounded-full  border-${
-                    selectedSong == option ? "white" : "gray-300"
-                  }`}
-                />
+                  className={` h-4 w-4 
+                  ${
+                    selectedSong?._id == option?._id
+                      ? "  border-4"
+                      : "  border-2"
+                  }
+                ${
+                  selectedSong?._id == option?._id
+                    ? " border-white"
+                    : " border-gray-300"
+                }
+                  rounded-full
+                  `}
+                ></div>
                 <li
                   key={option.id}
                   className="pl-4 py-2 cursor-pointer flex w-full justify-between  items-center"
