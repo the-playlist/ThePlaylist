@@ -86,7 +86,11 @@ const DutyScreen = () => {
     if (response && !response.error) {
       toast(response?.data?.description);
       await fetchAssignSongsList();
-      setSelectSongModal(true);
+      staffList.some((player) => {
+        if (player.duty.status === true) {
+          setSelectSongModal(true);
+        }
+      });
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }

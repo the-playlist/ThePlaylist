@@ -88,7 +88,7 @@ const PerformerView = () => {
                     {item?.title}
                   </td>
                   <td className={`${fontSize} capitalize text-end`}>
-                    {item?.artist}
+                    {item?.playerName}
                   </td>
                   <td className="text-black text-3xl rounded-r-lg text-end w-1/12">
                     <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
