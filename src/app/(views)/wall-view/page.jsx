@@ -40,7 +40,7 @@ const WallView = () => {
     try {
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
-        setSongList(response?.data?.content);
+        setSongList(response?.data?.content?.list);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
