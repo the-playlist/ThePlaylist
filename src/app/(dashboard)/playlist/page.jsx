@@ -14,6 +14,7 @@ import {
   useLazyGetAssignSongsWithPlayersQuery,
   useDeleteSongFromPlaylistByIdMutation,
   useUpdateSortOrderOfSongsMutation,
+  useUpdatePlaylistTypeMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -22,6 +23,9 @@ const IS_FAV_SONGS = "IS_FAV_SONGS";
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [updatePlaylistTypeAPI, updatePlaylistTypeResponse] =
+    useUpdatePlaylistTypeMutation();
+
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
@@ -38,20 +42,10 @@ const page = () => {
     try {
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
-        let isFavOrNot = [];
-        let isFav = localStorage.getItem(IS_FAV_SONGS) || false;
-        isFav = JSON.parse(isFav);
-        if (isFav) {
-          isFavOrNot = response?.data?.content?.filter(
-            (item) => item.isFav === true
-          );
-          setPlaylistSongList(isFavOrNot);
-        } else {
-          setPlaylistSongList(response?.data?.content);
-        }
+        let isFav = response?.data?.content?.isFavortiteListType;
+        setPlaylistSongList(response?.data?.content?.list);
+        setPlayListFavSongs(response?.data?.content?.list);
         setIsFavSongs(isFav);
-
-        setPlayListFavSongs(response?.data?.content);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -113,18 +107,18 @@ const page = () => {
     }
   };
 
-  const toggleFavSongs = () => {
+  const toggleFavSongs = async () => {
     if (!isFavSongs) {
       const updatedPlaylist = [...playlistSongList];
-      const favSongsList = updatedPlaylist.filter(
-        (item) => item.isFav === true
-      );
+      const favSongsList = updatedPlaylist.filter((item) => item.isFav);
       setPlaylistSongList(favSongsList);
     } else {
-      setPlaylistSongList(playListFavSongs);
+      fetchPlaylistSongList();
     }
-    localStorage.setItem(IS_FAV_SONGS, !isFavSongs);
     setIsFavSongs(!isFavSongs);
+    await updatePlaylistTypeAPI({
+      isFavortiteListType: !isFavSongs,
+    });
   };
 
   return (
