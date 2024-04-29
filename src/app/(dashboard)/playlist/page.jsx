@@ -188,11 +188,7 @@ const page = () => {
               >
                 <Droppable droppableId="list">
                   {(provided) => (
-                    <div
-                      {...provided?.droppableProps}
-                      className=" overflow-y-auto h-[900px]  pb-10"
-                      ref={provided?.innerRef}
-                    >
+                    <div {...provided?.droppableProps} ref={provided?.innerRef}>
                       {playlistSongList.map((item, index) => {
                         const {
                           title,
