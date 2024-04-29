@@ -6,7 +6,14 @@ import _ from "lodash";
 import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 
-const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
+const SelectSongModal = ({
+  title,
+  openModal,
+  closeModal,
+  btnText,
+  items,
+  fetchList,
+}) => {
   const reff = useRef();
   const [status, setStatus] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -240,6 +247,7 @@ const SelectSongModal = ({ title, openModal, closeModal, btnText, items }) => {
                 );
 
                 getDesiredOuptut(selectedPlayers);
+                fetchList();
               }}
               className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
             >

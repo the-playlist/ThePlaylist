@@ -355,6 +355,7 @@ const page = () => {
                 btnText={"Add"}
                 title={"Select songs"}
                 openModal={selectSongModal}
+                fetchList={() => fetchPlaylistSongList()}
                 closeModal={() => {
                   setSelectSongModal(false);
                 }}

@@ -41,7 +41,7 @@ const Login = () => {
       if (response.error) {
         alert("Invalid Credentials...");
       } else {
-        router.replace("/players");
+        router.replace("/playlist");
       }
     } catch (error) {
       console.error("error", error);

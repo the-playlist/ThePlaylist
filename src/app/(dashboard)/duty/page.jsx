@@ -262,6 +262,7 @@ const DutyScreen = () => {
                   btnText={"Push to Que"}
                   title={"Push to Que"}
                   openModal={selectSongModal}
+                  fetchList={() => {}}
                   closeModal={() => {
                     setSelectSongModal(false);
                   }}

@@ -17,14 +17,14 @@ const SideBar = () => {
           {navlinks.map((i) => {
             const isActive = pathname?.startsWith(i.href);
             return (
-              <li
-                className={`${
-                  isActive
-                    ? "  bg-[#FEF9EB]  border border-top-queue-bg "
-                    : "my-3 "
-                }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl p-4 my-3`}
-              >
-                <Link href={i.href}>
+              <Link href={i.href}>
+                <li
+                  className={`${
+                    isActive
+                      ? "  bg-[#FEF9EB]  border border-top-queue-bg "
+                      : "my-3 "
+                  }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl p-4 my-3`}
+                >
                   <div className={`   flex justify-start items-center`}>
                     <Image
                       src={i.icon}
@@ -40,8 +40,8 @@ const SideBar = () => {
                       {i.name}
                     </div>
                   </div>
-                </Link>
-              </li>
+                </li>
+              </Link>
             );
           })}
         </ul>
