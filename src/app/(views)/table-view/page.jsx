@@ -6,16 +6,51 @@ import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown, IoIosCloseCircle } from "react-icons/io";
 import Webcam from "react-webcam";
 import Link from "next/link";
-import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useAddUpdateVoteMutation,
+  useLazyGetTableViewSongsQuery,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 
 const TableView = () => {
-  const [getPlaylistSongListApi, getPlaylistSongListResponse] =
-    useLazyGetSongsFromPlaylistQuery();
+  const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [showCam, setShowCam] = useState(false);
   const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  function generateDeviceId() {
+    // Concatenate various properties to generate a unique identifier
+    const combinedId =
+      navigator.userAgent +
+      window.screen.width +
+      window.screen.height +
+      Math.floor(Math.random() * (100 - 1 + 1)) +
+      1;
+
+    // Hash the combined ID to generate a more anonymized and consistent identifier
+    const hashedId = hash(combinedId);
+    const ID = localStorage.getItem("UNIQUE_ID");
+    if (!ID) {
+      localStorage.setItem("UNIQUE_ID", hashedId);
+      return hashedId;
+    } else {
+      return ID;
+    }
+
+    // You can send this hashed ID to your server for identification or store it locally
+  }
+
+  function hash(str) {
+    let hash = 0;
+    if (str.length === 0) return hash;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = (hash << 5) - hash + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  }
 
   useEffect(() => {
     const handleResize = () => {
@@ -38,7 +73,8 @@ const TableView = () => {
 
   const fetchPlaylistSongList = async () => {
     try {
-      let response = await getPlaylistSongListApi(null);
+      const deviceId = generateDeviceId();
+      let response = await getPlaylistSongTableView(deviceId);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);
       }
@@ -71,22 +107,25 @@ const TableView = () => {
   };
 
   const ActionButtons = ({ index, item }) => {
-    const toggleButton = (isTrue) => {
-      debugger;
+    const [addUpdateVoteAPI, addUpdateVoteResponse] =
+      useAddUpdateVoteMutation();
+    const toggleButton = async (isTrue) => {
+      const deviceId = generateDeviceId();
+
       console.log("ISTRue", isTrue, item, index);
       let updatedPerformer = [...performer];
-
-      // Create a copy of the performer object at the specified index
       let updatedItem = { ...updatedPerformer[index] };
-
-      // Modify the isVote property of the copied performer object
-      updatedItem.isVote = isTrue;
-
-      // Update the performer array with the modified performer object
+      updatedItem.upVote = isTrue;
       updatedPerformer[index] = updatedItem;
-
-      // Update the state with the updated performer array
       setPerformers(updatedPerformer);
+      debugger;
+      await addUpdateVoteAPI({
+        customerId: deviceId,
+        songId: item?.songId,
+        playlistItemId: item?._id,
+        playerId: item?.assignedPlayerId,
+        isUpVote: isTrue,
+      });
     };
 
     return (
@@ -94,23 +133,23 @@ const TableView = () => {
         <button
           onClick={() => toggleButton(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.isVote == true ? "bg-green-500" : "bg-white"
+            item?.upVote == true ? "bg-green-500" : "bg-white"
           }`}
         >
           <IoIosArrowUp
             size={18}
-            color={`${item?.isVote == true ? "white" : "black"}`}
+            color={`${item?.upVote == true ? "white" : "black"}`}
           />
         </button>
         <button
           onClick={() => toggleButton(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.isVote == false ? "bg-red-500" : "bg-white"
+            item?.upVote === false ? "bg-red-500" : "bg-white"
           } ml-2`}
         >
           <IoIosArrowDown
             size={18}
-            color={`${item?.isVote == false ? "white" : "black"}`}
+            color={`${item?.upVote === false ? "white" : "black"}`}
           />
         </button>
       </div>

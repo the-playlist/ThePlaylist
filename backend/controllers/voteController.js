@@ -2,11 +2,9 @@ import Vote from "../models/votes";
 import ResponseModel from "./responseModel";
 
 export const addUpdateVote = async (req, res, next) => {
-  console.log(req);
   const body = req?.body;
-  debugger;
   const playlistItemId = req?.body?.playlistItemId;
-  const vote = Vote.findOne({ playlistItemId: playlistItemId });
+  const vote = await Vote.findOne({ playlistItemId: playlistItemId });
   if (vote) {
     await Vote.updateOne(
       { _id: vote._id },
@@ -25,6 +23,7 @@ export const addUpdateVote = async (req, res, next) => {
       isUpVote: body.isUpVote,
     });
   }
-  let response = new ResponseModel(true, "Vote added Successfully", players);
+
+  let response = new ResponseModel(true, "Vote added Successfully", null);
   res.status(200).json(response);
 };
