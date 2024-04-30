@@ -201,8 +201,8 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className=" overflow-y-auto h-[900px] pb-10">
-                <table className="table border-separate  border-spacing-y-5  pb-10 px-2">
+              <div className=" max-h-[80vh] overflow-y-auto pb-12">
+                <table className="table border-separate  border-spacing-y-5  pb-20 px-2">
                   <thead>
                     <tr className="text-base font-medium text-black">
                       <th className="font-medium">Players</th>
