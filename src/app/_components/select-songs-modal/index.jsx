@@ -5,7 +5,6 @@ import { MdClear } from "react-icons/md";
 import _ from "lodash";
 import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
-import { io } from "socket.io-client";
 
 const SelectSongModal = ({
   title,
@@ -15,7 +14,6 @@ const SelectSongModal = ({
   items,
   fetchList,
 }) => {
-  const [socket, setSocket] = useState();
   const reff = useRef();
   const [status, setStatus] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -23,21 +21,6 @@ const SelectSongModal = ({
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
-  useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
-
-    socket.connect();
-
-    socket.on("message", (message) => {
-      console.log("Received message:", message);
-    });
-
-    setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
-  }, []);
 
   useEffect(() => {
     if (openModal) {
@@ -82,10 +65,6 @@ const SelectSongModal = ({
   }
   const addSongsHandler = async (data) => {
     try {
-      // socket.emit("addSongToPlaylistApi", {
-      //   payload: data,
-      //   handler: addSongToPlaylistApi,
-      // });
       let response = await addSongToPlaylistApi(data);
       if (response && !response.error) {
         closeModal();

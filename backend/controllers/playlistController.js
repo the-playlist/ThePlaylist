@@ -3,7 +3,13 @@ import ResponseModel from "./responseModel";
 import PlaylistType from "../models/playlistType";
 
 export const addSongsToPlaylist = async (req, res, next) => {
-  const playlist = await Playlist.insertMany(req.body);
+  const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
+  const songsWithExpiration = req.body.map((song) => ({
+    ...song,
+    expiresAt: expirationTime,
+  }));
+
+  const playlist = await Playlist.insertMany(songsWithExpiration);
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
