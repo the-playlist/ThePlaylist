@@ -72,17 +72,25 @@ const TableView = () => {
 
   const ActionButtons = ({ index, item }) => {
     const toggleButton = (isTrue) => {
-      setPerformers((prevPerformer) => {
-        const updatedPerformer = [...prevPerformer];
-        updatedPerformer[index].isVote = isTrue;
-        return updatedPerformer;
-      });
+      let updatedPerformer = [...performer];
+
+      // Create a copy of the performer object at the specified index
+      let updatedItem = { ...updatedPerformer[index] };
+
+      // Modify the isVote property of the copied performer object
+      updatedItem.isVote = isTrue;
+
+      // Update the performer array with the modified performer object
+      updatedPerformer[index] = updatedItem;
+
+      // Update the state with the updated performer array
+      setPerformers(updatedPerformer);
     };
 
     return (
       <div className="flex mr-5">
         <button
-          // onClick={() => toggleButton(true)}
+          onClick={() => toggleButton(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.isVote == true ? "bg-green-500" : "bg-white"
           }`}
@@ -93,7 +101,7 @@ const TableView = () => {
           />
         </button>
         <button
-          // onClick={() => toggleButton(false)}
+          onClick={() => toggleButton(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.isVote == false ? "bg-red-500" : "bg-white"
           } ml-2`}
@@ -115,6 +123,11 @@ const TableView = () => {
           <div className=" flex items-center justify-center m-5">
             <Logo />
           </div>
+          {performer.length === 0 && (
+            <div className="flex items-center justify-center flex-1 min-h-[50%] font-semibold text-lg">
+              The playlist is empty.{" "}
+            </div>
+          )}
           {showCam ? (
             <>
               <button

@@ -70,6 +70,11 @@ const PerformerView = () => {
           <div className="  flex items-center justify-center m-5">
             <Logo />
           </div>
+          {performer.length === 0 && (
+            <div className="flex items-center justify-center flex-1 min-h-52 font-semibold text-lg">
+              The playlist is empty.
+            </div>
+          )}
           <table className="table table-lg border-separate border-spacing-y-2 ">
             {performer?.map((item: any, index: number) => (
               <tbody
