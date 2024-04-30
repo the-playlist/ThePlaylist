@@ -19,6 +19,8 @@ const endPoints = {
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
+  ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
+  GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -61,6 +63,9 @@ export const emptySplitApi = createApi({
     getOnDutyPlayerSongList: builder.query({
       query: () => endPoints.GET_ONDUTY_PLAYER_SONGS,
     }),
+    getTableViewSongs: builder.query({
+      query: (body: any) => `${endPoints.GET_TABLE_VIEW_SONGS}${body}`,
+    }),
     updateDutyStatus: builder.mutation({
       query: (body: any) => ({
         url: `${
@@ -75,6 +80,13 @@ export const emptySplitApi = createApi({
     updatePlaylistType: builder.mutation({
       query: (body: any) => ({
         url: `${endPoints.UPDATE_PLAYLIST_TYPE}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    addUpdateVote: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.ADD_UPDATE_VOTE}`,
         method: "POST",
         body: body,
       }),
@@ -155,4 +167,6 @@ export const {
   useDeleteSongFromPlaylistByIdMutation,
   useUpdateSortOrderOfSongsMutation,
   useUpdatePlaylistTypeMutation,
+  useAddUpdateVoteMutation,
+  useLazyGetTableViewSongsQuery,
 } = emptySplitApi;
