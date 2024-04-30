@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
@@ -67,18 +67,21 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
+    removeItemById(id);
     let response = await deleteSongByIdApi(id);
     if (response && !response.error) {
       toast(response?.data?.description);
-      removeItemById(id);
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
-  const removeItemById = (idToRemove) => {
-    setPlaylistSongList((prevItems) =>
-      prevItems.filter((item) => item._id !== idToRemove)
-    );
+  const removeItemById = async () => {
+    const currentArray = [...playlistSongList];
+    await setPlaylistSongList([]);
+    // Remove the first element from the array
+    currentArray.shift();
+    // Update the state with the new array
+    setPlaylistSongList(currentArray);
   };
 
   const handleDragEnd = (result) => {
@@ -219,21 +222,23 @@ const page = () => {
                                   <div
                                     key={index}
                                     className={` text-center ${
-                                      index < 2 ? "bg-top-queue-bg" : "white"
+                                      isLockedSongs
+                                        ? "bg-top-queue-bg"
+                                        : "white"
                                     }  shadow-lg rounded-2xl h-20 flex items-center mb-4 px-5`}
                                   >
                                     <div className="w-1/12 text-start font-extrabold text-lg">
-                                      {index < 2 ? (
-                                        index + 1
-                                      ) : (
+                                      {!isLockedSongs ? (
                                         <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
                                           <HiOutlineArrowsUpDown />
                                         </div>
+                                      ) : (
+                                        index + 1
                                       )}
                                     </div>
                                     <div className="w-2/12">{title}</div>
                                     <div className="w-1/12">
-                                      {index > 1 && (
+                                      {!isLockedSongs && (
                                         <div className="flex items-center justify-center">
                                           <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
                                             <div className="flex items-center justify-center bg-green-500 rounded-full shadow-xl w-6 h-6 mr-2">
@@ -349,7 +354,7 @@ const page = () => {
                 btnText={"Add"}
                 title={"Select songs"}
                 openModal={selectSongModal}
-                fetchList={() => fetchPlaylistSongList()}
+                fetchList={async () => await fetchPlaylistSongList()}
                 closeModal={() => {
                   setSelectSongModal(false);
                 }}

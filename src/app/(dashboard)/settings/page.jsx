@@ -7,7 +7,7 @@ const page = () => {
   const [currentMessage, setCurrentMessage] = useState("");
 
   useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
+    const socket = io("https://chat.mqasim.com/", { autoConnect: false });
 
     socket.connect();
 

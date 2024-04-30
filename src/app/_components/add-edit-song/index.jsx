@@ -91,7 +91,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               register={register}
               name="songTitle"
               error={errors.songTitle}
-              validate={{ required: true }}
+              validate={{ required: "Song title is required" }}
             />
             <InputField
               title="Artist"
@@ -99,7 +99,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               register={register}
               name="artist"
               error={errors.artist}
-              validate={{ required: true }}
+              validate={{ required: "Song artist is required" }}
             />
             <InputField
               title="Intro Sec"
@@ -158,7 +158,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                 className="select  border-gray-400 border-2 my-1 p-2 rounded focus:outline-none "
               >
                 <option>Standard</option>
-                <option>Balled</option>
+                <option>Ballad</option>
                 <option>Comedy</option>
               </select>
             </div>

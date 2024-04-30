@@ -10,22 +10,10 @@ const io = socketIo(server, {
   },
 });
 
-io.on("connection", (client) => {
-  client.on("addSongToPlaylistApi", async (data) => {
-    const { payload, handler } = data;
-    const response = await fetch(
-      "http://localhost:3000/api/playlist/addSongsToPlaylist",
-      {
-        method: "POST",
-        body: payload,
-      }
-    );
-    console.log("data", response.json());
+io.on("connection", (socket) => {
+  socket.on("addSongToPlaylistApi", (data) => {
+    io.emit("addSongToPlaylistApiResponse", data);
   });
-  client.on("message", (data) => {
-    console.log("data==>", data);
-  });
-  client.on("disconnect", () => {});
 });
 
 const PORT = process.env.PORT || 3001;

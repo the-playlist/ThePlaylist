@@ -107,18 +107,15 @@ const TableView = () => {
   };
 
   const ActionButtons = ({ index, item }) => {
-    const [addUpdateVoteAPI, addUpdateVoteResponse] =
-      useAddUpdateVoteMutation();
+    const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
+
     const toggleButton = async (isTrue) => {
       const deviceId = generateDeviceId();
-
-      console.log("ISTRue", isTrue, item, index);
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
       updatedItem.upVote = isTrue;
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
-      debugger;
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
@@ -164,6 +161,11 @@ const TableView = () => {
           <div className=" flex items-center justify-center m-5">
             <Logo />
           </div>
+          {performer.length === 0 && (
+            <div className="flex items-center justify-center flex-1 min-h-[50%] font-semibold text-lg">
+              The playlist is empty.{" "}
+            </div>
+          )}
           {showCam ? (
             <>
               <button

@@ -14,6 +14,7 @@ import {
   SelectSongModal,
 } from "@/app/_components";
 import _ from "lodash";
+import { useRouter } from "next/navigation";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
@@ -28,6 +29,8 @@ const DutyScreen = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI] = useUpdateDutyStatusMutation();
+
+  const router = useRouter();
 
   useEffect(() => {
     if (showModal) {
@@ -198,8 +201,8 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className=" overflow-y-auto h-[900px] pb-10">
-                <table className="table border-separate  border-spacing-y-5  pb-10 px-2">
+              <div className=" max-h-[80vh] overflow-y-auto pb-12">
+                <table className="table border-separate  border-spacing-y-5  pb-20 px-2">
                   <thead>
                     <tr className="text-base font-medium text-black">
                       <th className="font-medium">Players</th>
@@ -250,7 +253,7 @@ const DutyScreen = () => {
               )}
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
-                  text="Save"
+                  text="Save Attendance"
                   onClick={() => {
                     setShowModal(true);
                   }}
@@ -259,10 +262,12 @@ const DutyScreen = () => {
               {selectSongModal && (
                 <SelectSongModal
                   items={assignSongsList}
-                  btnText={"Push to Que"}
-                  title={"Push to Que"}
+                  btnText={"Push to Queue"}
+                  title={"Push to Queue"}
                   openModal={selectSongModal}
-                  fetchList={() => {}}
+                  fetchList={() => {
+                    router.push("/playlist");
+                  }}
                   closeModal={() => {
                     setSelectSongModal(false);
                   }}
