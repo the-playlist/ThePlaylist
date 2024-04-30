@@ -126,11 +126,11 @@ function AddEditPlayer({
               register={register}
               name="fName"
               error={errors.fName}
-              validate={{ required: true }}
+              validate={{ required: "First name is required" }}
             />
             <InputField
               placeholder="Enter Last Name"
-              validate={{ required: true }}
+              validate={{ required: "Last name is required" }}
               title="Last Name"
               register={register}
               name="lName"
@@ -138,7 +138,7 @@ function AddEditPlayer({
             />
             <InputField
               placeholder="Enter Email"
-              validate={{ required: true }}
+              validate={{ required: "Email is required" }}
               title="Email"
               register={register}
               name="email"
@@ -227,7 +227,7 @@ function AddEditPlayer({
           </div>
           <div className=" mt-2">
             <GenericButton
-              text={currentInfo ? "Update" : "Add"}
+              text={currentInfo ? "Update player" : "Add Player"}
               onClick={handleSubmit(onSubmit)}
             />
           </div>

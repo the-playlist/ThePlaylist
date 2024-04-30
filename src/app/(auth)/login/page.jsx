@@ -95,11 +95,11 @@ const Login = () => {
                 {errors?.password?.message || "Error"}
               </span>
             )}
-            <div>
+            {/* <div>
               <span className="block my-5 text-base font-medium text-black float-right ">
                 Forgot Password?
               </span>
-            </div>
+            </div> */}
           </div>
 
           <button
