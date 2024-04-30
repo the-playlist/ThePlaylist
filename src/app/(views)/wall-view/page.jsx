@@ -6,29 +6,26 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 import { ToggleFullScreen } from "@/app/_components";
 import { CustomLoader } from "@/app/_components";
 import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import { io } from "socket.io-client";
 
 const WallView = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [isLoading, setIsLoading] = useState(true);
   const [songList, setSongList] = useState([]);
-
   const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
-  const [fontSize, setFontSize] = useState("text-3xl");
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 1076) {
-        setFontSize("text-3xl");
-      } else {
-        setFontSize("text-xl");
-      }
-    };
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    socket.connect();
 
-    window.addEventListener("resize", handleResize);
-
+    socket.on("addSongToPlaylistApiResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     return () => {
-      window.removeEventListener("resize", handleResize);
+      console.log("Disconnecting socket...");
+      socket.disconnect();
     };
   }, []);
 
@@ -42,6 +39,7 @@ const WallView = () => {
       if (response && !response.isError) {
         setSongList(response?.data?.content?.list);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -49,7 +47,7 @@ const WallView = () => {
 
   return (
     <div className="overflow-x-auto mx-auto p-10 bg-white " ref={elementRef}>
-      {getPlaylistSongListResponse?.isFetching ? (
+      {isLoading ? (
         <CustomLoader />
       ) : (
         <>
@@ -82,10 +80,12 @@ const WallView = () => {
               `}
               >
                 <tr>
-                  <td className={`${fontSize} text-start rounded-l-lg `}>
+                  <td
+                    className={`lg:text-3xl text-lg text-start rounded-l-lg `}
+                  >
                     {item?.title}
                   </td>
-                  <td className={`${fontSize} text-end rounded-r-lg`}>
+                  <td className={`lg:text-3xl text-lg text-end rounded-r-lg`}>
                     {item?.artist}
                   </td>
                 </tr>

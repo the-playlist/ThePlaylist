@@ -5,33 +5,29 @@ import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import { CustomLoader, ToggleFullScreen } from "@/app/_components";
 import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import { io } from "socket.io-client";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [loading, setLoading] = useState(true);
-
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
-  const [fontSize, setFontSize] = useState("text-3xl");
+  const [performer, setPerformers] = useState([]);
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 1076) {
-        setFontSize("text-3xl");
-      } else {
-        setFontSize("text-xl");
-      }
-    };
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    socket.connect();
 
-    window.addEventListener("resize", handleResize);
-
+    socket.on("addSongToPlaylistApiResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     return () => {
-      window.removeEventListener("resize", handleResize);
+      console.log("Disconnecting socket...");
+      socket.disconnect();
     };
   }, []);
 
-  const [performer, setPerformers] = useState([]);
   useEffect(() => {
     fetchPlaylistSongList();
   }, []);
@@ -76,7 +72,7 @@ const PerformerView = () => {
             </div>
           )}
           <table className="table table-lg border-separate border-spacing-y-2 ">
-            {performer?.map((item: any, index: number) => (
+            {performer?.map((item, index) => (
               <tbody
                 className={`h-20 text-black text-base rounded-tl-lg    
               ${
@@ -86,16 +82,16 @@ const PerformerView = () => {
               }`}
               >
                 <tr className="rounded-l-lg">
-                  <td className={`${fontSize} text-start rounded-l-lg`}>
+                  <td className={`lg:text-3xl text-lg text-start rounded-l-lg`}>
                     {index + 1}
                   </td>
-                  <td className={`${fontSize} capitalize text-start`}>
+                  <td className={`lg:text-3xl text-lg capitalize text-start`}>
                     {item?.title}
                   </td>
-                  <td className={`${fontSize} capitalize text-end`}>
+                  <td className={`lg:text-3xl text-lg capitalize text-end`}>
                     {item?.playerName}
                   </td>
-                  <td className="text-black text-3xl rounded-r-lg text-end w-1/12">
+                  <td className="text-black rounded-r-lg text-end w-1/12">
                     <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
                       {item?.introSec}
                     </div>
