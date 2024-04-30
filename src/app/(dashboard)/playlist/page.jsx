@@ -170,7 +170,7 @@ const page = () => {
               <div className="w-1/12"></div>
             </div>
           )}
-          <div className="overflow-y-auto h-[900px] pb-10 ">
+          <div className="overflow-y-auto h-[900px] pb-20 ">
             <div className="border-separate border-spacing-y-5 mb-48 mx-1  ">
               {playlistSongList.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
@@ -201,7 +201,6 @@ const page = () => {
                           isFav,
                           sortOrder,
                         } = item || {};
-                        console.log(index);
                         const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable
@@ -344,7 +343,6 @@ const page = () => {
               <IoArrowUndo />
               <span className="ml-2">Undo Action</span>
             </button> */}
-
             {selectSongModal && (
               <SelectSongModal
                 items={assignSongsList}

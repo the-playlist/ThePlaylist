@@ -3,13 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently \"npm run node\" \"npm run next\"",
+    "dev": "npm run next",
     "next": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "node": "node server.js"
-
   },
   "dependencies": {
     "@emotion/react": "^11.11.4",
