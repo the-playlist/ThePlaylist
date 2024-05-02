@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import {
   ReportIcon,
   ChangePassIcon,
@@ -30,7 +30,7 @@ const SelectedItemContent =
                 }}
                 className={`p-3 border hover:cursor-pointer ${
                   selectedItem?.id == item.id
-                    ? "border-[#EFC440]"
+                    ? "border-[#EFC440] "
                     : " border-[#F1F1F1]"
                 } bg-white rounded-lg w-1/4 mr-4`}
               >

@@ -80,8 +80,8 @@ const Players = () => {
               </thead>
               <tbody>
                 {playersList?.map((item, index) => (
-                  <tr className="h-20 text-black text-lg shadow-lg  rounded-2xl ">
-                    <th>{index + 1}</th>
+                  <tr className="h-20 text-black text-lg  bg-white drop-shadow rounded-2xl ">
+                    <th className="rounded-l-2xl">{index + 1}</th>
                     <td>{item?.firstName}</td>
                     <td>{item?.lastName}</td>
                     <td>{item?.email}</td>
@@ -95,7 +95,7 @@ const Players = () => {
                         count={item?.assignSongs?.length}
                       />
                     </td>
-                    <td>
+                    <td className="rounded-r-2xl">
                       <OptionButton
                         item={item}
                         index={index}

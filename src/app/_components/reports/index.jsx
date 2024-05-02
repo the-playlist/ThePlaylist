@@ -31,7 +31,6 @@ const Reports = () => {
     if (response && !response.isError) {
       setReportsList(response?.data?.content?.list);
     }
-    console.log("response", response);
   };
   return (
     <div className="bg-[#fbfbfb]  shadow-lg rounded-lg my-10 p-5">
@@ -58,27 +57,36 @@ const Reports = () => {
           <div className="w-3/12">Up Vote</div>
           <div className="w-3/12">Down Vote</div>
         </div>
-        <div className="overflow-y-auto h-[530px]  pb-20">
-          {reportsList.map((item, index) => (
-            <div
-              className={` text-center bg-white shadow-sm  rounded-2xl h-16 flex items-center mb-4 px-5`}
-            >
-              <div className="w-1/12 text-start">
-                {index == 0 ? (
-                  <BadgeOne />
-                ) : index == 1 ? (
-                  <BadgeTwo />
-                ) : (
-                  <div className=" font-semibold ml-3">{index + 1}</div>
-                )}
+        {reportsSongsApiResponse?.isFetching ? (
+          <div className="flex items-center justify-center h-[555px]">
+            <span className="loading loading-bars loading-xs"></span>
+            <span className="loading loading-bars loading-sm"></span>
+            <span className="loading loading-bars loading-md"></span>
+            <span className="loading loading-bars loading-lg"></span>
+          </div>
+        ) : (
+          <div className="overflow-y-auto h-[555px]  pb-20 px-1">
+            {reportsList.map((item, index) => (
+              <div
+                className={` text-center bg-white drop-shadow rounded-2xl h-16 flex items-center mb-4 px-5`}
+              >
+                <div className="w-1/12 text-start">
+                  {index == 0 ? (
+                    <BadgeOne />
+                  ) : index == 1 ? (
+                    <BadgeTwo />
+                  ) : (
+                    <div className=" font-semibold ml-3">{index + 1}</div>
+                  )}
+                </div>
+                <div className="w-2/12 ">{item?.title}</div>
+                <div className="w-3/12">{item?.artist}</div>
+                <div className="w-3/12  ">{item?.upVote}</div>
+                <div className="w-3/12 ">{item?.downVote}</div>
               </div>
-              <div className="w-2/12 ">{item?.title}</div>
-              <div className="w-3/12">{item?.artist}</div>
-              <div className="w-3/12  ">{item?.upVote}</div>
-              <div className="w-3/12 ">{item?.downVote}</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

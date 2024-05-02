@@ -58,7 +58,7 @@ const NavBar = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <nav className="flex justify-between items-center px-5 py-3 shadow-md rounded-2xl">
+    <nav className="flex justify-between items-center px-5 py-3 drop-shadow bg-white rounded-2xl">
       <div className="flex ">
         <div className="  lg:hidden md:hidden flex  mr-5 items-center  ">
           <ul className=" flex-col w-full text-center   ">
