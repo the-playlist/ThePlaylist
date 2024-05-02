@@ -1,17 +1,17 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { io } from "socket.io-client";
+import React, { useState } from "react";
 import {
   ReportIcon,
   ChangePassIcon,
   ClearSongIcon,
   FavSongIcon,
 } from "@/app/svgs";
+import { ChangePassword, Reports } from "@/app/_components";
 
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(null);
+    const [selectedItemId, setSelectedItemId] = useState(3);
 
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
@@ -45,7 +45,7 @@ const SelectedItemContent =
                     {item?.title}
                   </span>
                   <span
-                    className={`h-10 w-10 flex justify-center items-center rounded-full ${
+                    className={`h-10 w-10 flex lg:text-lg text-base justify-center items-center rounded-full ${
                       selectedItem?.id == item.id
                         ? "bg-[#FDF9EC]"
                         : "bg-[#f2f2f2]"
@@ -56,8 +56,10 @@ const SelectedItemContent =
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between w-full my-3">
-                  <span className="text-[#989b9e]">{item.desc}</span>
+                <div className="text-start w-full my-3">
+                  <span className="text-[#989b9e] lg:text-base text-sm">
+                    {item.desc}
+                  </span>
                 </div>
               </button>
             );
@@ -71,8 +73,7 @@ const SelectedItemContent =
 const ItemContent = ({ item }) => {
   return (
     <div>
-      <div>{item.title}</div>
-      <div>{item.desc}</div>
+      <div>{item.detail}</div>
     </div>
   );
 };
@@ -80,49 +81,20 @@ const ItemContent = ({ item }) => {
 const SelectableItemContent = SelectedItemContent(ItemContent);
 
 const page = () => {
-  const [socket, setSocket] = useState();
-  const [currentMessage, setCurrentMessage] = useState("");
-  const [selectedItem, setSelectedItem] = useState();
-
-  useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
-
-    socket.connect();
-
-    socket.on("message", (message) => {
-      console.log("Received message:", message);
-    });
-
-    setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
-  }, []);
-  // Function to send a message
-  const sendMessage = () => {
-    if (currentMessage.trim() !== "") {
-      socket.emit("message", {
-        recipient: "alice",
-        message: currentMessage,
-      });
-      // socket.emit("message", currentMessage);
-      setCurrentMessage("");
-    }
-  };
-
   const settingArray = [
     {
       id: 0,
       icon: (color) => <ChangePassIcon color={color} />,
       title: "Master Password",
       desc: "Suc as manage master password change or update the password.",
+      detail: <ChangePassword />,
     },
     {
       id: 1,
       icon: (color) => <ClearSongIcon color={color} />,
       title: "Clear Songs",
       desc: "Suc as clear all the songs that are listed in the playlist.",
+      detail: "",
     },
 
     {
@@ -130,24 +102,19 @@ const page = () => {
       icon: (color) => <FavSongIcon color={color} />,
       title: "Favourite Songs",
       desc: "Suc as add all the songs marked favourite to the playlist. ",
+      detail: "",
     },
     {
       id: 3,
       icon: (color) => <ReportIcon color={color} />,
       title: "Reports",
       desc: "Such as songs top vots for tonight, this week, or this month.",
+      detail: <Reports />,
     },
   ];
   return (
     <div className="min-h-screen   ">
       <SelectableItemContent items={settingArray} />
-      {/* <input
-        className="border border-black"
-        type="text"
-        value={currentMessage}
-        onChange={(e) => setCurrentMessage(e.target.value)}
-      />
-      <button onClick={sendMessage}>Send</button> */}
     </div>
   );
 };
