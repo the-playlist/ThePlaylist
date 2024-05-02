@@ -25,7 +25,7 @@ const SelectSongModal = ({
   };
 
   useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
     socket.connect();
     setSocket(socket);
     return () => {
