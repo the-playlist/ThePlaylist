@@ -12,6 +12,7 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
+import { Listener_URL } from "../../_utils/common/constants";
 
 const TableView = () => {
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
@@ -70,7 +71,7 @@ const TableView = () => {
   }, []);
 
   useEffect(() => {
-    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     setSocket(socket);
     socket.on("addSongToPlaylistApiResponse", (item) => {

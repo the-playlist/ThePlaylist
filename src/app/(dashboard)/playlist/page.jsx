@@ -19,6 +19,7 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
+import { Listener_URL } from "../../_utils/common/constants";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
@@ -35,7 +36,7 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     socket.on("votingResponse", (item) => {
       fetchPlaylistSongList();
