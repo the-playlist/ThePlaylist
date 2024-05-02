@@ -116,6 +116,7 @@ const TableView = () => {
       updatedItem.upVote = isTrue;
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
+      debugger;
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
