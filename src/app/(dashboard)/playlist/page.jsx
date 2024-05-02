@@ -33,9 +33,13 @@ const page = () => {
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
     socket.connect();
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     setSocket(socket);
     return () => {
       console.log("Disconnecting socket...");
@@ -48,7 +52,7 @@ const page = () => {
 
   const fetchPlaylistSongList = async () => {
     try {
-      setIsLoading(true);
+      // setIsLoading(true);
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
@@ -113,6 +117,7 @@ const page = () => {
       await updateSortOrderApi({
         songsList: payload,
       });
+      socket.emit("addSongToPlaylistApi", payload);
     } catch (error) {
       console.log(error);
     }
