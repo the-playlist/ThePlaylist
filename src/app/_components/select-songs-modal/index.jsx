@@ -40,6 +40,7 @@ const SelectSongModal = ({
       reff.current?.close();
     }
   }, [openModal]);
+
   const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
     useAddSongsToPlaylistMutation();
 

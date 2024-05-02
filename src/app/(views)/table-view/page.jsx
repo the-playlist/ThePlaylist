@@ -11,6 +11,7 @@ import {
   useLazyGetTableViewSongsQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
+import { io } from "socket.io-client";
 
 const TableView = () => {
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
@@ -18,7 +19,7 @@ const TableView = () => {
   const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [socket, setSocket] = useState();
   function generateDeviceId() {
     // Concatenate various properties to generate a unique identifier
     const combinedId =
@@ -67,6 +68,20 @@ const TableView = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  useEffect(() => {
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    socket.connect();
+    setSocket(socket);
+    socket.on("addSongToPlaylistApiResponse", (item) => {
+      fetchPlaylistSongList();
+    });
+    return () => {
+      console.log("Disconnecting socket...");
+      socket.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     fetchPlaylistSongList();
   }, []);
@@ -116,8 +131,14 @@ const TableView = () => {
       updatedItem.upVote = isTrue;
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
-      debugger;
       await addUpdateVoteAPI({
+        customerId: deviceId,
+        songId: item?.songId,
+        playlistItemId: item?._id,
+        playerId: item?.assignedPlayerId,
+        isUpVote: isTrue,
+      });
+      socket.emit("votingRequest", {
         customerId: deviceId,
         songId: item?.songId,
         playlistItemId: item?._id,

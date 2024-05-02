@@ -18,21 +18,33 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-const IS_FAV_SONGS = "IS_FAV_SONGS";
+import { io } from "socket.io-client";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [updatePlaylistTypeAPI, updatePlaylistTypeResponse] =
     useUpdatePlaylistTypeMutation();
-
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [isStart, setIsStart] = useState(false);
+  const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
-  const [playListFavSongs, setPlayListFavSongs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    socket.connect();
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
+    setSocket(socket);
+    return () => {
+      console.log("Disconnecting socket...");
+    };
+  }, []);
 
   useEffect(() => {
     fetchPlaylistSongList();
@@ -40,13 +52,14 @@ const page = () => {
 
   const fetchPlaylistSongList = async () => {
     try {
+      // setIsLoading(true);
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         setPlaylistSongList(response?.data?.content?.list);
-        setPlayListFavSongs(response?.data?.content?.list);
         setIsFavSongs(isFav);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -69,6 +82,7 @@ const page = () => {
   const deleteSongFromPlaylistHandler = async (id) => {
     removeItemById(id);
     let response = await deleteSongByIdApi(id);
+    socket.emit("addSongToPlaylistApi", id);
     if (response && !response.error) {
       toast(response?.data?.description);
     } else {
@@ -103,6 +117,7 @@ const page = () => {
       await updateSortOrderApi({
         songsList: payload,
       });
+      socket.emit("addSongToPlaylistApi", payload);
     } catch (error) {
       console.log(error);
     }
@@ -124,7 +139,7 @@ const page = () => {
 
   return (
     <div className="">
-      {getPlaylistSongListResponse?.isFetching ? (
+      {isLoading ? (
         <CustomLoader />
       ) : (
         <>
@@ -171,8 +186,12 @@ const page = () => {
               <div className="w-1/12"></div>
             </div>
           )}
-          <div className="overflow-y-auto h-[900px] pb-20 ">
-            <div className="border-separate border-spacing-y-5 mb-48 mx-1  ">
+          <div
+            className={`overflow-y-auto ${
+              playlistSongList.length > 0 ? "h-[700px]" : "h-[800px]"
+            } pb-10 `}
+          >
+            <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
               {playlistSongList.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
                   <div className="flex items-center justify-center mt-10">
@@ -354,7 +373,7 @@ const page = () => {
                 btnText={"Add"}
                 title={"Select songs"}
                 openModal={selectSongModal}
-                fetchList={async () => await fetchPlaylistSongList()}
+                fetchList={fetchPlaylistSongList}
                 closeModal={() => {
                   setSelectSongModal(false);
                 }}
