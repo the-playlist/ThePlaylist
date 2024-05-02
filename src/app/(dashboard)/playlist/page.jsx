@@ -75,12 +75,10 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
-  const removeItemById = async () => {
-    const currentArray = [...playlistSongList];
+  const removeItemById = async (id) => {
+    let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
-    // Remove the first element from the array
-    currentArray.shift();
-    // Update the state with the new array
+    currentArray = currentArray.filter((item) => item._id != id);
     setPlaylistSongList(currentArray);
   };
 
@@ -285,8 +283,10 @@ const page = () => {
                                         {index === 0 && (
                                           <SongCountdownTimer
                                             duration={songDuration}
-                                            advanceTheQueue={
-                                              deleteSongFromPlaylistHandler
+                                            advanceTheQueue={() =>
+                                              deleteSongFromPlaylistHandler(
+                                                playlistSongList[0]?._id
+                                              )
                                             }
                                             playlistSongList={playlistSongList}
                                             isStart={isStart}
