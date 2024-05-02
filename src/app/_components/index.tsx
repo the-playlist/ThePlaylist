@@ -15,6 +15,9 @@ import CustomLoader from "./custom_loader";
 import SelectSongModal from "./select-songs-modal";
 import SongCountdownTimer from "./song-countdown-timer";
 import MinuteSecField from "./minutes-sec-field";
+import ChangePassword from "./change-password";
+import ChangePassInputField from "./change-pass-input-field";
+import Reports from "./reports";
 
 export {
   NavBar,
@@ -34,4 +37,7 @@ export {
   SelectSongModal,
   SongCountdownTimer,
   MinuteSecField,
+  ChangePassword,
+  ChangePassInputField,
+  Reports,
 };

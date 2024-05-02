@@ -4,6 +4,8 @@ import ReportIcon from "./report";
 import FavSongIcon from "./favSong";
 import ClearSongIcon from "./clearSong";
 import ChangePassIcon from "./changePass";
+import BadgeOne from "./badgeOne";
+import BadgeTwo from "./badgeTwo";
 
 export {
   Logo,
@@ -12,4 +14,6 @@ export {
   FavSongIcon,
   ClearSongIcon,
   ChangePassIcon,
+  BadgeOne,
+  BadgeTwo,
 };
