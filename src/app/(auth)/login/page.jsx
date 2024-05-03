@@ -4,8 +4,10 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
+  const [isPassword, setIsPassword] = useState(false);
   const router = useRouter();
   const {
     register,
@@ -42,7 +44,7 @@ const Login = () => {
       if (response.error) {
         alert("Invalid Credentials...");
       } else {
-        router.replace("/playlist");
+        router.replace("/duty");
       }
     } catch (error) {
       console.error("error", error);
@@ -66,10 +68,15 @@ const Login = () => {
             <input
               type="email"
               id="email"
-              className=" border border-gray-300 text-gray-900 text-sm rounded-md  focus:ring-top-queue-bg block w-full p-5  "
+              className=" focus:outline-none border border-gray-300 text-gray-900 text-sm rounded-md  focus:ring-top-queue-bg block w-full p-5  "
               placeholder="Enter Email"
               {...register("email", {
-                required: "Please enter email.",
+                required: "Please enter email",
+                pattern: {
+                  value:
+                    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                  message: "Invalid email format",
+                },
               })}
             />
             {errors.email && (
@@ -82,15 +89,35 @@ const Login = () => {
             <label className="block mb-2 text-base font-medium text-black ">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-md focus:ring-top-queue-bg  block w-full p-5 "
-              placeholder="Enter Password"
-              {...register("password", {
-                required: "Please enter password",
-              })}
-            />
+            <div className="border  focus:ring-top-queue-bg   border-gray-300 text-gray-900 rounded-md  w-full p-5 flex justify-between items-center">
+              <input
+                type={!isPassword ? "password" : "text"}
+                id="password"
+                className=" text-sm  focus:outline-none block w-full"
+                placeholder="Enter Password"
+                {...register("password", {
+                  required: "Please enter password",
+                })}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault(); // Prevent default form submission
+                    handleSubmit(onSubmit)(); // Manually trigger form submission
+                  }
+                }}
+              />
+              {isPassword ? (
+                <FaEye
+                  onClick={() => setIsPassword(!isPassword)}
+                  className="text-gray-1 cursor-pointer"
+                />
+              ) : (
+                <FaEyeSlash
+                  onClick={() => setIsPassword(!isPassword)}
+                  className="text-gray-1 cursor-pointer"
+                />
+              )}
+            </div>
+
             {errors.password && (
               <span className=" text-red-900 text-xs font-medium">
                 {errors?.password?.message || "Error"}

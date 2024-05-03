@@ -138,7 +138,14 @@ function AddEditPlayer({
             />
             <InputField
               placeholder="Enter Email"
-              validate={{ required: "Email is required" }}
+              validate={{
+                required: "Email is required",
+                pattern: {
+                  value:
+                    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+                  message: "Invalid email format",
+                },
+              }}
               title="Email"
               register={register}
               name="email"
@@ -148,31 +155,15 @@ function AddEditPlayer({
               title="Phone"
               register={register}
               name="phone"
+              isPhone
               placeholder="Enter Phone"
               onChange={handleNumberChange}
             />
           </div>
-          <div className="flex flex-wrap">
-            {selectedSongsList.map((i, index) => {
-              return (
-                <div
-                  onClick={() => {
-                    setSelectedSongsList((prevList) =>
-                      prevList.filter((song) => song.title !== i.title)
-                    );
-                  }}
-                  className=" cursor-pointer  flex flex-row items-center m-1 p-1 rounded-lg bg-primary"
-                >
-                  <span className=" text-white font-semibold">{i.title}</span>
-                  <IoMdCloseCircle className=" text-white  ml-1" />
-                </div>
-              );
-            })}
-          </div>
 
           <div className="border rounded mt-2 p-1">
             <div className="font-semibold text-lg ">{`Assign Songs (${selectedSongsList.length})`}</div>
-            <div className="flex  flex-row items-center border-2 border-gray-300 shadow-2xl bg-white m-2 p-2 rounded">
+            <div className="flex  flex-row items-center border-2 border-gray-300 shadow-md bg-white m-2 p-2 rounded">
               <IoSearchOutline />
               <input
                 className="ml-2 outline-none "
@@ -187,13 +178,35 @@ function AddEditPlayer({
                 }}
               />
             </div>
+            <div
+              className={`flex flex-wrap ${
+                selectedSongsList?.length > 0 && "bg-[#F4F4F4] mb-5 mt-3"
+              }  rounded-md p-2 max-h-20 overflow-y-auto`}
+            >
+              {selectedSongsList.map((i, index) => {
+                return (
+                  <div
+                    onClick={() => {
+                      setSelectedSongsList((prevList) =>
+                        prevList.filter((song) => song.title !== i.title)
+                      );
+                    }}
+                    className=" cursor-pointer  flex flex-row items-center m-1 p-1 rounded-lg bg-primary"
+                  >
+                    <span className=" text-black font-medium">{i.title}</span>
+                    <IoMdCloseCircle className=" text-white  ml-1" />
+                  </div>
+                );
+              })}
+            </div>
+
             {getSongsListResponse?.isFetching && (
               <div className="flex items-center justify-center">
                 <CircularProgress color="warning" variant="outlined" />
               </div>
             )}
             <div className="border-3 border-red overflow-y-auto  max-h-36">
-              {filteredsongs?.map((i) => {
+              {filteredsongs?.map((i, index) => {
                 const isInclude = !selectedSongsList.some(
                   (item) => item._id === i._id
                 );
@@ -204,7 +217,9 @@ function AddEditPlayer({
                         setSelectedSongsList((prevList) => [...prevList, i]);
                       }
                     }}
-                    className={`cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2 ${
+                    className={`cursor-pointer ${
+                      index < filteredsongs?.length - 1 && "border-b"
+                    } py-1 border-gray-500 flex items-center justify-between px-2 ${
                       !isInclude && `bg-primary rounded-lg my-1`
                     }`}
                   >

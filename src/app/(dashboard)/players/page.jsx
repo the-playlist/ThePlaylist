@@ -89,8 +89,10 @@ const Players = () => {
                     <td>
                       <SongIcon
                         onClick={() => {
-                          setCurrentPlayerInfo(item);
-                          document?.getElementById("my_modal_5")?.showModal();
+                          if (item?.assignSongs?.length > 0) {
+                            setCurrentPlayerInfo(item);
+                            document?.getElementById("my_modal_5")?.showModal();
+                          }
                         }}
                         count={item?.assignSongs?.length}
                       />
@@ -137,7 +139,7 @@ const Players = () => {
         />
       )}
       <ShowQualifiedList
-        title={"Songs"}
+        title={`Songs (${currentPlayerInfo?.firstName} ${currentPlayerInfo?.lastName})`}
         currentInfo={currentPlayerInfo?.assignSongs}
       />
     </div>
