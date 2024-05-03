@@ -70,6 +70,7 @@ const SongsManagment = () => {
             <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
               <thead>
                 <tr className="text-black text-lg font-thin">
+                  <th></th>
                   <th>Title</th>
                   <th>Artist</th>
                   <th className=" text-center">Qualified</th>
@@ -82,7 +83,9 @@ const SongsManagment = () => {
               <tbody>
                 {songsList?.map((item, index) => (
                   <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
-                    <td className="rounded-l-2xl">{item?.title}</td>
+                    <th className="rounded-l-2xl">{index + 1}</th>
+
+                    <td>{item?.title}</td>
                     <td>{item?.artist}</td>
                     <td className=" text-center flex justify-center  items-center h-20">
                       <SongIcon
