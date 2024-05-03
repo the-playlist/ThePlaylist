@@ -82,8 +82,8 @@ const SongsManagment = () => {
               </thead>
               <tbody>
                 {songsList?.map((item, index) => (
-                  <tr className="h-20 text-black text-lg shadow-xl  rounded-2xl ">
-                    <th>{index + 1}</th>
+                  <tr className="h-20 text-black text-lg bg-white drop-shadow rounded-2xl ">
+                    <th className="rounded-l-2xl">{index + 1}</th>
                     <td>{item?.title}</td>
                     <td>{item?.artist}</td>
                     <td className=" text-center flex justify-center  items-center h-20">
@@ -107,7 +107,7 @@ const SongsManagment = () => {
                     <td className=" text-center flex justify-center  items-center h-20">
                       <FavIcon id={item._id} isFav_={item.isFav} />
                     </td>
-                    <td>
+                    <td className="rounded-r-2xl">
                       {
                         <OptionButton
                           item={item}

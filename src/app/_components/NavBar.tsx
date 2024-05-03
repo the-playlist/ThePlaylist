@@ -58,7 +58,7 @@ const NavBar = () => {
     setIsOpen(!isOpen);
   };
   return (
-    <nav className="flex justify-between items-center px-5 py-3 shadow-md rounded-2xl">
+    <nav className="flex justify-between items-center px-5 py-3 drop-shadow bg-white rounded-2xl">
       <div className="flex ">
         <div className="  lg:hidden md:hidden flex  mr-5 items-center  ">
           <ul className=" flex-col w-full text-center   ">
@@ -93,12 +93,7 @@ const NavBar = () => {
                       >
                         <Link href={i.href} onClick={toggleMenu}>
                           <div className={`   flex justify-start items-center`}>
-                            <Image
-                              src={i.icon}
-                              width={20}
-                              height={20}
-                              alt="Picture of the author"
-                            />
+                            {i.icon(isActive)}
                             <div
                               className={`ml-3 lg:text-base text-sm ${
                                 isActive ? "text-top-queue-bg" : "text-black "

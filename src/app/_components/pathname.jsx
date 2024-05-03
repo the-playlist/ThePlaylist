@@ -1,28 +1,36 @@
+import {
+  DutyIcon,
+  PlaylistIcon,
+  PlayerIcon,
+  SongIcon,
+  SettingIcon,
+} from "../svgs";
+
 export const navlinks = [
   {
     name: "Playlist",
     href: "/playlist",
-    icon: "/playlist.svg",
+    icon: (isActive) => <PlaylistIcon color={isActive ? "#EFC440" : "#000"} />,
   },
   {
     name: "Duty",
     href: "/duty",
-    icon: "/duty-icon.svg",
+    icon: (isActive) => <DutyIcon color={isActive ? "#EFC440" : "#000"} />,
   },
   {
     name: "Players",
     href: "/players",
-    icon: "/player-logo.svg",
+    icon: (isActive) => <PlayerIcon color={isActive ? "#EFC440" : "#000"} />,
   },
   {
     name: "Songs",
     href: "/songs",
-    icon: "/song.svg",
+    icon: (isActive) => <SongIcon color={isActive ? "#EFC440" : "#000"} />,
   },
 
   {
     name: "Settings",
     href: "/settings",
-    icon: "/setting.svg",
+    icon: (isActive) => <SettingIcon color={isActive ? "#EFC440" : "#000"} />,
   },
 ];

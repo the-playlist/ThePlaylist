@@ -21,6 +21,7 @@ const endPoints = {
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
+  GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -47,6 +48,9 @@ export const emptySplitApi = createApi({
   endpoints: (builder) => ({
     getSongsFromPlaylist: builder.query({
       query: () => endPoints.GET_SONGS_FROM_PLAYLIST,
+    }),
+    getSongsReportList: builder.query({
+      query: () => endPoints.GET_SONGS_REPORT_LIST,
     }),
     getAssignSongsWithPlayers: builder.query({
       query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS,
@@ -169,4 +173,5 @@ export const {
   useUpdatePlaylistTypeMutation,
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
+  useLazyGetSongsReportListQuery,
 } = emptySplitApi;

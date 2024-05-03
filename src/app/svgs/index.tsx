@@ -6,6 +6,11 @@ import ClearSongIcon from "./clearSong";
 import ChangePassIcon from "./changePass";
 import BadgeOne from "./badgeOne";
 import BadgeTwo from "./badgeTwo";
+import DutyIcon from "./duty";
+import PlaylistIcon from "./playlist";
+import PlayerIcon from "./players";
+import SongIcon from "./song";
+import SettingIcon from "./setting";
 
 export {
   Logo,
@@ -16,4 +21,9 @@ export {
   ChangePassIcon,
   BadgeOne,
   BadgeTwo,
+  DutyIcon,
+  PlaylistIcon,
+  PlayerIcon,
+  SongIcon,
+  SettingIcon,
 };

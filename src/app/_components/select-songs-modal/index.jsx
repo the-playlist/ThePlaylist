@@ -6,6 +6,7 @@ import _ from "lodash";
 import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
+import { Listener_URL } from "../../_utils/common/constants";
 
 const SelectSongModal = ({
   title,
@@ -25,7 +26,7 @@ const SelectSongModal = ({
   };
 
   useEffect(() => {
-    const socket = io("http://localhost:3001", { autoConnect: false });
+    const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     setSocket(socket);
     return () => {
@@ -40,6 +41,7 @@ const SelectSongModal = ({
       reff.current?.close();
     }
   }, [openModal]);
+
   const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
     useAddSongsToPlaylistMutation();
 

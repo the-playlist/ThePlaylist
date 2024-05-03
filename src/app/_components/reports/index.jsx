@@ -1,5 +1,7 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import { BadgeOne, BadgeTwo } from "@/app/svgs";
+import { useLazyGetSongsReportListQuery } from "@/app/_utils/redux/slice/emptySplitApi";
 
 const Reports = () => {
   const viewByOption = [
@@ -16,6 +18,20 @@ const Reports = () => {
       value: "This month",
     },
   ];
+  const [reportsList, setReportsList] = useState([]);
+  useEffect(() => {
+    fetchReportList();
+  }, []);
+
+  const [reportsSongsApi, reportsSongsApiResponse] =
+    useLazyGetSongsReportListQuery();
+
+  const fetchReportList = async () => {
+    let response = await reportsSongsApi();
+    if (response && !response.isError) {
+      setReportsList(response?.data?.content?.list);
+    }
+  };
   return (
     <div className="bg-[#fbfbfb]  shadow-lg rounded-lg my-10 p-5">
       <div className="flex justify-between items-center">
@@ -37,29 +53,40 @@ const Reports = () => {
         <div className="text-base font-medium text-black flex text-center my-5  px-5 ">
           <div className="w-1/12"></div>
           <div className="w-2/12 ">Title</div>
-          <div className="w-3/12">Player</div>
-          <div className="w-6/12"></div>
+          <div className="w-3/12">Artist</div>
+          <div className="w-3/12">Up Vote</div>
+          <div className="w-3/12">Down Vote</div>
         </div>
-        <div className="overflow-y-auto h-[530px]  pb-20">
-          {[1, 2, 3, 4, 5, 6, 7].map((item, index) => (
-            <div
-              className={` text-center bg-white shadow-sm  rounded-2xl h-16 flex items-center mb-4 px-5`}
-            >
-              <div className="w-1/12 text-start">
-                {index == 0 ? (
-                  <BadgeOne />
-                ) : index == 1 ? (
-                  <BadgeTwo />
-                ) : (
-                  <div className=" font-semibold ml-3">{index + 1}</div>
-                )}
+        {reportsSongsApiResponse?.isFetching ? (
+          <div className="flex items-center justify-center h-[555px]">
+            <span className="loading loading-bars loading-xs"></span>
+            <span className="loading loading-bars loading-sm"></span>
+            <span className="loading loading-bars loading-md"></span>
+            <span className="loading loading-bars loading-lg"></span>
+          </div>
+        ) : (
+          <div className="overflow-y-auto h-[555px]  pb-20 px-1">
+            {reportsList.map((item, index) => (
+              <div
+                className={` text-center bg-white drop-shadow rounded-2xl h-16 flex items-center mb-4 px-5`}
+              >
+                <div className="w-1/12 text-start">
+                  {index == 0 ? (
+                    <BadgeOne />
+                  ) : index == 1 ? (
+                    <BadgeTwo />
+                  ) : (
+                    <div className=" font-semibold ml-3">{index + 1}</div>
+                  )}
+                </div>
+                <div className="w-2/12 ">{item?.title}</div>
+                <div className="w-3/12">{item?.artist}</div>
+                <div className="w-3/12  ">{item?.upVote}</div>
+                <div className="w-3/12 ">{item?.downVote}</div>
               </div>
-              <div className="w-2/12 ">Hey Jude</div>
-              <div className="w-3/12">Aretha Franklin</div>
-              <div className="w-6/12 text-end ">274</div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

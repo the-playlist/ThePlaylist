@@ -7,6 +7,7 @@ import { ToggleFullScreen } from "@/app/_components";
 import { CustomLoader } from "@/app/_components";
 import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
+import { Listener_URL } from "../../_utils/common/constants";
 
 const WallView = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
@@ -17,7 +18,7 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
-    const socket = io(process.env.SOCKET_LISTNER_URI, { autoConnect: false });
+    const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
 
     socket.on("addSongToPlaylistApiResponse", (item) => {

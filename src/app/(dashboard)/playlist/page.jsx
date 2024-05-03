@@ -18,21 +18,34 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
-const IS_FAV_SONGS = "IS_FAV_SONGS";
+import { io } from "socket.io-client";
+import { Listener_URL } from "../../_utils/common/constants";
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [updatePlaylistTypeAPI, updatePlaylistTypeResponse] =
     useUpdatePlaylistTypeMutation();
-
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [isStart, setIsStart] = useState(false);
+  const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
-  const [playListFavSongs, setPlayListFavSongs] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const socket = io(Listener_URL, { autoConnect: false });
+    socket.connect();
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
+    setSocket(socket);
+    return () => {
+      console.log("Disconnecting socket...");
+    };
+  }, []);
 
   useEffect(() => {
     fetchPlaylistSongList();
@@ -40,13 +53,14 @@ const page = () => {
 
   const fetchPlaylistSongList = async () => {
     try {
+      // setIsLoading(true);
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         setPlaylistSongList(response?.data?.content?.list);
-        setPlayListFavSongs(response?.data?.content?.list);
         setIsFavSongs(isFav);
       }
+      setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
     }
@@ -69,6 +83,7 @@ const page = () => {
   const deleteSongFromPlaylistHandler = async (id) => {
     removeItemById(id);
     let response = await deleteSongByIdApi(id);
+    socket.emit("addSongToPlaylistApi", id);
     if (response && !response.error) {
       toast(response?.data?.description);
     } else {
@@ -103,6 +118,7 @@ const page = () => {
       await updateSortOrderApi({
         songsList: payload,
       });
+      socket.emit("addSongToPlaylistApi", payload);
     } catch (error) {
       console.log(error);
     }
@@ -124,7 +140,7 @@ const page = () => {
 
   return (
     <div className="">
-      {getPlaylistSongListResponse?.isFetching ? (
+      {isLoading ? (
         <CustomLoader />
       ) : (
         <>
@@ -171,8 +187,12 @@ const page = () => {
               <div className="w-1/12"></div>
             </div>
           )}
-          <div className="overflow-y-auto h-[900px] pb-20 ">
-            <div className="border-separate border-spacing-y-5 mb-48 mx-1  ">
+          <div
+            className={`overflow-y-auto ${
+              playlistSongList.length > 0 ? "h-[700px]" : "h-[800px]"
+            } pb-10 `}
+          >
+            <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
               {playlistSongList.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
                   <div className="flex items-center justify-center mt-10">
@@ -222,8 +242,8 @@ const page = () => {
                                     className={` text-center ${
                                       isLockedSongs
                                         ? "bg-top-queue-bg"
-                                        : "white"
-                                    }  shadow-lg rounded-2xl h-20 flex items-center mb-4 px-5`}
+                                        : "bg-white"
+                                    }  drop-shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                   >
                                     <div className="w-1/12 text-start font-extrabold text-lg">
                                       {!isLockedSongs ? (
@@ -239,7 +259,7 @@ const page = () => {
                                       {!isLockedSongs && (
                                         <div className="flex items-center justify-center">
                                           <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-green-500 rounded-full shadow-xl w-6 h-6 mr-2">
+                                            <div className="flex items-center justify-center bg-green-500 rounded-full drop-shadow w-6 h-6 mr-2">
                                               <IoIosArrowUp
                                                 size={18}
                                                 color={"white"}
@@ -248,7 +268,7 @@ const page = () => {
                                             {upVote}
                                           </div>
                                           <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-red-500 rounded-full shadow-xl w-6 h-6 mr-2">
+                                            <div className="flex items-center justify-center bg-red-500 rounded-full drop-shadow w-6 h-6 mr-2">
                                               <IoIosArrowDown
                                                 size={18}
                                                 color={"white"}
@@ -261,7 +281,7 @@ const page = () => {
                                     </div>
                                     <div className="w-3/12">{playerName}</div>
                                     <div className="w-2/12 flex items-center justify-center">
-                                      <div className="bg-white shadow-xl flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                                      <div className="bg-white drop-shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
                                         {introSec}
                                       </div>
                                     </div>
@@ -354,7 +374,7 @@ const page = () => {
                 btnText={"Add"}
                 title={"Select songs"}
                 openModal={selectSongModal}
-                fetchList={async () => await fetchPlaylistSongList()}
+                fetchList={fetchPlaylistSongList}
                 closeModal={() => {
                   setSelectSongModal(false);
                 }}
