@@ -3,6 +3,10 @@ import InputField from "../input-field";
 import ChangePassInputField from "../change-pass-input-field";
 import { useForm } from "react-hook-form";
 import GenericButton from "../generic-button";
+import { useSession } from "next-auth/react";
+import { useChangeUserPasswordMutation } from "@/app/_utils/redux/slice/emptySplitApi";
+import { toast } from "react-toastify";
+import { signOut } from "next-auth/react";
 
 const ChangePassword = () => {
   const {
@@ -17,6 +21,27 @@ const ChangePassword = () => {
       newPass: "",
     },
   });
+  const [changePasswordApi, changePasswordResponse] =
+    useChangeUserPasswordMutation();
+
+  const { data: session } = useSession();
+  const onSubmit = async (data) => {
+    let payload = {
+      email: session?.user?.email,
+      currentPassword: data?.currentPass,
+      newPassword: data?.newPass,
+    };
+    let response = await changePasswordApi(payload);
+
+    if (response && !response.error) {
+      signOut({
+        callbackUrl: "/login",
+        redirect: true,
+      });
+    } else {
+      alert(response?.error?.data?.message || "Something Went Wrong...");
+    }
+  };
   return (
     <div className="flex items-center justify-center  mt-20 p-5">
       <div className="  w-2/5">
@@ -54,7 +79,7 @@ const ChangePassword = () => {
           validate={{ required: "New Password is required" }}
           type="password"
         />
-        <GenericButton text="Update" onClick={handleSubmit} />
+        <GenericButton text="Update" onClick={handleSubmit(onSubmit)} />
       </div>
     </div>
   );

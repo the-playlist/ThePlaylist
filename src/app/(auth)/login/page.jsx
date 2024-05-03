@@ -38,6 +38,7 @@ const Login = () => {
         password: data?.password,
         redirect: false,
       });
+      console.log("response", response);
       if (response.error) {
         alert("Invalid Credentials...");
       } else {

@@ -2,6 +2,8 @@ import ResponseModel from "./responseModel";
 import User from "../models/user";
 import bcrypt from "bcrypt";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
 
 export const RegisterUser = async (req, res, next) => {
   const { email, username, password } = req?.body;
@@ -69,4 +71,36 @@ export const authOptions = {
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
+};
+
+export const ChangePassword = async (req, res, next) => {
+  const { email, newPassword, currentPassword } = req.body;
+
+  if (!email || !newPassword || !currentPassword) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  const isCorrectPassword = await bcrypt.compare(
+    currentPassword,
+    user.password
+  );
+
+  if (!isCorrectPassword) {
+    return res.status(401).json({ message: "Incorrect current password" });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+
+  const hashPassword = await bcrypt.hash(newPassword, salt);
+
+  user.password = hashPassword;
+  await user.save();
+  const response = new ResponseModel(true, "Password Changed successfully");
+  res.status(200).json(response);
 };
