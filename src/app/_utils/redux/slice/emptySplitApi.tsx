@@ -22,6 +22,7 @@ const endPoints = {
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList",
+  CHANGE_PASSWORD: "api/auth/changePassword",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -77,6 +78,13 @@ export const emptySplitApi = createApi({
             ? `${endPoints.UPDATE_DUTY_STATUS}?id=${body.id}`
             : endPoints.UPDATE_DUTY_STATUS
         }`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    changeUserPassword: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.CHANGE_PASSWORD,
         method: "POST",
         body: body,
       }),
@@ -174,4 +182,5 @@ export const {
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
   useLazyGetSongsReportListQuery,
+  useChangeUserPasswordMutation,
 } = emptySplitApi;

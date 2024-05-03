@@ -7,6 +7,7 @@ import {
   FavSongIcon,
 } from "@/app/svgs";
 import { ChangePassword, Reports } from "@/app/_components";
+import { SessionProvider } from "next-auth/react";
 
 const SelectedItemContent =
   (WrappedComponent) =>
@@ -113,9 +114,11 @@ const page = () => {
     },
   ];
   return (
-    <div className="min-h-screen   ">
-      <SelectableItemContent items={settingArray} />
-    </div>
+    <SessionProvider>
+      <div className="min-h-screen   ">
+        <SelectableItemContent items={settingArray} />
+      </div>
+    </SessionProvider>
   );
 };
 
