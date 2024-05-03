@@ -79,7 +79,12 @@ const ChangePassword = () => {
           validate={{ required: "New Password is required" }}
           type="password"
         />
-        <GenericButton text="Update" onClick={handleSubmit(onSubmit)} />
+        <GenericButton
+          text="Update"
+          onClick={handleSubmit(onSubmit)}
+          disabled={changePasswordResponse?.isLoading}
+          loading={changePasswordResponse?.isLoading}
+        />
       </div>
     </div>
   );

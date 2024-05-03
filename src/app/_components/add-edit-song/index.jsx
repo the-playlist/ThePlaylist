@@ -56,7 +56,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       qualifiedPlayer: true,
       id: currentInfo ? _id : null,
     };
-    console.log("payload", payload);
+
     let response = await addUpdateSongAPI({ data: payload });
     if (response && !response.isError) {
       closeModal();
@@ -76,17 +76,13 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
             <div className=" font-bold text-lg ">
               {currentInfo ? `Edit Song` : `Add New Song`}
             </div>
-            {/* if there is a button in form, it will close the modal */}
-            <button
-              onClick={closeModal}
-              className="btn btn-sm btn-circle btn-ghost  absolute top-1 right-1"
-            >
+            <button onClick={closeModal} className="">
               ✕
             </button>
           </form>
-          <div className=" flex flex-row justify-evenly flex-wrap ">
+          <div className=" flex flex-row justify-evenly flex-wrap mt-2 ">
             <InputField
-              title="Title"
+              title="Title *"
               placeholder="Enter Title of Song"
               register={register}
               name="songTitle"
@@ -94,7 +90,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               validate={{ required: "Song title is required" }}
             />
             <InputField
-              title="Artist"
+              title="Artist *"
               placeholder="Enter Artist of Song"
               register={register}
               name="artist"
@@ -102,7 +98,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               validate={{ required: "Song artist is required" }}
             />
             <InputField
-              title="Intro Sec"
+              title="Intro Sec *"
               placeholder="Enter Intro sec i.e 30"
               register={register}
               name="introSec"
@@ -130,7 +126,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               </div>
             </div> */}
             <MinuteSecField
-              title="Song Duration"
+              title="Song Duration *"
               register={register}
               name1="minutes"
               name2="seconds"
@@ -149,7 +145,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
             />
 
             <div className="flex flex-col flex-grow mx-1 w-full">
-              <label>Category</label>
+              <label>Category *</label>
               <select
                 name="category"
                 {...register("category", {
@@ -166,6 +162,8 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
 
           <div className=" mt-2">
             <GenericButton
+              loading={addUpdateSongResponse?.isLoading}
+              disabled={addUpdateSongResponse?.isLoading}
               onClick={handleSubmit(onSubmit)}
               text={currentInfo ? "Update" : "Add"}
             />

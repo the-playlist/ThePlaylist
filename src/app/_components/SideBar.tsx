@@ -24,13 +24,13 @@ const SideBar = () => {
                   className={`${
                     isActive
                       ? "  bg-[#FEF9EB]  border border-top-queue-bg "
-                      : "my-3 "
+                      : "my-5 "
                   }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl p-4 my-3`}
                 >
                   <div className={`   flex justify-start items-center`}>
                     {i.icon(isActive)}
                     <div
-                      className={`mx-3 lg:text-base text-sm ${
+                      className={`ml-10 mr-3 m lg:text-base text-sm ${
                         isActive ? "text-top-queue-bg" : "text-black "
                       }`}
                     >

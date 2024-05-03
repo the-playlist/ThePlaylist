@@ -42,7 +42,7 @@ const ConfirmationPopup = ({ openModal, closeModal, title, onYesPress }) => {
 
             <button
               onClick={onYesPress}
-              className="btn w-[49%] bg-black text-white "
+              className="btn w-[49%] bg-primary text-black "
             >
               Yes, confirm
             </button>

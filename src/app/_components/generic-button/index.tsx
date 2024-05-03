@@ -1,14 +1,15 @@
-import { title } from "process";
 import React from "react";
 
 const GenericButton = ({
   text,
   onClick,
   disabled = false,
+  loading = false,
 }: {
   text: string;
   onClick: () => void;
   disabled?: boolean;
+  loading?: boolean;
 }) => {
   return (
     <button
@@ -16,7 +17,11 @@ const GenericButton = ({
       disabled={disabled}
       className="flex w-full btn bg-primary text-black"
     >
-      {text}
+      {loading ? (
+        <span className="loading loading-spinner loading-md"></span>
+      ) : (
+        text
+      )}
     </button>
   );
 };

@@ -33,7 +33,6 @@ const Players = () => {
       if (result && !result.isError) {
         setPlayersList(result?.data?.content);
       } else {
-        // Handle unsuccessful response
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -80,7 +79,7 @@ const Players = () => {
               </thead>
               <tbody>
                 {playersList?.map((item, index) => (
-                  <tr className="h-20 text-black text-lg  bg-white drop-shadow rounded-2xl ">
+                  <tr className="h-20 text-black text-lg  bg-white shadow rounded-2xl ">
                     <th className="rounded-l-2xl">{index + 1}</th>
                     <td>{item?.firstName}</td>
                     <td>{item?.lastName}</td>
@@ -130,7 +129,7 @@ const Players = () => {
       )}
       {deletePlayerModal && (
         <ConfirmationModal
-          title={"Are you Sure to delete this Player"}
+          title={"Are you sure you want to delete Player name from list? "}
           closeModal={() => {
             setDeletePlayerModal(false);
           }}

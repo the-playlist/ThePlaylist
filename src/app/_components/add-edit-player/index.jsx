@@ -242,6 +242,8 @@ function AddEditPlayer({
           </div>
           <div className=" mt-2">
             <GenericButton
+              loading={addPlayerResponse?.isLoading}
+              disabled={addPlayerResponse?.isLoading}
               text={currentInfo ? "Update player" : "Add Player"}
               onClick={handleSubmit(onSubmit)}
             />

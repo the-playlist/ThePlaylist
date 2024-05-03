@@ -7,6 +7,7 @@ import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySpl
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import GenericButton from "../generic-button";
 
 const SelectSongModal = ({
   title,
@@ -254,7 +255,10 @@ const SelectSongModal = ({
             })}
           </div>
           <div className="sticky -bottom-5 w-full flex justify-end pb-4 bg-[#fafafa]">
-            <button
+            <GenericButton
+              disabled={AddSongsToPlaylistResponse?.isLoading}
+              loading={AddSongsToPlaylistResponse?.isLoading}
+              text={btnText}
               onClick={() => {
                 const selectedPlayers = playersList.filter(
                   (item) => item.isChecked == true
@@ -263,10 +267,7 @@ const SelectSongModal = ({
                 getDesiredOuptut(selectedPlayers);
                 fetchList();
               }}
-              className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
-            >
-              {btnText}
-            </button>
+            />
           </div>
         </div>
       </dialog>

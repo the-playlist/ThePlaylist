@@ -1,6 +1,7 @@
 import React from "react";
 import { IoIosMusicalNotes } from "react-icons/io";
 import { FaUserAlt } from "react-icons/fa";
+import GenericButton from "../generic-button";
 
 const ShowQualifiedList = ({ title, currentInfo, isUser }) => {
   return (
@@ -11,12 +12,11 @@ const ShowQualifiedList = ({ title, currentInfo, isUser }) => {
           className="flex  items-center justify-between flex-1 "
         >
           <div className=" font-bold text-lg mb-3 ">{title}</div>
-          {/* if there is a button in form, it will close the modal */}
           <button className="btn btn-sm btn-circle btn-ghost  absolute top-1 right-1">
             ✕
           </button>
         </form>
-        <div className=" flex flex-col justify-evenly max-h-60 overflow-y-auto border p-1 rounded">
+        <div className=" flex flex-col justify-evenly max-h-60 overflow-y-auto border p-1 rounded-md">
           {currentInfo?.map((i, index) => (
             <div
               className={`cursor-pointer ${
@@ -39,6 +39,12 @@ const ShowQualifiedList = ({ title, currentInfo, isUser }) => {
             </div>
           ))}
         </div>
+        <form
+          method="dialog"
+          className="flex  items-center justify-between flex-1 mt-3 "
+        >
+          <GenericButton text="Ok" />
+        </form>
       </div>
     </dialog>
   );

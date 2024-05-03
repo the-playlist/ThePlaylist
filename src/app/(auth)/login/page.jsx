@@ -8,6 +8,7 @@ import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 const Login = () => {
   const [isPassword, setIsPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const {
     register,
@@ -35,12 +36,13 @@ const Login = () => {
 
   const onSubmit = async (data) => {
     try {
+      setIsLoading(true);
       let response = await signIn("credentials", {
         email: data?.email,
         password: data?.password,
         redirect: false,
       });
-      console.log("response", response);
+      setIsLoading(false);
       if (response.error) {
         alert("Invalid Credentials...");
       } else {
@@ -131,11 +133,16 @@ const Login = () => {
           </div>
 
           <button
+            disabled={isLoading}
             type="submit"
             onClick={handleSubmit(onSubmit)}
             className="text-black w-full bg-top-queue-bg hover:bg-yellow-500   font-medium rounded-md text-sm   px-5 p-5 text-center  "
           >
-            Sign In
+            {isLoading ? (
+              <span className="loading loading-spinner loading-md"></span>
+            ) : (
+              "Sign In"
+            )}
           </button>
         </div>
       </div>

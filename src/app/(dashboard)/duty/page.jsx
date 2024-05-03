@@ -166,7 +166,7 @@ const DutyScreen = () => {
           {staffList?.length > 0 && (
             <>
               <div className="px-2">
-                <h2 className="font-medium my-5">
+                <h2 className="font-bold my-5">
                   On Duty Players ({countTrueDuty})
                 </h2>
                 <div className="relative w-1/4 mb-8 flex items-center ">
@@ -202,12 +202,12 @@ const DutyScreen = () => {
                 </div>
               </div>
               <div className=" overflow-y-auto pb-12 h-[800px] ">
-                <table className="table border-separate  border-spacing-y-5  pb-20 px-2">
+                <table className="table border-separate  border-spacing-y-3  pb-20 px-2">
                   <thead>
                     <tr className="text-base font-medium text-black">
-                      <th className="font-medium">Players</th>
-                      <td>Status</td>
-                      <td className=" float-right ">Change Status</td>
+                      <th>Players</th>
+                      <th>Status</th>
+                      <th className=" float-right ">Change Status</th>
                     </tr>
                   </thead>
                   {filteredPlayers?.map((item, index) => {

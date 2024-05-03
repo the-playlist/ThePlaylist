@@ -243,7 +243,7 @@ const page = () => {
                                       isLockedSongs
                                         ? "bg-top-queue-bg"
                                         : "bg-white"
-                                    }  drop-shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
+                                    }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                   >
                                     <div className="w-1/12 text-start font-extrabold text-lg">
                                       {!isLockedSongs ? (
@@ -259,7 +259,7 @@ const page = () => {
                                       {!isLockedSongs && (
                                         <div className="flex items-center justify-center">
                                           <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-green-500 rounded-full drop-shadow w-6 h-6 mr-2">
+                                            <div className="flex items-center justify-center bg-green-500 rounded-fullshadow w-6 h-6 mr-2">
                                               <IoIosArrowUp
                                                 size={18}
                                                 color={"white"}
@@ -268,7 +268,7 @@ const page = () => {
                                             {upVote}
                                           </div>
                                           <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-red-500 rounded-full drop-shadow w-6 h-6 mr-2">
+                                            <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
                                               <IoIosArrowDown
                                                 size={18}
                                                 color={"white"}
@@ -281,7 +281,7 @@ const page = () => {
                                     </div>
                                     <div className="w-3/12">{playerName}</div>
                                     <div className="w-2/12 flex items-center justify-center">
-                                      <div className="bg-white drop-shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                                      <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
                                         {introSec}
                                       </div>
                                     </div>

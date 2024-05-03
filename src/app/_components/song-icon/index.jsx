@@ -6,7 +6,7 @@ const SongIcon = ({ count, isUser, onClick }) => {
     <div className="w-15 h-15">
       <div
         onClick={onClick}
-        className="bg-yellow-600 w-10 h-10  rounded-full flex relative items-center justify-center cursor-pointer"
+        className="bg-primary w-10 h-10  rounded-full flex relative items-center justify-center cursor-pointer"
       >
         <span className="bg-white absolute -top-1 -right-1  text-xs rounded-full p-0.5 shadow-lg ">
           {count}
