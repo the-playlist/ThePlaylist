@@ -10,7 +10,7 @@ const OptionButton = ({ item, index, onDeletePress, onEditPeess }: any) => {
     <>
       <Menu
         menuButton={
-          <MenuButton className=" w-10 h-10  rounded-full bg-option">
+          <MenuButton className=" w-10 h-10 rounded-full bg-option flex items-center justify-center ">
             ...
           </MenuButton>
         }

@@ -1,6 +1,8 @@
 import React from "react";
+import { IoIosMusicalNotes } from "react-icons/io";
+import { FaUserAlt } from "react-icons/fa";
 
-const ShowQualifiedList = ({ title, currentInfo }) => {
+const ShowQualifiedList = ({ title, currentInfo, isUser }) => {
   return (
     <dialog id="my_modal_5" className="modal">
       <div className="modal-box  w-11/12 max-w-2xl">
@@ -15,14 +17,25 @@ const ShowQualifiedList = ({ title, currentInfo }) => {
           </button>
         </form>
         <div className=" flex flex-col justify-evenly max-h-60 overflow-y-auto border p-1 rounded">
-          {currentInfo?.map((i) => (
+          {currentInfo?.map((i, index) => (
             <div
-              className={`cursor-pointer border-b py-1 border-gray-500 flex items-center justify-between px-2 `}
+              className={`cursor-pointer ${
+                index < currentInfo?.length - 1 && "border-b"
+              } py-1 border-gray-200 flex items-center justify-between px-2 `}
             >
-              <span className={`font-semibold text-black `}>
-                {i?.fullname || i?.title}
-              </span>
-              <span className={`text-black `}>{i?.artist}</span>
+              <div className="flex flex-row items-center my-2">
+                <div className=" flex items-center justify-center p-2 bg-[#fdf9ec] rounded-full mr-3 ">
+                  {isUser ? (
+                    <FaUserAlt className="text-primary" />
+                  ) : (
+                    <IoIosMusicalNotes className="text-primary" />
+                  )}
+                </div>
+                <div className={`font-semibold text-black `}>
+                  {i?.fullname || i?.title}
+                </div>
+              </div>
+              <span className={`text-black font-light `}>{i?.artist}</span>
             </div>
           ))}
         </div>

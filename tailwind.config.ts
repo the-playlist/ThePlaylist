@@ -15,7 +15,7 @@ const config: Config = {
         "1": "1px",
       },
       colors: {
-        primary: "#E6A92C",
+        primary: "#EFC440",
         "dashbord-bg": "#FCFCFC",
         option: "#F7F7F7",
         "top-queue-bg": "#EFC440",
@@ -23,6 +23,9 @@ const config: Config = {
         "deactivate-color": "#F0F0F0",
         "add-bg": "#f2d065",
         "gray-1": "#ACACAC",
+        "gray-2": "#EFEFEF",
+        "gray-3": "#939393",
+        "gray-4": "#D9D9D9",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

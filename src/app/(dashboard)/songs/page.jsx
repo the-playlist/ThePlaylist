@@ -150,6 +150,7 @@ const SongsManagment = () => {
           )}
           <ShowQualifiedList
             title={"Qualified Player"}
+            isUser
             currentInfo={currentSongInfo?.qualifiedPlayers}
           />
         </>
