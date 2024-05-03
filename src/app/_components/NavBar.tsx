@@ -93,12 +93,7 @@ const NavBar = () => {
                       >
                         <Link href={i.href} onClick={toggleMenu}>
                           <div className={`   flex justify-start items-center`}>
-                            <Image
-                              src={i.icon}
-                              width={20}
-                              height={20}
-                              alt="Picture of the author"
-                            />
+                            {i.icon(isActive)}
                             <div
                               className={`ml-3 lg:text-base text-sm ${
                                 isActive ? "text-top-queue-bg" : "text-black "
