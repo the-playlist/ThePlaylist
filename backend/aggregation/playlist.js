@@ -147,62 +147,11 @@ export const songFromPlaylist = [
 ];
 export const songReports = [
   {
-    $match: { isDeleted: false }, // Match documents where isDeleted is false
-  },
-  {
-    $lookup: {
-      from: "songs", // Assuming the name of the collection is "songs"
-      localField: "songData",
-      foreignField: "_id",
-      as: "songData",
-    },
-  },
-  {
-    $unwind: "$songData", // Unwind the array if necessary
-  },
-  {
-    $lookup: {
-      from: "players", // Assuming the name of the collection is "players"
-      localField: "assignedPlayer",
-      foreignField: "_id",
-      as: "assignedPlayer",
-    },
-  },
-  {
-    $unwind: "$assignedPlayer", // Unwind the array if necessary
-  },
-  {
-    $match: { "assignedPlayer.duty.status": true }, // Filter documents based on assignedPlayer.duty.status
-  },
-  {
-    $project: {
-      _id: 1,
-      "songData.title": 1,
-      "songData.artist": 1,
-      "songData.introSec": 1,
-      "songData.songDuration": 1,
-      "songData.category": 1,
-      "songData.isFav": 1,
-      "songData._id": 1,
-      "assignedPlayer.firstName": 1,
-      "assignedPlayer.lastName": 1,
-      "assignedPlayer._id": 1,
-      "assignedPlayer.duty.status": 1,
-      sortOrder: 1,
-      upVote: 1,
-      downVote: 1,
-      sortOrder: 1,
-    },
-  },
-  {
-    $sort: { sortOrder: 1 }, // Sort the results
-  },
-  {
     $lookup: {
       from: "votes",
-      localField: "songData._id",
+      localField: "_id",
       foreignField: "songId",
-      as: "VoteCountData",
+      as: "votesDetails",
     },
   },
   {
@@ -210,7 +159,7 @@ export const songReports = [
       upVoteCount: {
         $size: {
           $filter: {
-            input: "$VoteCountData",
+            input: "$votesDetails",
             as: "vote",
             cond: {
               $eq: ["$$vote.isUpVote", true],
@@ -221,7 +170,7 @@ export const songReports = [
       downVoteCount: {
         $size: {
           $filter: {
-            input: "$VoteCountData",
+            input: "$votesDetails",
             as: "vote",
             cond: {
               $eq: ["$$vote.isUpVote", false],
@@ -229,6 +178,17 @@ export const songReports = [
           },
         },
       },
+    },
+  },
+  {
+    $project: {
+      votesDetails: 0,
+    },
+  },
+  {
+    $sort: {
+      upVoteCount: -1,
+      downVoteCount: -1,
     },
   },
 ];

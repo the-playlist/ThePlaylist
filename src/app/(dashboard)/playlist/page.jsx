@@ -6,6 +6,7 @@ import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { IoArrowBackOutline } from "react-icons/io5";
 import {
   CustomLoader,
+  Loader,
   SelectSongModal,
   SongCountdownTimer,
 } from "../../_components";
@@ -15,6 +16,7 @@ import {
   useDeleteSongFromPlaylistByIdMutation,
   useUpdateSortOrderOfSongsMutation,
   useUpdatePlaylistTypeMutation,
+  useDeleteAllSongsFromPlaylistMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -24,8 +26,9 @@ import { Listener_URL } from "../../_utils/common/constants";
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
-  const [updatePlaylistTypeAPI, updatePlaylistTypeResponse] =
-    useUpdatePlaylistTypeMutation();
+  const [deleteAllSongsApi, deleteAllSongsResponse] =
+    useDeleteAllSongsFromPlaylistMutation();
+  const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
@@ -138,6 +141,14 @@ const page = () => {
     });
   };
 
+  const deleteAllSongsHandler = async () => {
+    let response = await deleteAllSongsApi();
+    if (response && !response.error) {
+      toast.success(response?.data?.description);
+      fetchPlaylistSongList();
+    }
+  };
+
   return (
     <div className="">
       {isLoading ? (
@@ -160,21 +171,37 @@ const page = () => {
                 <FaForward />
               </button>
             )}
-            <button
-              onClick={toggleFavSongs}
-              className={`flex items-center hover:cursor-pointer border ${
-                !isFavSongs ? "border-top-queue-bg" : "border-deactivate-color"
-              }  ${
-                !isFavSongs
-                  ? "hover:bg-primary hover:text-white text-top-queue-bg"
-                  : "text-gray-1"
-              }   font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded`}
-            >
-              {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
-              <span className="ml-2">
-                {isFavSongs ? "Back to Playlist" : "Play Favourite songs"}
-              </span>
-            </button>
+            <div className="flex flex-row ">
+              {playlistSongList.length > 0 && (
+                <button
+                  className="border rounded p-3 flex-grow-0 mr-2"
+                  onClick={deleteAllSongsHandler}
+                >
+                  {deleteAllSongsResponse.isLoading ? (
+                    <Loader />
+                  ) : (
+                    "Clear Playlist"
+                  )}
+                </button>
+              )}
+              <button
+                onClick={toggleFavSongs}
+                className={`flex items-center hover:cursor-pointer border ${
+                  !isFavSongs
+                    ? "border-top-queue-bg"
+                    : "border-deactivate-color"
+                }  ${
+                  !isFavSongs
+                    ? "hover:bg-primary hover:text-white text-top-queue-bg"
+                    : "text-gray-1"
+                }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+              >
+                {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+                <span className="ml-2">
+                  {isFavSongs ? "Back to Playlist" : "Play Favourite songs"}
+                </span>
+              </button>
+            </div>
           </div>
           {playlistSongList.length > 0 && (
             <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">

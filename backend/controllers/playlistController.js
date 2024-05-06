@@ -1,3 +1,4 @@
+import Song from "../models/songs";
 import Playlist from "../models/playlist";
 import Vote from "../models/votes";
 import ResponseModel from "./responseModel";
@@ -57,35 +58,13 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   res.status(200).json(response);
 };
 export const getSongsReportList = async (req, res, next) => {
-  const playlist = await Playlist.aggregate(songReports);
-  const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: "662b7a6e80f2c908c92a0b3d",
-  }).lean();
+  const songsList = await Song.aggregate(songReports);
   // After populating, flatten the objects and rename properties
-  let flattenedPlaylist = playlist.map((item) => ({
-    _id: item._id,
-    playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-    assignedPlayerId: item.assignedPlayer?._id,
-    songId: item.songData._id,
-    title: item.songData.title,
-    artist: item.songData.artist,
-    introSec: item.songData.introSec,
-    songDuration: item.songData.songDuration,
-    isFav: item.songData.isFav,
-    dutyStatus: item?.assignedPlayer?.duty?.status,
-    category: item.songData.category,
-    upVote: item.upVoteCount,
-    downVote: item.downVoteCount,
-    sortOrder: item.sortOrder,
-  }));
-
-  if (isFavortiteListType) {
-    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-  }
-  const response = new ResponseModel(true, "Songs fetched successfully.", {
-    list: flattenedPlaylist,
-    isFavortiteListType: isFavortiteListType,
-  });
+  const response = new ResponseModel(
+    true,
+    "Songs fetched successfully.",
+    songsList
+  );
   res.status(200).json(response);
 };
 export const getSongsForTableView = async (req, res, next) => {
@@ -161,7 +140,12 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
   await Playlist.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
-  await Playlist.find();
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
+};
+
+export const deleteAllSongsFromPlaylist = async (req, res, next) => {
+  await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

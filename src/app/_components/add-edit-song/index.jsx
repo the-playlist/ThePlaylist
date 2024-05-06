@@ -56,7 +56,6 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       qualifiedPlayer: true,
       id: currentInfo ? _id : null,
     };
-
     let response = await addUpdateSongAPI({ data: payload });
     if (response && !response.isError) {
       closeModal();

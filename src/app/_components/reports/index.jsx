@@ -29,7 +29,7 @@ const Reports = () => {
   const fetchReportList = async () => {
     let response = await reportsSongsApi();
     if (response && !response.isError) {
-      setReportsList(response?.data?.content?.list);
+      setReportsList(response?.data?.content);
     }
   };
   return (
@@ -81,8 +81,8 @@ const Reports = () => {
                 </div>
                 <div className="w-2/12 ">{item?.title}</div>
                 <div className="w-3/12">{item?.artist}</div>
-                <div className="w-3/12  ">{item?.upVote}</div>
-                <div className="w-3/12 ">{item?.downVote}</div>
+                <div className="w-3/12  ">{item?.upVoteCount}</div>
+                <div className="w-3/12 ">{item?.downVoteCount}</div>
               </div>
             ))}
           </div>

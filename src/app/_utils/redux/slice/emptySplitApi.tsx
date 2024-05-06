@@ -19,6 +19,7 @@ const endPoints = {
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
+  DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList",
@@ -150,6 +151,12 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    deleteAllSongsFromPlaylist: builder.mutation({
+      query: () => ({
+        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST}`,
+        method: "DELETE",
+      }),
+    }),
     deleteSongFromPlaylistById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body}`,
@@ -183,4 +190,5 @@ export const {
   useLazyGetTableViewSongsQuery,
   useLazyGetSongsReportListQuery,
   useChangeUserPasswordMutation,
+  useDeleteAllSongsFromPlaylistMutation,
 } = emptySplitApi;
