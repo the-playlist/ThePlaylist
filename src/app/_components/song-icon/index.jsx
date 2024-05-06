@@ -8,7 +8,7 @@ const SongIcon = ({ count, isUser, onClick }) => {
         onClick={onClick}
         className="bg-primary w-10 h-10  rounded-full flex relative items-center justify-center cursor-pointer"
       >
-        <span className="bg-white absolute -top-1 -right-1  text-xs rounded-full p-0.5 shadow-lg ">
+        <span className="bg-white absolute -top-1 -right-1   text-xs rounded-full px-[5px] shadow ">
           {count}
         </span>
         {isUser ? (
