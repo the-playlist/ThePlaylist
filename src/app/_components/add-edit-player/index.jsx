@@ -70,7 +70,7 @@ function AddEditPlayer({
         firstName: data?.fName.trim(),
         lastName: data?.lName.trim(),
         email: data?.email.trim(),
-        phone: data?.phone.trim(),
+        phone: data?.phone,
         assignSongs: _.map(selectedSongsList, ({ _id }) => _id),
         id: currentInfo ? _id : null,
       });

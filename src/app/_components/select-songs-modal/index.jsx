@@ -114,7 +114,7 @@ const SelectSongModal = ({
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-1/2 max-w-4xl min-h-1.5  p-0 bg-[#fafafafa]">
+        <div className="modal-box  w-1/2 max-w-4xl min-h-1.5 pb-4  p-0 bg-[#fafafafa]">
           <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
             <div className="flex justify-between items-center">
               <div>{title}</div>
@@ -254,7 +254,7 @@ const SelectSongModal = ({
               }
             })}
           </div>
-          <div className="sticky -bottom-5 w-full flex justify-end px-4 pb-4 bg-[#fafafa]">
+          <div className="sticky -bottom-5 w-full flex justify-end px-4 pb-4  bg-[#fafafa]">
             <GenericButton
               disabled={AddSongsToPlaylistResponse?.isLoading}
               loading={AddSongsToPlaylistResponse?.isLoading}

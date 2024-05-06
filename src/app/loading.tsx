@@ -2,7 +2,7 @@ import React from "react";
 import { CustomLoader } from "./_components";
 
 const loading = () => {
-  return <CustomLoader />;
+  return <CustomLoader bgColor={"bg-black"} />;
 };
 
 export default loading;
