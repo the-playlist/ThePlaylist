@@ -25,7 +25,20 @@ function InputField({
         )}
         <input
           className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal"
-          {...register(name, validate)}
+          {...register(
+            name,
+            validate
+
+            //   {
+            //   validate: (value: any) => {
+            //     if (value?.length == 0) {
+            //       return validate;
+            //     } else {
+            //       return !!value.trim() || "White spaces not allowed";
+            //     }
+            //   },
+            // }
+          )}
           {...props}
         />
       </div>

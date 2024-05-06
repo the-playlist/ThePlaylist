@@ -48,8 +48,8 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
 
   const onSubmit = async (data) => {
     const payload = {
-      title: data.songTitle,
-      artist: data.artist,
+      title: data.songTitle.trim(),
+      artist: data.artist.trim(),
       introSec: data.introSec,
       songDuration: `${data.minutes}:${data.seconds}`,
       category: data.category,
@@ -63,6 +63,13 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       toast.success(response.data.description);
       fetchList();
     }
+  };
+
+  const validateNoStartEndSpace = (value) => {
+    const regex = /^\s+|\s+$/; // Matches leading or trailing spaces
+    return (
+      !regex.test(value) || "Spaces are not allowed at the beginning or end"
+    );
   };
 
   return (
@@ -87,15 +94,28 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               register={register}
               name="songTitle"
               error={errors.songTitle}
-              validate={{ required: "Song title is required" }}
+              validate={{
+                required: "Song title is required",
+                pattern: {
+                  value: /^\S/,
+                  message: "White spaces are not allowed",
+                },
+              }}
             />
+
             <InputField
               title="Artist *"
               placeholder="Enter Artist of Song"
               register={register}
               name="artist"
               error={errors.artist}
-              validate={{ required: "Song artist is required" }}
+              validate={{
+                required: "Song artist is required",
+                pattern: {
+                  value: /^\S/,
+                  message: "White spaces are not allowed",
+                },
+              }}
             />
           </div>
 

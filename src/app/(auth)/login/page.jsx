@@ -102,8 +102,8 @@ const Login = () => {
                 })}
                 onKeyDown={(event) => {
                   if (event.key === "Enter") {
-                    event.preventDefault(); // Prevent default form submission
-                    handleSubmit(onSubmit)(); // Manually trigger form submission
+                    event.preventDefault();
+                    handleSubmit(onSubmit)();
                   }
                 }}
               />

@@ -67,10 +67,10 @@ function AddEditPlayer({
   const addPlayerHandler = async (data) => {
     try {
       let response = await addPlayerApi({
-        firstName: data?.fName,
-        lastName: data?.lName,
-        email: data?.email,
-        phone: data?.phone,
+        firstName: data?.fName.trim(),
+        lastName: data?.lName.trim(),
+        email: data?.email.trim(),
+        phone: data?.phone.trim(),
         assignSongs: _.map(selectedSongsList, ({ _id }) => _id),
         id: currentInfo ? _id : null,
       });
