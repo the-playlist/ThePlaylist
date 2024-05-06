@@ -50,7 +50,7 @@ const WallView = () => {
     <div ref={elementRef} className=" bg-[#1F1F1F] min-h-screen">
       <div className="overflow-x-auto mx-auto p-10">
         {isLoading ? (
-          <CustomLoader />
+          <CustomLoader bgColor={"bg-white"} />
         ) : (
           <>
             <div className=" float-right">

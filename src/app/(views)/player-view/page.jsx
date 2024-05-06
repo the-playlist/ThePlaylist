@@ -49,7 +49,7 @@ const PerformerView = () => {
     <div className=" bg-[#1F1F1F] min-h-screen" ref={ref}>
       <div className="overflow-x-auto mx-auto p-10 ">
         {loading ? (
-          <CustomLoader />
+          <CustomLoader bgColor={"bg-white"} />
         ) : (
           <>
             <div className=" float-right">

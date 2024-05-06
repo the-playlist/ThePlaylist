@@ -180,7 +180,7 @@ const TableView = () => {
   return (
     <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
       {loading ? (
-        <CustomLoader />
+        <CustomLoader bgColor={"bg-white"} />
       ) : (
         <>
           <div className=" flex items-center justify-center m-5">
