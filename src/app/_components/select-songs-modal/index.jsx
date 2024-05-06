@@ -225,7 +225,7 @@ const SelectSongModal = ({
                               e.target.value
                             );
                           }}
-                          className="select select-bordered w-full max-w-xs"
+                          className="select select-bordered w-full max-w-xs focus:outline-none"
                         >
                           {item?.assignedPlayers?.map((item) => {
                             return (

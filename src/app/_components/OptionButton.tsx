@@ -4,20 +4,24 @@ import { FaTrashAlt } from "react-icons/fa";
 import { Menu, MenuItem, MenuButton } from "@szhsin/react-menu";
 import "@szhsin/react-menu/dist/index.css";
 import "@szhsin/react-menu/dist/transitions/slide.css";
+import { BsThreeDots } from "react-icons/bs";
 
 const OptionButton = ({ item, index, onDeletePress, onEditPeess }: any) => {
   return (
     <>
       <Menu
+        arrow={true}
+        align={"center"}
+        position={"auto"}
         menuButton={
           <MenuButton className=" w-10 h-10 rounded-full bg-option flex items-center justify-center ">
-            ...
+            <BsThreeDots />
           </MenuButton>
         }
         transition
       >
         <MenuItem onClick={onEditPeess}>
-          <div className="flex flex-row justify-between items-center">
+          <div className="flex flex-row justify-between items-center ">
             <svg
               width="16"
               height="16"

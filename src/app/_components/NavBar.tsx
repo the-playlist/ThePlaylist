@@ -9,8 +9,6 @@ import "@szhsin/react-menu/dist/transitions/slide.css";
 import { signOut } from "next-auth/react";
 import { MdLogout } from "react-icons/md";
 import { RiMenu2Fill } from "react-icons/ri";
-import { IoCloseSharp } from "react-icons/io5";
-import Image from "next/image";
 
 const MenuOption = () => {
   return (
@@ -111,12 +109,9 @@ const NavBar = () => {
             </div>
           </ul>
         </div>
-        <Link
-          className="text-black font-bold hover:cursor-pointer"
-          href={"/players"}
-        >
+        <div className="text-black font-bold hover:cursor-pointer">
           {screenName[0]?.name || ""}
-        </Link>
+        </div>
       </div>
 
       <MenuOption />

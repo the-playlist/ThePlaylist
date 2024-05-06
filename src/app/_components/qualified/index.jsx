@@ -9,12 +9,9 @@ const ShowQualifiedList = ({ title, currentInfo, isUser }) => {
       <div className="modal-box  w-11/12 max-w-2xl">
         <form
           method="dialog"
-          className="flex  items-center justify-between flex-1 "
+          className="flex  items-start justify-between flex-1 "
         >
           <div className=" font-bold text-lg mb-3 ">{title}</div>
-          <button className="btn btn-sm btn-circle btn-ghost  absolute top-1 right-1">
-            ✕
-          </button>
         </form>
         <div className=" flex flex-col justify-evenly max-h-60 overflow-y-auto border p-1 rounded-md">
           {currentInfo?.map((i, index) => (

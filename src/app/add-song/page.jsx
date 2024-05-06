@@ -7,7 +7,7 @@ import {
   useAddSongsToPlaylistMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
-import { toast } from "react-toastify";
+import { IoSearchOutline } from "react-icons/io5";
 
 const Typeahead = () => {
   const [getAssignSongsApi, getAssignSongsResponse] =
@@ -83,17 +83,17 @@ const Typeahead = () => {
   };
   return (
     <>
-      <div className="fixed top-0 left-0  bg-white right-0 flex  p-4">
-        <div className="relative flex border-[1px] border-[#F0F0F0] w-full rounded-lg">
+      <div className="fixed top-12 left-0  bg-[#1F1F1F] right-0 flex  p-4">
+        <div className="relative flex  bg-[#303134]  w-full rounded-lg">
           <input
             type="text"
             value={inputValue}
             onChange={handleInputChange}
-            className=" border-0 border-[#F0F0F0] placeholder-[#A0A0A0] text-gray-900 text-sm rounded-lg pl-10 pr-4 py-3 w-full focus:ring-black "
+            className=" bg-[#303134]  placeholder-[#A0A0A0] text-sm rounded-lg pl-10 pr-4 py-3 w-full focus:ring-black text-white "
             placeholder="Search"
           />
           <svg
-            className="absolute top-0 left-0 w-6 h-6 mt-2 ml-3 text-[#A0A0A0]"
+            className="absolute top-0 left-0 w-6 h-6 mt-2 ml-3 text-white"
             fill="none"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -114,16 +114,16 @@ const Typeahead = () => {
         </div>
       </div>
       {getAssignSongsResponse?.isFetching ? (
-        <div className="mt-10 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md"></span>
+        <div className="mt-24 flex items-center justify-center">
+          <span className="loading loading-spinner loading-md bg-white"></span>
         </div>
       ) : (
-        <ul className=" z-10 w-full  bg-white  mt-10 mb-32 overflow-y-auto ">
+        <ul className="z-10 w-full  bg-[#1F1F1F]  mt-10 mb-32 overflow-y-auto ">
           {filteredOptions?.map((option) => (
-            <div className="border-b-1 border-gray-300">
+            <div className="border-b-1 border-[#323335]">
               <button
                 className={`flex w-full items-center rounded-md px-3  py-1 my-1 bg-${
-                  selectedSong == option ? "top-queue-bg" : "white"
+                  selectedSong == option ? "top-queue-bg" : "[#1F1F1F]"
                 }`}
                 onClick={() => {
                   setInputValue(option.title);
@@ -133,14 +133,12 @@ const Typeahead = () => {
                 <div
                   className={` h-4 w-4 
                   ${
-                    selectedSong?._id == option?._id
-                      ? "  border-4"
-                      : "  border-2"
+                    selectedSong?._id == option?._id ? " border-4" : " border-2"
                   }
                 ${
                   selectedSong?._id == option?._id
-                    ? " border-white"
-                    : " border-gray-300"
+                    ? " border-black"
+                    : " border-[#FFFFFF]"
                 }
                   rounded-full
                   `}
@@ -149,17 +147,27 @@ const Typeahead = () => {
                   key={option.id}
                   className="pl-4 py-2 cursor-pointer flex w-full justify-between  items-center"
                 >
-                  <span className=" text-sm text-black font-bold">
+                  <span
+                    className={`text-sm text-${
+                      selectedSong?._id == option?._id ? "black" : "white"
+                    } font-bold`}
+                  >
                     {option.title}
                   </span>
-                  <span className="text-sm text-black">{option.artist}</span>
+                  <span
+                    className={`text-sm text-${
+                      selectedSong?._id == option?._id ? "black" : "white"
+                    }`}
+                  >
+                    {option.artist}
+                  </span>
                 </li>
               </button>
             </div>
           ))}
         </ul>
       )}
-      <div className="fixed bottom-0 left-0 w-full bg-white flex justify-end p-4">
+      <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
@@ -185,8 +193,8 @@ const Typeahead = () => {
 };
 const AddSong = () => {
   return (
-    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-5 pt-5">
-      <div className="mb-2 text-base font-medium text-black">Select a Song</div>
+    <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
+      <div className="mb-2 text-base font-medium text-white">Select a Song</div>
       <Typeahead />
     </div>
   );

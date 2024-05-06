@@ -259,7 +259,7 @@ const page = () => {
                                       {!isLockedSongs && (
                                         <div className="flex items-center justify-center">
                                           <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-green-500 rounded-fullshadow w-6 h-6 mr-2">
+                                            <div className="flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2">
                                               <IoIosArrowUp
                                                 size={18}
                                                 color={"white"}

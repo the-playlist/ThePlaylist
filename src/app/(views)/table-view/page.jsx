@@ -102,19 +102,19 @@ const TableView = () => {
 
   const ButtonsAtEnd = ({ onCamPress }) => {
     return (
-      <div className="fixed bottom-0 left-0 w-full bg-white flex justify-end p-4">
+      <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
         <Link
           href={"/add-song"}
           className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
         >
-          <div className="rounded-full bg-add-bg mr-2 p-1">
-            <IoAdd size={16} />
+          <div className="rounded-full bg-[#1F1F1F] mr-2 p-1">
+            <IoAdd size={16} color="white" />
           </div>
           Add a Song
         </Link>
         <button
           onClick={onCamPress}
-          className="ml-4 w-full text-base flex items-center bg-white border border-black  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab"
+          className="ml-4 w-full text-base flex items-center bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white lg:hover:bg-gray-400"
         >
           <FaVideo size={16} className="mr-2" /> Live Video
         </button>
@@ -153,30 +153,32 @@ const TableView = () => {
         <button
           onClick={() => toggleButton(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote == true ? "bg-green-500" : "bg-white"
+            item?.upVote == true ? "bg-green-500" : "bg-[#3A3B3E]"
           }`}
         >
           <IoIosArrowUp
             size={18}
-            color={`${item?.upVote == true ? "white" : "black"}`}
+            // color={`${item?.upVote == true ? "white" : "black"}`}
+            color={"white"}
           />
         </button>
         <button
           onClick={() => toggleButton(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote === false ? "bg-red-500" : "bg-white"
+            item?.upVote === false ? "bg-red-500" : "bg-[#3A3B3E]"
           } ml-2`}
         >
           <IoIosArrowDown
             size={18}
-            color={`${item?.upVote === false ? "white" : "black"}`}
+            // color={`${item?.upVote === false ? "white" : "black"}`}
+            color={"white"}
           />
         </button>
       </div>
     );
   };
   return (
-    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto  px-5 pt-5">
+    <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
       {loading ? (
         <CustomLoader />
       ) : (
@@ -218,12 +220,18 @@ const TableView = () => {
                       ) : (
                         <ActionButtons key={index} index={index} item={item} />
                       )}
-                      <p className={`font-semibold capitalize  ${fontSize}`}>
+                      <p
+                        className={`font-semibold capitalize ${
+                          index < 2 ? "text-black" : "text-white"
+                        }  ${fontSize}`}
+                      >
                         {item?.title}
                       </p>
                     </div>
                     <div
-                      className={`w-1/2 p-4 text-end capitalize ${fontSize}`}
+                      className={`w-1/2 p-4 text-end capitalize ${
+                        index < 2 ? "text-black" : "text-white"
+                      } ${fontSize}`}
                     >
                       {item?.artist}
                     </div>

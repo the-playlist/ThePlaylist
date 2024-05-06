@@ -50,18 +50,19 @@ const SongsManagment = () => {
   return (
     <>
       {songsListResponse?.isFetching ? (
-        <div className=" h-full flex items-center justify-center bg-white">
+        <div className=" h-full flex items-center justify-center ">
           <CustomLoader />
         </div>
       ) : (
         <>
-          <div className="flex border-3 justify-end">
+          <div className="flex justify-between mt-5 items-center mx-1">
+            <div className=" text-xl font-bold text-black">Songs list</div>
             <button
               onClick={() => {
                 setCurrentSongInfo(null);
                 setAddNewSongModal(true);
               }}
-              className=" self-end btn btn-primary bg-primary border-none text-black "
+              className=" self-end hover:bg-primary  btn btn-primary bg-primary border-none text-black "
             >
               + Add New Song
             </button>
@@ -99,7 +100,9 @@ const SongsManagment = () => {
                         count={item?.qualifiedCount}
                       />
                     </td>
-                    <td className=" text-center">{`:${item?.introSec}`}</td>
+                    <td className=" text-center">{`:${
+                      item?.introSec || "N/A"
+                    }`}</td>
                     <td className=" text-center">
                       <span className="text-center font-semibold bg-option p-2 rounded-lg">
                         {item?.category || "N/A"}
@@ -145,6 +148,7 @@ const SongsManagment = () => {
               closeModal={() => {
                 setDeleteSongModal(false);
               }}
+              isDelete={true}
               openModal={deleteSongModal}
               onYesPress={onSongDeleteHandler}
             />
