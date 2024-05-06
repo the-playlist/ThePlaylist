@@ -51,12 +51,13 @@ const Players = () => {
   return (
     <div>
       {getAllPlayersResponse?.isFetching ? (
-        <div className=" h-full flex items-center justify-center  bg-white">
+        <div className="h-full flex items-center justify-center  bg-white">
           <CustomLoader />
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <div className="flex border-3 justify-end">
+          <div className="flex mt-5 justify-between items-center mx-1">
+            <div className="text-xl font-bold text-black">Players list</div>
             <AddPlayerButton
               onClick={() => {
                 setCurrentPlayerInfo(null);
@@ -129,12 +130,13 @@ const Players = () => {
       )}
       {deletePlayerModal && (
         <ConfirmationModal
-          title={"Are you sure you want to delete Player name from list? "}
+          title={`Are you sure you want to delete ${currentPlayerInfo?.firstName} ${currentPlayerInfo?.lastName} from list? `}
           closeModal={() => {
             setDeletePlayerModal(false);
           }}
           openModal={deletePlayerModal}
           onYesPress={onPlayerDeleteHandler}
+          isDelete={true}
         />
       )}
       <ShowQualifiedList

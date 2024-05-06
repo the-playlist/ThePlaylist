@@ -1,8 +1,15 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 import { FaQuestion } from "react-icons/fa";
+import { BsTrash } from "react-icons/bs";
 
-const ConfirmationPopup = ({ openModal, closeModal, title, onYesPress }) => {
+const ConfirmationPopup = ({
+  openModal,
+  closeModal,
+  title,
+  onYesPress,
+  isDelete,
+}) => {
   const reff = useRef();
   useEffect(() => {
     if (openModal) {
@@ -24,10 +31,18 @@ const ConfirmationPopup = ({ openModal, closeModal, title, onYesPress }) => {
         </form>
         <div className="flex items-center mt-2 mb-5">
           <div className=" h-20 w-20 mr-3 rounded-md bg-gray-100 flex items-center justify-center">
-            <FaQuestion size={30} color="#EFC440" />
+            {isDelete ? (
+              <BsTrash size={30} color="#FE0101" />
+            ) : (
+              <FaQuestion size={30} color="#EFC440" />
+            )}
           </div>
           <div>
-            <h3 className="font-bold text-lg text-top-queue-bg">
+            <h3
+              className={`font-bold text-lg ${
+                isDelete ? "text-[#FE0101]" : "text-top-queue-bg"
+              }`}
+            >
               Are you sure?
             </h3>
             <p className=" text-gray-400 text-sm">{title}</p>

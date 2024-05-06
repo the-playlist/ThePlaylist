@@ -97,69 +97,103 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
               error={errors.artist}
               validate={{ required: "Song artist is required" }}
             />
-            <InputField
-              title="Intro Sec *"
-              placeholder="Enter Intro sec i.e 30"
-              register={register}
-              name="introSec"
-              error={errors.introSec}
-              validate={{
-                required: "Intro sec is required",
-                pattern: {
-                  value: /^[0-9]*$/,
-                  message: "Please enter only numbers.",
-                },
-              }}
-            />
-            {/* <div className="flex flex-col flex-grow mx-1">
-              <label htmlFor="">{"Song Duration"}</label>
-              <div className=" border-gray-400 rounded  border-2 my-1 p-2 flex w-full">
-                <input
-                  placeholder="Minutes"
-                  className="px-3   w-full   focus:outline-none"
-                />
-                <div className=" border-r-2 border-gray-400" />
-                <input
-                  placeholder="Seconds"
-                  className="px-2 w-full  focus:outline-none"
-                />
-              </div>
-            </div> */}
-            <MinuteSecField
-              title="Song Duration *"
-              register={register}
-              name1="minutes"
-              name2="seconds"
-              error={errors.minutes}
-              error2={errors.seconds}
-              validate={{
-                required: "Song Duration is required",
-                pattern: {
-                  value: /^[0-9]*$/,
-                  message: "Please enter only numbers.",
-                },
-                validate: (value) =>
-                  parseInt(value) <= 60 ||
-                  "Value must be less than or equal to 60.",
-              }}
-            />
-
-            <div className="flex flex-col flex-grow mx-1 w-full">
-              <label>Category *</label>
-              <select
-                name="category"
-                {...register("category", {
-                  required: "Please select category of song",
-                })}
-                className="select  border-gray-400 border-2 my-1 p-2 rounded focus:outline-none "
-              >
-                <option>Standard</option>
-                <option>Ballad</option>
-                <option>Comedy</option>
-              </select>
-            </div>
           </div>
 
+          <div className="flex ">
+            <div className="flex w-1/2 ">
+              <div className="w-1/2 flex flex-col flex-grow mx-1 ">
+                <label htmlFor="">{"Song Duration *"}</label>
+                <div className="flex">
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  mr-1 ">
+                    <label htmlFor="" className="text-[10px]">
+                      {"Min"}
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="00"
+                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
+                      {...register("min", {
+                        required: "Song Duration is required",
+                        min: {
+                          value: 0,
+                          message: "Minutes duration cannot be negative",
+                        },
+                        max: {
+                          value: 59,
+                          message: "Minutes duration cannot exceed 59 minutes",
+                        },
+                      })}
+                    />
+                  </div>
+
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 ml-1  ">
+                    <label htmlFor="" className="text-[10px]">
+                      {"Sec"}
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="00"
+                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
+                      {...register("introSec", {
+                        min: {
+                          value: 0,
+                          message: "Intro seconds cannot be negative",
+                        },
+                        max: {
+                          value: 59,
+                          message:
+                            "Maximum intro seconds cannot exceed 59 seconds",
+                        },
+                      })}
+                    />
+                  </div>
+                </div>
+                {errors.min && (
+                  <span className=" text-red-900 text-xs font-medium">
+                    {errors.min.message}
+                  </span>
+                )}
+                {errors.introSec && (
+                  <span className=" text-red-900 text-xs font-medium">
+                    {errors.introSec.message}
+                  </span>
+                )}
+              </div>
+              <div className="w-1/2 flex flex-col flex-grow mx-1 ">
+                <label htmlFor="">{"Intro Seconds "}</label>
+                <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  ">
+                  <label htmlFor="" className="text-[10px]">
+                    {"Sec"}
+                  </label>
+                  <input
+                    type="number"
+                    placeholder="00"
+                    className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal w-full "
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex w-1/2">
+              <div className="flex flex-col flex-grow mx-1  w-full">
+                <label>Category *</label>
+                <select
+                  name="category"
+                  {...register("category", {
+                    required: "Please select category of song",
+                  })}
+                  className="select border-[#D9D9D9] border-[1px] my-1 rounded-
+lg focus:outline-none "
+                  style={{
+                    height: "57px",
+                  }}
+                >
+                  <option>Standard</option>
+                  <option>Ballad</option>
+                  <option>Comedy</option>
+                </select>
+              </div>
+            </div>
+          </div>
           <div className=" mt-2">
             <GenericButton
               loading={addUpdateSongResponse?.isLoading}
