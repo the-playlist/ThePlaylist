@@ -114,8 +114,8 @@ const SelectSongModal = ({
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-1/2 max-w-4xl p-4 bg-[#fafafafa]">
-          <div className="sticky  bg-[#fafafafa] py-2 top-0">
+        <div className="modal-box  w-1/2 max-w-4xl min-h-1.5  p-0 bg-[#fafafafa]">
+          <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
             <div className="flex justify-between items-center">
               <div>{title}</div>
               <button onClick={closeModal}>
@@ -131,7 +131,7 @@ const SelectSongModal = ({
                   setSearchTerm(searchTerm.trim());
                 }}
                 onChange={handleSearch}
-                className="block w-full py-5 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                className="block w-full py-5 pl-10 pr-4 border placeholder:text-base border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
               />
               <svg
                 className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
@@ -181,7 +181,7 @@ const SelectSongModal = ({
               <div className="w-3/12">Intro Seconds</div>
             </div>
           </div>
-          <div className="overflow-y-auto">
+          <div className="overflow-y-auto px-4">
             {playersList?.map((item, index) => {
               const matchesSearch =
                 item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -254,7 +254,7 @@ const SelectSongModal = ({
               }
             })}
           </div>
-          <div className="sticky -bottom-5 w-full flex justify-end pb-4 bg-[#fafafa]">
+          <div className="sticky -bottom-5 w-full flex justify-end px-4 pb-4 bg-[#fafafa]">
             <GenericButton
               disabled={AddSongsToPlaylistResponse?.isLoading}
               loading={AddSongsToPlaylistResponse?.isLoading}
