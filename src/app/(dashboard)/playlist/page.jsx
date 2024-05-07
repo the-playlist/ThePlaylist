@@ -156,7 +156,7 @@ const page = () => {
       ) : (
         <>
           <div
-            className={`flex ${
+            className={`flex items-center ${
               playlistSongList?.length > 0 ? "justify-between" : "justify-end"
             } items-center mx-1 mt-5`}
           >
@@ -165,7 +165,7 @@ const page = () => {
                 onClick={() => {
                   deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
                 }}
-                className="flex items-center hover:cursor-pointer bg-black hover:bg-blue-600 text-white font-bold py-3 px-4 lg:w-1/5 lg:text-xl justify-center rounded"
+                className="flex items-center hover:cursor-pointer bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4  lg:text-lg justify-center rounded-lg"
               >
                 <span className="mr-2">Advance the Queue</span>
                 <FaForward />
@@ -174,27 +174,31 @@ const page = () => {
             <div className="flex flex-row ">
               {playlistSongList.length > 0 && (
                 <button
-                  className="border rounded p-3 flex-grow-0 mr-2"
+                  className="border border-black hover:bg-primary hover:border-primary rounded-lg p-3 flex-grow-0 mr-2 font-bold"
                   onClick={deleteAllSongsHandler}
                 >
                   {deleteAllSongsResponse.isLoading ? (
                     <Loader />
                   ) : (
-                    "Clear Playlist"
+                    "Clear All Songs"
                   )}
                 </button>
               )}
               <button
+                disabled={playlistSongList.length == 0}
                 onClick={toggleFavSongs}
-                className={`flex items-center hover:cursor-pointer border ${
-                  !isFavSongs
-                    ? "border-top-queue-bg"
-                    : "border-deactivate-color"
-                }  ${
-                  !isFavSongs
-                    ? "hover:bg-primary hover:text-white text-top-queue-bg"
-                    : "text-gray-1"
-                }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                className={`flex items-center hover:cursor-pointer border
+                ${
+                  playlistSongList.length > 0
+                    ? `
+                
+                ${!isFavSongs ? "border-black" : "border-deactivate-color"}  ${
+                        !isFavSongs
+                          ? "hover:bg-primary  text-black hover:border-primary"
+                          : "text-gray-1 "
+                      }`
+                    : "border-deactivate-color text-gray-1"
+                }   font-bold py-3 px-4 lg:text-lg  justify-center rounded-lg`}
               >
                 {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
                 <span className="ml-2">
@@ -224,7 +228,7 @@ const page = () => {
                 !getPlaylistSongListResponse.isFetching && (
                   <div className="flex items-center justify-center mt-10">
                     <span className=" text-black font-semibold ">
-                      Currently there is no songs available in the playlist
+                      Currently there are no songs available in the playlist
                     </span>
                   </div>
                 )}
@@ -381,33 +385,35 @@ const page = () => {
               </DragDropContext>
             </div>
           </div>
-          <div className="sticky bottom-0 w-full flex  items-center justify-center py-4 bg-[#fafafa]">
-            <button
-              onClick={async () => {
-                await fetchAssignSongsList();
-                setSelectSongModal(true);
-              }}
-              className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
-            >
-              + Add a Song
-            </button>
-            {/* <button className="ml-4 w-1/2  text-base flex items-center bg-white  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab">
+          {!isFavSongs && (
+            <div className="sticky bottom-0 w-full flex  items-center justify-center py-4 bg-[#fafafa]">
+              <button
+                onClick={async () => {
+                  await fetchAssignSongsList();
+                  setSelectSongModal(true);
+                }}
+                className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
+              >
+                + Add a Song
+              </button>
+              {/* <button className="ml-4 w-1/2  text-base flex items-center bg-white  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab">
               <IoArrowUndo />
               <span className="ml-2">Undo Action</span>
             </button> */}
-            {selectSongModal && (
-              <SelectSongModal
-                items={assignSongsList}
-                btnText={"Add"}
-                title={"Select songs"}
-                openModal={selectSongModal}
-                fetchList={fetchPlaylistSongList}
-                closeModal={() => {
-                  setSelectSongModal(false);
-                }}
-              />
-            )}
-          </div>
+              {selectSongModal && (
+                <SelectSongModal
+                  items={assignSongsList}
+                  btnText={"Add"}
+                  title={"Select songs"}
+                  openModal={selectSongModal}
+                  fetchList={fetchPlaylistSongList}
+                  closeModal={() => {
+                    setSelectSongModal(false);
+                  }}
+                />
+              )}
+            </div>
+          )}
         </>
       )}
     </div>

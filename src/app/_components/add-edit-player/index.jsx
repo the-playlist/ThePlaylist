@@ -12,6 +12,7 @@ import {
   useAddUpdatePlayerMutation,
   useLazyGetSongsListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
+import { MdClear } from "react-icons/md";
 
 function AddEditPlayer({
   openModal,
@@ -42,6 +43,7 @@ function AddEditPlayer({
   const reff = useRef();
   const [getSongsListApi, getSongsListResponse] = useLazyGetSongsListQuery();
   const [addPlayerApi, addPlayerResponse] = useAddUpdatePlayerMutation();
+  const [searchTerm, setSearchTerm] = useState();
   useEffect(() => {
     if (openModal) {
       reff.current?.showModal();
@@ -160,23 +162,35 @@ function AddEditPlayer({
               onChange={handleNumberChange}
             />
           </div>
-
+          <div className="font-semibold my-1 text-lg ">{`Assign Songs (${selectedSongsList.length})`}</div>
           <div className="border rounded mt-2 p-1">
-            <div className="font-semibold text-lg ">{`Assign Songs (${selectedSongsList.length})`}</div>
             <div className="flex  flex-row items-center border-2 border-gray-300 shadow-md bg-white m-2 p-2 rounded">
               <IoSearchOutline />
               <input
-                className="ml-2 outline-none "
+                className="ml-2 outline-none  w-full"
                 placeholder="Search Songs"
+                value={searchTerm}
                 onChange={(e) => {
                   let selection = songs.filter((song) =>
                     song.title
                       .toLowerCase()
                       .startsWith(e.target.value.toLowerCase())
                   );
+                  setSearchTerm(e.target.value.toLowerCase());
                   setFilteredsongs(selection);
                 }}
               />
+              {searchTerm && (
+                <button
+                  className="  hover:pointer  rounded-r-lg px-4 py-2 "
+                  onClick={() => {
+                    setSearchTerm("");
+                    setFilteredsongs(songs);
+                  }}
+                >
+                  <MdClear size={20} />
+                </button>
+              )}
             </div>
             <div
               className={`flex flex-wrap ${
@@ -216,6 +230,7 @@ function AddEditPlayer({
                       if (isInclude) {
                         setSelectedSongsList((prevList) => [...prevList, i]);
                       }
+                      setSearchTerm("");
                     }}
                     className={`cursor-pointer ${
                       index < filteredsongs?.length - 1 && "border-b"

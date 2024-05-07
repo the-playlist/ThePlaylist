@@ -155,7 +155,7 @@ const DutyScreen = () => {
                       onUpdateStatusHandler(payload);
                       setShowModal(false);
                     }}
-                    className="btn w-[49%] bg-black text-white "
+                    className="btn w-[49%] bg-primary text-black "
                   >
                     Yes, confirm
                   </button>
@@ -172,7 +172,7 @@ const DutyScreen = () => {
                 <div className="relative w-1/4 mb-8 flex items-center ">
                   <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Search"
                     value={searchTerm}
                     onBlur={() => {
                       setSearchTerm(searchTerm.trim());
@@ -193,7 +193,7 @@ const DutyScreen = () => {
                   </svg>
                   {searchTerm?.length > 0 && (
                     <button
-                      className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
+                      className="absolute right-0 top-2 hover:pointer rounded-r-lg px-4 py-2 "
                       onClick={() => setSearchTerm("")}
                     >
                       <MdClear size={20} className="text-gray-400" />
@@ -245,12 +245,12 @@ const DutyScreen = () => {
                     );
                   })}
                 </table>
+                {filteredPlayers?.length == 0 && (
+                  <div className="flex justify-center text-base items-center h-56 text-black w-full">
+                    No Players Found
+                  </div>
+                )}
               </div>
-              {filteredPlayers?.length == 0 && (
-                <div className="flex justify-center text-base items-center h-56 text-black w-full">
-                  No Players Found
-                </div>
-              )}
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
                   text="Save Attendance"
