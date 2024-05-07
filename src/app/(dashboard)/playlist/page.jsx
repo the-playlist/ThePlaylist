@@ -1,9 +1,10 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { IoArrowBackOutline } from "react-icons/io5";
+import { TbMusicX } from "react-icons/tb";
 import {
   CustomLoader,
   Loader,
@@ -174,35 +175,33 @@ const page = () => {
             <div className="flex flex-row ">
               {playlistSongList.length > 0 && (
                 <button
-                  className="border border-black hover:bg-primary hover:border-primary rounded-lg p-3 flex-grow-0 mr-2 font-bold"
+                  className="border-black border rounded p-3 flex-grow-0 mr-2 text-black"
                   onClick={deleteAllSongsHandler}
                 >
                   {deleteAllSongsResponse.isLoading ? (
                     <Loader />
                   ) : (
-                    "Clear All Songs"
+                    <span className="flex flex-row items-center">
+                      <TbMusicX className="mr-2" />
+                      Clear Playlist
+                    </span>
                   )}
                 </button>
               )}
               <button
                 disabled={playlistSongList.length == 0}
                 onClick={toggleFavSongs}
-                className={`flex items-center hover:cursor-pointer border
-                ${
-                  playlistSongList.length > 0
-                    ? `
-                
-                ${!isFavSongs ? "border-black" : "border-deactivate-color"}  ${
-                        !isFavSongs
-                          ? "hover:bg-primary  text-black hover:border-primary"
-                          : "text-gray-1 "
-                      }`
-                    : "border-deactivate-color text-gray-1"
-                }   font-bold py-3 px-4 lg:text-lg  justify-center rounded-lg`}
+                className={`flex items-center hover:cursor-pointer border ${
+                  !isFavSongs ? "border-black" : "border-top-queue-bg"
+                }  ${
+                  !isFavSongs
+                    ? "hover:bg-black hover:text-white text-black"
+                    : "text-top-queue-bg"
+                }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
               >
                 {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
                 <span className="ml-2">
-                  {isFavSongs ? "Back to Playlist" : "Play Favourite songs"}
+                  {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
                 </span>
               </button>
             </div>

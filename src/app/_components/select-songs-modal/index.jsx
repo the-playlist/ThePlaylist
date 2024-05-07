@@ -9,6 +9,8 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import GenericButton from "../generic-button";
 
+const SONGS_LIMIT = 25;
+
 const SelectSongModal = ({
   title,
   openModal,
@@ -52,7 +54,7 @@ const SelectSongModal = ({
   }, []);
 
   function addSelectedPlayers(data) {
-    return data.map((item) => {
+    return data.map((item, index) => {
       const selectedPlayer =
         item.assignedPlayers && item.assignedPlayers.length > 0
           ? item.assignedPlayers[0]
@@ -60,7 +62,7 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        isChecked: true,
+        isChecked: index < SONGS_LIMIT,
       };
     });
   }
@@ -83,6 +85,7 @@ const SelectSongModal = ({
       if (response && !response.error) {
         socket.emit("addSongToPlaylistApi", data);
         closeModal();
+        await fetchList();
         toast.success(response?.data?.description);
       }
     } catch (error) {
@@ -110,18 +113,19 @@ const SelectSongModal = ({
       setStatus(false);
     }
   }, [playersList]);
-
+  const activeSongsCount = playersList?.filter((item) => item.isChecked).length;
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
         <div className="modal-box  w-1/2 max-w-4xl min-h-1.5 pb-4  p-0 bg-[#fafafafa]">
           <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
             <div className="flex justify-between items-center">
-              <div>{title}</div>
+              <div>{`${title} (${activeSongsCount}) `}</div>
               <button onClick={closeModal}>
                 <MdClear size={20} />
               </button>
             </div>
+
             <div className="relative w-1/3 my-4 flex items-center ">
               <input
                 type="text"
@@ -153,10 +157,15 @@ const SelectSongModal = ({
                 </button>
               )}
             </div>
+            {activeSongsCount > SONGS_LIMIT && (
+              <div className="flex w-4/6 text-left text-red-600">
+                {`There is limit that playlist should have only ${SONGS_LIMIT} songs. Please Select only ${SONGS_LIMIT} songs`}
+              </div>
+            )}
             <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
               <div className="w-3/12 ">
                 <div className="flex items-center">
-                  <input
+                  {/* <input
                     type="checkbox"
                     onClick={() => {
                       setPlayersList((prevPlayerList) =>
@@ -172,7 +181,7 @@ const SelectSongModal = ({
                       (player) => player.isChecked === true
                     )}
                     className="checkbox mr-3 checkbox-success"
-                  />
+                  /> */}
                   Title
                 </div>
               </div>
@@ -256,16 +265,17 @@ const SelectSongModal = ({
           </div>
           <div className="sticky -bottom-5 w-full flex justify-end px-4 pb-4  bg-[#fafafa]">
             <GenericButton
-              disabled={AddSongsToPlaylistResponse?.isLoading}
+              disabled={
+                AddSongsToPlaylistResponse?.isLoading ||
+                activeSongsCount > SONGS_LIMIT
+              }
               loading={AddSongsToPlaylistResponse?.isLoading}
               text={btnText}
               onClick={() => {
                 const selectedPlayers = playersList.filter(
                   (item) => item.isChecked == true
                 );
-
                 getDesiredOuptut(selectedPlayers);
-                fetchList();
               }}
             />
           </div>
