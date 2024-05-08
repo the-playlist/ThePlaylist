@@ -66,9 +66,9 @@ const Players = () => {
             />
           </div>
           <div className=" max-h-[80vh] overflow-y-auto">
-            <table className="table border-separate border-spacing-y-5 rounded-2xl px-1 ">
-              <thead>
-                <tr className="text-black text-lg font-thin">
+            <table className="table table-auto w-full  border-separate border-spacing-y-5 rounded-2xl px-1 ">
+              <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
+                <tr className="text-black text-lg font-thin sticky absolute">
                   <th></th>
                   <th>First Name</th>
                   <th>Last Name</th>

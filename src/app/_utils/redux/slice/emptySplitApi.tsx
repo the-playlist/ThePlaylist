@@ -157,9 +157,16 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    undoDeletedSongsFromPlaylist: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
     deleteSongFromPlaylistById: builder.mutation({
       query: (body) => ({
-        url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body}`,
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body.id}&isDeleted=${body.isDeleted} `,
         method: "DELETE",
       }),
     }),
@@ -191,4 +198,5 @@ export const {
   useLazyGetSongsReportListQuery,
   useChangeUserPasswordMutation,
   useDeleteAllSongsFromPlaylistMutation,
+  useUndoDeletedSongsFromPlaylistMutation,
 } = emptySplitApi;

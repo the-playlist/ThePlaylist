@@ -202,8 +202,8 @@ const DutyScreen = () => {
                 </div>
               </div>
               <div className=" overflow-y-auto pb-12 h-[800px] ">
-                <table className="table border-separate  border-spacing-y-3  pb-20 px-2">
-                  <thead>
+                <table className="table table-auto w-full border-separate  border-spacing-y-3  pb-32 px-2">
+                  <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
                     <tr className="text-base font-medium text-black">
                       <th>Players</th>
                       <th>Status</th>
@@ -212,7 +212,7 @@ const DutyScreen = () => {
                   </thead>
                   {filteredPlayers?.map((item, index) => {
                     return (
-                      <tbody className="  bg-white drop-shadow rounded-2xl h-20 ">
+                      <tbody className="bg-white drop-shadow rounded-2xl h-20 ">
                         <tr className="">
                           <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
                           <td>
