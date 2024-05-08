@@ -69,7 +69,7 @@ const PerformerView = () => {
               <Logo />
             </div>
             {performer.length === 0 && (
-              <div className="flex items-center justify-center flex-1 min-h-52 font-semibold text-lg">
+              <div className="flex items-center justify-center flex-1 min-h-52 font-semibold text-lg text-white">
                 The playlist is empty.
               </div>
             )}
