@@ -13,16 +13,18 @@ import {
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { useSearchParams } from "next/navigation";
 
 const TableView = () => {
+  const searchParams = useSearchParams();
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [showCam, setShowCam] = useState(false);
-  const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
+  const id = searchParams.get("id");
+
   function generateDeviceId() {
-    // Concatenate various properties to generate a unique identifier
     const combinedId =
       navigator.userAgent +
       window.screen.width +
@@ -30,7 +32,6 @@ const TableView = () => {
       Math.floor(Math.random() * (100 - 1 + 1)) +
       1;
 
-    // Hash the combined ID to generate a more anonymized and consistent identifier
     const hashedId = hash(combinedId);
     const ID = localStorage.getItem("UNIQUE_ID");
     if (!ID) {
@@ -55,22 +56,6 @@ const TableView = () => {
   }
 
   useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 1076) {
-        setFontSize("text-lg");
-      } else {
-        setFontSize("text-sm");
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
-
-  useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     setSocket(socket);
@@ -90,7 +75,7 @@ const TableView = () => {
   const fetchPlaylistSongList = async () => {
     try {
       const deviceId = generateDeviceId();
-      let response = await getPlaylistSongTableView(deviceId);
+      let response = await getPlaylistSongTableView(id);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);
       }
@@ -133,14 +118,14 @@ const TableView = () => {
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
       await addUpdateVoteAPI({
-        customerId: deviceId,
+        customerId: id,
         songId: item?.songId,
         playlistItemId: item?._id,
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
       socket.emit("votingRequest", {
-        customerId: deviceId,
+        customerId: id,
         songId: item?.songId,
         playlistItemId: item?._id,
         playerId: item?.assignedPlayerId,
@@ -223,7 +208,7 @@ const TableView = () => {
                       <p
                         className={`font-semibold capitalize ${
                           index < 2 ? "text-black" : "text-white"
-                        }  ${fontSize}`}
+                        }  lg:text-lg text-sm `}
                       >
                         {item?.title}
                       </p>
@@ -231,7 +216,7 @@ const TableView = () => {
                     <div
                       className={`w-1/2 p-4 text-end capitalize ${
                         index < 2 ? "text-black" : "text-white"
-                      } ${fontSize}`}
+                      } lg:text-lg text-sm`}
                     >
                       {item?.artist}
                     </div>
