@@ -22,7 +22,7 @@ const TableView = () => {
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
-  const id = searchParams.get("id");
+  const id = searchParams.get("id") || 0;
 
   function generateDeviceId() {
     const combinedId =

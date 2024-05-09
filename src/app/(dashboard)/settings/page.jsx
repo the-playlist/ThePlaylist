@@ -115,7 +115,7 @@ const page = () => {
   ];
   return (
     <SessionProvider>
-      <div className="  overflow-y-auto max-h-screen ">
+      <div className="  overflow-y-auto max-h-screen pb-24 ">
         <SelectableItemContent items={settingArray} />
       </div>
     </SessionProvider>
