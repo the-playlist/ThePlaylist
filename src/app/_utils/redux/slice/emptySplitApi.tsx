@@ -24,6 +24,9 @@ const endPoints = {
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList",
   CHANGE_PASSWORD: "api/auth/changePassword",
+  CREATE_STREAM_USER: "api/stream/createStreamUser",
+  SEND_STREAM_REQUEST: "api/stream/sendStreamRequestToMaster",
+  GET_STREAM_REQUEST: "api/stream/getStreamRequest",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -69,6 +72,9 @@ export const emptySplitApi = createApi({
     getOnDutyPlayerSongList: builder.query({
       query: () => endPoints.GET_ONDUTY_PLAYER_SONGS,
     }),
+    getStreamRequest: builder.query({
+      query: () => endPoints.GET_STREAM_REQUEST,
+    }),
     getTableViewSongs: builder.query({
       query: (body: any) => `${endPoints.GET_TABLE_VIEW_SONGS}${body}`,
     }),
@@ -86,6 +92,13 @@ export const emptySplitApi = createApi({
     changeUserPassword: builder.mutation({
       query: (body: any) => ({
         url: endPoints.CHANGE_PASSWORD,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    createStreamUser: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.CREATE_STREAM_USER,
         method: "POST",
         body: body,
       }),
@@ -191,4 +204,6 @@ export const {
   useLazyGetSongsReportListQuery,
   useChangeUserPasswordMutation,
   useDeleteAllSongsFromPlaylistMutation,
+  useCreateStreamUserMutation,
+  useLazyGetStreamRequestQuery,
 } = emptySplitApi;

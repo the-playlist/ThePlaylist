@@ -3,20 +3,26 @@ import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
-import { IoIosArrowUp, IoIosArrowDown, IoIosCloseCircle } from "react-icons/io";
-import Webcam from "react-webcam";
+import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import Link from "next/link";
 import {
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
+  useCreateStreamUserMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
+import { Listener_URL, authToken } from "../../_utils/common/constants";
+import StreamRequest from "@/app/_components/live-video";
+import { toast } from "react-toastify";
 
 const TableView = () => {
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
-  const [showCam, setShowCam] = useState(false);
+  const [createStreamUserApi] = useCreateStreamUserMutation();
+  const [meetingId, setMeetingId] = useState(null);
+  const [streamPayload, setStreamPayload] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+
   const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -100,6 +106,50 @@ const TableView = () => {
     }
   };
 
+  const createMeeting = async ({ token }) => {
+    const res = await fetch(`https://api.videosdk.live/v2/rooms`, {
+      method: "POST",
+      headers: {
+        authorization: `${authToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    const { roomId } = await res.json();
+    return roomId;
+  };
+
+  const getMeetingAndToken = async (id) => {
+    const deviceId = generateDeviceId();
+
+    const meetingId =
+      id == null ? await createMeeting({ token: authToken }) : id;
+    if (meetingId) {
+      let response = await fetch(
+        "http://localhost:3000/api/stream/sendStreamRequest",
+        {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            streamId: meetingId,
+            userId: deviceId,
+            isTrue: null,
+          }),
+        }
+      );
+      if (response.ok) {
+        toast("Your Request has been sent to Master");
+      } else {
+        toast("Error");
+      }
+      setShowModal(true);
+    }
+
+    setMeetingId(meetingId);
+  };
+
   const ButtonsAtEnd = ({ onCamPress }) => {
     return (
       <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
@@ -113,7 +163,9 @@ const TableView = () => {
           Add a Song
         </Link>
         <button
-          onClick={onCamPress}
+          onClick={() => {
+            creatStreamUserHandler();
+          }}
           className="ml-4 w-full text-base flex items-center bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white lg:hover:bg-gray-400"
         >
           <FaVideo size={16} className="mr-2" /> Live Video
@@ -121,10 +173,39 @@ const TableView = () => {
       </div>
     );
   };
+  function generateRandomStreamId(length = 12) {
+    // Define the character pool
+    const characterPool =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    // Create an empty string to store the random ID
+    let randomId = "";
+
+    // Loop for the desired length of the ID
+    for (let i = 0; i < length; i++) {
+      // Get a random index from the character pool
+      const randomIndex = Math.floor(Math.random() * characterPool.length);
+
+      // Extract the character at the random index and append it to the ID
+      randomId += characterPool[randomIndex];
+    }
+
+    // Return the generated random stream ID
+    return randomId;
+  }
+
+  const creatStreamUserHandler = async () => {
+    const deviceId = generateDeviceId();
+    let response = await createStreamUserApi({
+      user_id: deviceId,
+      callId: generateRandomStreamId(),
+    });
+    if (response?.data?.success) {
+      setStreamPayload(response?.data?.content);
+    }
+  };
   const ActionButtons = ({ index, item }) => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
-
     const toggleButton = async (isTrue) => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
@@ -177,6 +258,7 @@ const TableView = () => {
       </div>
     );
   };
+
   return (
     <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
       {loading ? (
@@ -186,25 +268,21 @@ const TableView = () => {
           <div className=" flex items-center justify-center m-5">
             <Logo />
           </div>
-          {performer.length === 0 && (
-            <div className="flex items-center justify-center flex-1 min-h-[50%] font-semibold text-lg">
-              The playlist is empty.{" "}
-            </div>
-          )}
-          {showCam ? (
+
+          {streamPayload ? (
             <>
-              <button
-                className="flex items-center justify-center"
-                onClick={() => {
-                  setShowCam(false);
-                }}
-              >
-                <IoIosCloseCircle size={30} /> Close
-              </button>
-              <Webcam />
+              <StreamRequest
+                setStreamPayload={setStreamPayload}
+                streamPayload={streamPayload}
+              />
             </>
           ) : (
             <div className="mb-30">
+              {performer.length === 0 && (
+                <div className="flex items-center text-white justify-center flex-1 mt-20 font-semibold text-lg">
+                  The playlist is empty.
+                </div>
+              )}
               {performer?.map((item, index) => {
                 return (
                   <div
@@ -238,11 +316,7 @@ const TableView = () => {
                   </div>
                 );
               })}
-              <ButtonsAtEnd
-                onCamPress={() => {
-                  setShowCam(true);
-                }}
-              />
+              <ButtonsAtEnd />
             </div>
           )}
         </>

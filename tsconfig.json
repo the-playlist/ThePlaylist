@@ -36,6 +36,6 @@
     "src/app/(views)/table-view/page.jsx",
     "src/app/(dashboard)/settings/page.jsx",
     "src/app/(views)/player-view/page.jsx"
-  ],
+, "src/app/_components/live-video/index.jsx", "src/app/stream-response/page.jsx"  ],
   "exclude": ["node_modules"]
 }
