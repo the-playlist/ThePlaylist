@@ -152,6 +152,13 @@ export const emptySplitApi = createApi({
         body: body?.data,
       }),
     }),
+    sendStreamRequest: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.SEND_STREAM_REQUEST}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
     deletePlayerById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_PLAYER}${body}`,
@@ -206,4 +213,5 @@ export const {
   useDeleteAllSongsFromPlaylistMutation,
   useCreateStreamUserMutation,
   useLazyGetStreamRequestQuery,
+  useSendStreamRequestMutation,
 } = emptySplitApi;

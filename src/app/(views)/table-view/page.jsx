@@ -12,23 +12,22 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { Listener_URL, authToken } from "../../_utils/common/constants";
+import { Listener_URL } from "../../_utils/common/constants";
 import StreamRequest from "@/app/_components/live-video";
-import { toast } from "react-toastify";
+import { useSearchParams } from "next/navigation";
 
 const TableView = () => {
+  const searchParams = useSearchParams();
+  const tableNo = searchParams.get("tableno");
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [createStreamUserApi] = useCreateStreamUserMutation();
-  const [meetingId, setMeetingId] = useState(null);
   const [streamPayload, setStreamPayload] = useState(null);
-  const [showModal, setShowModal] = useState(false);
 
   const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   function generateDeviceId() {
-    // Concatenate various properties to generate a unique identifier
     const combinedId =
       navigator.userAgent +
       window.screen.width +
@@ -36,7 +35,6 @@ const TableView = () => {
       Math.floor(Math.random() * (100 - 1 + 1)) +
       1;
 
-    // Hash the combined ID to generate a more anonymized and consistent identifier
     const hashedId = hash(combinedId);
     const ID = localStorage.getItem("UNIQUE_ID");
     if (!ID) {
@@ -45,8 +43,6 @@ const TableView = () => {
     } else {
       return ID;
     }
-
-    // You can send this hashed ID to your server for identification or store it locally
   }
 
   function hash(str) {
@@ -55,7 +51,7 @@ const TableView = () => {
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
     }
     return hash;
   }
@@ -106,50 +102,6 @@ const TableView = () => {
     }
   };
 
-  const createMeeting = async ({ token }) => {
-    const res = await fetch(`https://api.videosdk.live/v2/rooms`, {
-      method: "POST",
-      headers: {
-        authorization: `${authToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-    const { roomId } = await res.json();
-    return roomId;
-  };
-
-  const getMeetingAndToken = async (id) => {
-    const deviceId = generateDeviceId();
-
-    const meetingId =
-      id == null ? await createMeeting({ token: authToken }) : id;
-    if (meetingId) {
-      let response = await fetch(
-        "http://localhost:3000/api/stream/sendStreamRequest",
-        {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            streamId: meetingId,
-            userId: deviceId,
-            isTrue: null,
-          }),
-        }
-      );
-      if (response.ok) {
-        toast("Your Request has been sent to Master");
-      } else {
-        toast("Error");
-      }
-      setShowModal(true);
-    }
-
-    setMeetingId(meetingId);
-  };
-
   const ButtonsAtEnd = ({ onCamPress }) => {
     return (
       <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
@@ -174,23 +126,17 @@ const TableView = () => {
     );
   };
   function generateRandomStreamId(length = 12) {
-    // Define the character pool
     const characterPool =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-    // Create an empty string to store the random ID
     let randomId = "";
 
-    // Loop for the desired length of the ID
     for (let i = 0; i < length; i++) {
-      // Get a random index from the character pool
       const randomIndex = Math.floor(Math.random() * characterPool.length);
 
-      // Extract the character at the random index and append it to the ID
       randomId += characterPool[randomIndex];
     }
 
-    // Return the generated random stream ID
     return randomId;
   }
 
@@ -199,6 +145,7 @@ const TableView = () => {
     let response = await createStreamUserApi({
       user_id: deviceId,
       callId: generateRandomStreamId(),
+      tableNo: tableNo,
     });
     if (response?.data?.success) {
       setStreamPayload(response?.data?.content);
@@ -301,7 +248,7 @@ const TableView = () => {
                       <p
                         className={`font-semibold capitalize ${
                           index < 2 ? "text-black" : "text-white"
-                        }  ${fontSize}`}
+                        }  text-sm lg:text-lg`}
                       >
                         {item?.title}
                       </p>
@@ -309,7 +256,7 @@ const TableView = () => {
                     <div
                       className={`w-1/2 p-4 text-end capitalize ${
                         index < 2 ? "text-black" : "text-white"
-                      } ${fontSize}`}
+                      } text-sm lg:text-lg`}
                     >
                       {item?.artist}
                     </div>

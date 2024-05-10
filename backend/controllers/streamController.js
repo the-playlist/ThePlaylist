@@ -34,7 +34,7 @@ export const deleteStreamRequest = async (req, res, next) => {
 };
 
 export const createStreamUser = (req, res) => {
-  const { user_id, callId } = req.body;
+  const { user_id, callId, tableNo } = req.body;
   const api_secret_key = process.env.STREAM_SECRET_KEY;
   const api_key = process.env.STREAM_API_KEY;
 
@@ -45,6 +45,7 @@ export const createStreamUser = (req, res) => {
       token,
       user_id,
       callId,
+      tableNo,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -54,7 +55,7 @@ export const createStreamUser = (req, res) => {
 };
 
 export const sendStreamRequestToMaster = async (req, res) => {
-  const { url, userId, tableNo } = req?.query || {};
+  const { url, userId, tableNo } = req?.body || {};
   const request = await Stream.create({ url, userId, tableNo });
   let response = new ResponseModel(
     true,

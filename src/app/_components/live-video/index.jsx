@@ -281,7 +281,7 @@
 // export default StreamRequest;
 
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   StreamCall,
   StreamVideo,
@@ -294,10 +294,14 @@ import {
   ParticipantView,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
+import { useSendStreamRequestMutation } from "../../_utils/redux/slice/emptySplitApi";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 const StreamRequest = ({ streamPayload, setStreamPayload }) => {
   const { token, user_id, callId } = streamPayload;
-  const apiKey = "d7r2k5cjtzqj"; // the API key can be found in the "Credentials" section
+
+  const apiKey = "d7r2k5cjtzqj";
   // const token =
   //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiVW1lciBBbGkifQ.qa-bTjC4TNsA-mQ2_S87j6cK2XeoXkYIX1oP3svVYGg"; // the token can be found in the "Credentials" section
   // const userId = "Umer Ali"; // the user id can be found in the "Credentials" section
@@ -306,24 +310,30 @@ const StreamRequest = ({ streamPayload, setStreamPayload }) => {
   // set up the user object
   const user = {
     id: user_id,
-    name: "Oliver",
-    image: "https://getstream.io/random_svg/?id=oliver&name=Oliver",
+    name: "User",
+    image: "https://getstream.io/random_svg/?id=oliver&name=User",
   };
 
   const client = new StreamVideoClient({ apiKey, user, token });
+
   const call = client.call("livestream", callId);
+
   call.join({ create: true });
 
   return (
     <StreamVideo client={client}>
       <StreamCall call={call}>
-        <MyLivestreamUI />
+        <MyLivestreamUI
+          setStreamPayload={setStreamPayload}
+          streamPayload={streamPayload}
+        />
       </StreamCall>
     </StreamVideo>
   );
 };
 
-export const MyLivestreamUI = () => {
+export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
+  const router = useRouter();
   const call = useCall();
   const {
     useIsCallLive,
@@ -335,11 +345,30 @@ export const MyLivestreamUI = () => {
   const localParticipant = useLocalParticipant();
   const isCallLive = useIsCallLive();
   const egress = useCallEgress();
+  const [streamUrl, setStreamUrl] = useState(null);
+  const [sendStreamReqApi] = useSendStreamRequestMutation();
 
   useEffect(() => {
-    console.log("HLS PLAYLIST URL:", egress?.hls?.playlist_url);
+    setStreamUrl(egress?.hls?.playlist_url);
   }, [egress?.hls?.playlist_url]);
 
+  useEffect(() => {
+    if (streamUrl) {
+      streamRequestHandler();
+    }
+  }, [streamUrl]);
+
+  const streamRequestHandler = async () => {
+    let payload = {
+      url: streamUrl,
+      tableNo: streamPayload?.tableNo,
+      userId: streamPayload?.user_id,
+    };
+    const response = await sendStreamReqApi(payload);
+    if (response?.data.success) {
+      toast(response?.data?.description);
+    }
+  };
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
       <div
@@ -353,7 +382,7 @@ export const MyLivestreamUI = () => {
       >
         Live: {totalParticipants}
       </div>
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, width: "100%", height: "auto" }}>
         {localParticipant && (
           <ParticipantView
             participant={localParticipant}
@@ -368,9 +397,22 @@ export const MyLivestreamUI = () => {
         style={{ alignSelf: "center", marginBottom: "20px" }}
       >
         {isCallLive ? (
-          <button onClick={() => call?.stopLive()}>Stop Livestream</button>
+          <button
+            onClick={() => {
+              call?.stopLive();
+              setStreamPayload(null);
+              setStreamUrl(null);
+              router.replace("/table-view");
+            }}
+          >
+            Stop Livestream
+          </button>
         ) : (
-          <button onClick={() => call?.goLive({ start_hls: true })}>
+          <button
+            onClick={() => {
+              call?.goLive({ start_hls: true });
+            }}
+          >
             Start Livestream
           </button>
         )}

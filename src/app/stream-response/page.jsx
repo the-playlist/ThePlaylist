@@ -268,7 +268,15 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import {
+  LivestreamLayout,
+  StreamVideo,
+  StreamCall,
+  StreamVideoClient,
+} from "@stream-io/video-react-sdk";
+
 import { useLazyGetStreamRequestQuery } from "../_utils/redux/slice/emptySplitApi";
+import ReactHlsPlayer from "react-hls-player";
 
 const StreamResponse = () => {
   const [getStreamRequestListApi, getStreamRequestResponse] =
@@ -285,20 +293,38 @@ const StreamResponse = () => {
       setContent(response?.data?.content);
     }
   };
+  // const apiKey = "d7r2k5cjtzqj"; // the API key can be found in the "Credentials" section
+  // const token =
+  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiLTU4ODQzMDM1NyJ9.ZHHa6A-pLOWeOjs_XpgxY_u2j4f6lK4jVwr2wo_Z2e8";
+
+  // const user = {
+  //   id: "-588430357",
+  //   name: "Oliver",
+  //   image: "https://getstream.io/random_svg/?id=oliver&name=Oliver",
+  // };
+
+  // const client = new StreamVideoClient({ apiKey, user, token });
+
+  // const call = client.call("livestream", "cq3RQ4xwmNvn");
+
+  // call.join({ create: true });
   return (
     <div className="min-h-screen p-12">
       <div className="flex flex-wrap items-center ">
-        {[1, 2, 3, 4, 5, 6, 7]?.map((item) => (
-          <div className="card w-96 bg-base-100 shadow-xl m-10">
+        {content?.map((item) => (
+          <div className="card w-96 bg-base-100 shadow-xl m-9">
             <figure>
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1606107557195-0e29a4b5b4aa.jpg"
-                alt="Shoes"
+              <ReactHlsPlayer
+                src={item?.url}
+                autoPlay={true}
+                controls={true}
+                // width="100%"
+                // height="100%"
               />
             </figure>
             <div className="card-body">
-              <h2 className="card-title">Table no: </h2>
-              <p>userId</p>
+              <h2 className="card-title">Table no:{item?.tableNo} </h2>
+              <p>userId: {item?.userId}</p>
               <div className=" flex justify-between items-center">
                 <div className="card-actions justify-end">
                   <button className="btn btn-primary">Accept</button>
@@ -311,6 +337,27 @@ const StreamResponse = () => {
           </div>
         ))}
       </div>
+      {/* <StreamVideo client={client}>
+        <StreamCall call={call}>
+          <LivestreamLayout
+            muted={false}
+            enableFullscreen={true}
+            showParticipantCount={true}
+            showDuration={true}
+            showLiveBadge={true}
+            showSpeakerName={false}
+            floatingParticipantProps={{
+              muted: false,
+              enableFullscreen: true,
+              showParticipantCount: true,
+              showDuration: true,
+              showLiveBadge: true,
+              showSpeakerName: false,
+              position: "top-right",
+            }}
+          />
+        </StreamCall>
+      </StreamVideo> */}
     </div>
   );
 };

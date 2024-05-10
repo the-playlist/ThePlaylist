@@ -5,6 +5,6 @@ import onError from "../../../../../backend/middlewares/errors";
 
 const router = createRouter();
 connectMongoDb();
-router.get(sendStreamRequestToMaster);
+router.post(sendStreamRequestToMaster);
 
 export default router.handler({ onError });
