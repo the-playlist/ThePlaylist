@@ -3,22 +3,26 @@ import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
-import { IoIosArrowUp, IoIosArrowDown, IoIosCloseCircle } from "react-icons/io";
-import Webcam from "react-webcam";
+import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import Link from "next/link";
 import {
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
+  useCreateStreamUserMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import StreamRequest from "@/app/_components/live-video";
 import { useSearchParams } from "next/navigation";
+import { IoArrowBackCircleOutline } from "react-icons/io5";
 
 const TableView = () => {
   const searchParams = useSearchParams();
+  const tableNo = searchParams.get("tableno");
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
-  const [showCam, setShowCam] = useState(false);
+  const [createStreamUserApi] = useCreateStreamUserMutation();
+  const [streamPayload, setStreamPayload] = useState(null);
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
@@ -40,8 +44,6 @@ const TableView = () => {
     } else {
       return ID;
     }
-
-    // You can send this hashed ID to your server for identification or store it locally
   }
 
   function hash(str) {
@@ -50,7 +52,7 @@ const TableView = () => {
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32bit integer
+      hash = hash & hash;
     }
     return hash;
   }
@@ -75,7 +77,7 @@ const TableView = () => {
   const fetchPlaylistSongList = async () => {
     try {
       const deviceId = generateDeviceId();
-      let response = await getPlaylistSongTableView(id);
+      let response = await getPlaylistSongTableView(deviceId);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);
       }
@@ -98,7 +100,9 @@ const TableView = () => {
           Add a Song
         </Link>
         <button
-          onClick={onCamPress}
+          onClick={() => {
+            creatStreamUserHandler();
+          }}
           className="ml-4 w-full text-base flex items-center bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white lg:hover:bg-gray-400"
         >
           <FaVideo size={16} className="mr-2" /> Live Video
@@ -106,10 +110,34 @@ const TableView = () => {
       </div>
     );
   };
+  function generateRandomStreamId(length = 12) {
+    const characterPool =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
+    let randomId = "";
+
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * characterPool.length);
+
+      randomId += characterPool[randomIndex];
+    }
+
+    return randomId;
+  }
+
+  const creatStreamUserHandler = async () => {
+    const deviceId = generateDeviceId();
+    let response = await createStreamUserApi({
+      user_id: deviceId,
+      callId: generateRandomStreamId(),
+      tableNo: tableNo,
+    });
+    if (response?.data?.success) {
+      setStreamPayload(response?.data?.content);
+    }
+  };
   const ActionButtons = ({ index, item }) => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
-
     const toggleButton = async (isTrue) => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
@@ -118,14 +146,14 @@ const TableView = () => {
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
       await addUpdateVoteAPI({
-        customerId: id,
+        customerId: deviceId,
         songId: item?.songId,
         playlistItemId: item?._id,
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
       socket.emit("votingRequest", {
-        customerId: id,
+        customerId: deviceId,
         songId: item?.songId,
         playlistItemId: item?._id,
         playerId: item?.assignedPlayerId,
@@ -141,11 +169,7 @@ const TableView = () => {
             item?.upVote == true ? "bg-green-500" : "bg-[#3A3B3E]"
           }`}
         >
-          <IoIosArrowUp
-            size={18}
-            // color={`${item?.upVote == true ? "white" : "black"}`}
-            color={"white"}
-          />
+          <IoIosArrowUp size={18} color={"white"} />
         </button>
         <button
           onClick={() => toggleButton(false)}
@@ -153,15 +177,12 @@ const TableView = () => {
             item?.upVote === false ? "bg-red-500" : "bg-[#3A3B3E]"
           } ml-2`}
         >
-          <IoIosArrowDown
-            size={18}
-            // color={`${item?.upVote === false ? "white" : "black"}`}
-            color={"white"}
-          />
+          <IoIosArrowDown size={18} color={"white"} />
         </button>
       </div>
     );
   };
+
   return (
     <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
       {loading ? (
@@ -171,25 +192,21 @@ const TableView = () => {
           <div className=" flex items-center justify-center m-5">
             <Logo />
           </div>
-          {performer.length === 0 && (
-            <div className="flex items-center justify-center flex-1 min-h-[50%] font-semibold text-lg text-white">
-              The playlist is empty.{" "}
-            </div>
-          )}
-          {showCam ? (
+
+          {streamPayload ? (
             <>
-              <button
-                className="flex items-center justify-center"
-                onClick={() => {
-                  setShowCam(false);
-                }}
-              >
-                <IoIosCloseCircle size={30} /> Close
-              </button>
-              <Webcam />
+              <StreamRequest
+                setStreamPayload={setStreamPayload}
+                streamPayload={streamPayload}
+              />
             </>
           ) : (
             <div className="mb-30">
+              {performer.length === 0 && (
+                <div className="flex items-center text-white justify-center flex-1 mt-20 font-semibold text-lg">
+                  The playlist is empty.
+                </div>
+              )}
               {performer?.map((item, index) => {
                 return (
                   <div
@@ -208,7 +225,7 @@ const TableView = () => {
                       <p
                         className={`font-semibold capitalize ${
                           index < 2 ? "text-black" : "text-white"
-                        }  lg:text-lg text-sm `}
+                        }  text-sm lg:text-lg`}
                       >
                         {item?.title}
                       </p>
@@ -216,18 +233,14 @@ const TableView = () => {
                     <div
                       className={`w-1/2 p-4 text-end capitalize ${
                         index < 2 ? "text-black" : "text-white"
-                      } lg:text-lg text-sm`}
+                      } text-sm lg:text-lg`}
                     >
                       {item?.artist}
                     </div>
                   </div>
                 );
               })}
-              <ButtonsAtEnd
-                onCamPress={() => {
-                  setShowCam(true);
-                }}
-              />
+              <ButtonsAtEnd />
             </div>
           )}
         </>
