@@ -8,6 +8,7 @@ import {
   songsForTableView,
   songReports,
 } from "../aggregation/playlist";
+import { forEach, forIn } from "lodash";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -136,16 +137,28 @@ export const updateSongsOrder = async (req, res, next) => {
 
 export const deleteSongFromPlaylistById = async (req, res, next) => {
   const id = req.query.id;
+  const isDeleted = req.query.isDeleted;
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
-  await Playlist.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
+  await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
 
 export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
+};
+
+export const undoDeleteSongsFromPlaylist = async (req, res, next) => {
+  const songsIdList = req.body.data;
+  if (songsIdList?.length) {
+    songsIdList.forEach(async (element) => {
+      await Playlist.updateOne({ _id: element }, { isDeleted: false });
+    });
+  }
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

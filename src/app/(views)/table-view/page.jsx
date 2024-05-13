@@ -15,6 +15,7 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import StreamRequest from "@/app/_components/live-video";
 import { useSearchParams } from "next/navigation";
+import { IoArrowBackCircleOutline } from "react-icons/io5";
 
 const TableView = () => {
   const searchParams = useSearchParams();
@@ -22,11 +23,11 @@ const TableView = () => {
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [createStreamUserApi] = useCreateStreamUserMutation();
   const [streamPayload, setStreamPayload] = useState(null);
-
-  const [fontSize, setFontSize] = useState("text-sm");
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
+  const id = searchParams.get("id") || 0;
+
   function generateDeviceId() {
     const combinedId =
       navigator.userAgent +
@@ -55,22 +56,6 @@ const TableView = () => {
     }
     return hash;
   }
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth > 1076) {
-        setFontSize("text-lg");
-      } else {
-        setFontSize("text-sm");
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
 
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
@@ -184,11 +169,7 @@ const TableView = () => {
             item?.upVote == true ? "bg-green-500" : "bg-[#3A3B3E]"
           }`}
         >
-          <IoIosArrowUp
-            size={18}
-            // color={`${item?.upVote == true ? "white" : "black"}`}
-            color={"white"}
-          />
+          <IoIosArrowUp size={18} color={"white"} />
         </button>
         <button
           onClick={() => toggleButton(false)}
@@ -196,11 +177,7 @@ const TableView = () => {
             item?.upVote === false ? "bg-red-500" : "bg-[#3A3B3E]"
           } ml-2`}
         >
-          <IoIosArrowDown
-            size={18}
-            // color={`${item?.upVote === false ? "white" : "black"}`}
-            color={"white"}
-          />
+          <IoIosArrowDown size={18} color={"white"} />
         </button>
       </div>
     );

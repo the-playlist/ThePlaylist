@@ -27,6 +27,8 @@ const endPoints = {
   CREATE_STREAM_USER: "api/stream/createStreamUser",
   SEND_STREAM_REQUEST: "api/stream/sendStreamRequestToMaster",
   GET_STREAM_REQUEST: "api/stream/getStreamRequest",
+  CHANGE_STREAM_REQUEST_STATUS: "api/stream/changeStreamStatus",
+  GET_LIVE_STREAM: "api/stream/getLiveStream",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -78,6 +80,9 @@ export const emptySplitApi = createApi({
     getTableViewSongs: builder.query({
       query: (body: any) => `${endPoints.GET_TABLE_VIEW_SONGS}${body}`,
     }),
+    getLiveStream: builder.query({
+      query: () => endPoints.GET_LIVE_STREAM,
+    }),
     updateDutyStatus: builder.mutation({
       query: (body: any) => ({
         url: `${
@@ -99,6 +104,13 @@ export const emptySplitApi = createApi({
     createStreamUser: builder.mutation({
       query: (body: any) => ({
         url: endPoints.CREATE_STREAM_USER,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    changeStreamRequestStatus: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.CHANGE_STREAM_REQUEST_STATUS,
         method: "POST",
         body: body,
       }),
@@ -177,9 +189,16 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    undoDeletedSongsFromPlaylist: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
     deleteSongFromPlaylistById: builder.mutation({
       query: (body) => ({
-        url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body}`,
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body.id}&isDeleted=${body.isDeleted} `,
         method: "DELETE",
       }),
     }),
@@ -214,4 +233,7 @@ export const {
   useCreateStreamUserMutation,
   useLazyGetStreamRequestQuery,
   useSendStreamRequestMutation,
+  useUndoDeletedSongsFromPlaylistMutation,
+  useChangeStreamRequestStatusMutation,
+  useLazyGetLiveStreamQuery,
 } = emptySplitApi;

@@ -1,11 +1,10 @@
 import React from "react";
-import InputField from "../input-field";
+
 import ChangePassInputField from "../change-pass-input-field";
 import { useForm } from "react-hook-form";
 import GenericButton from "../generic-button";
 import { useSession } from "next-auth/react";
 import { useChangeUserPasswordMutation } from "@/app/_utils/redux/slice/emptySplitApi";
-import { toast } from "react-toastify";
 import { signOut } from "next-auth/react";
 
 const ChangePassword = () => {
@@ -14,10 +13,11 @@ const ChangePassword = () => {
     handleSubmit,
     formState: { errors },
     reset,
+    getValues,
   } = useForm({
     defaultValues: {
       currentPass: "",
-      confirmCurrentPass: "",
+      confirmNewPass: "",
       newPass: "",
     },
   });
@@ -42,6 +42,14 @@ const ChangePassword = () => {
       alert(response?.error?.data?.message || "Something Went Wrong...");
     }
   };
+  const validateConfirmPassword = (value) => {
+    const newPassword = getValues("newPass");
+    if (value === newPassword) {
+      return true;
+    } else {
+      return "Passwords do not match";
+    }
+  };
   return (
     <div className="flex items-center justify-center  mt-20 p-5">
       <div className="  w-2/5">
@@ -61,15 +69,7 @@ const ChangePassword = () => {
           validate={{ required: "Current Password is required" }}
           type="password"
         />
-        <ChangePassInputField
-          title="Confirm Current Password"
-          placeholder="Enter Current Password"
-          register={register}
-          name="confirmCurrentPass"
-          error={errors.confirmCurrentPass}
-          validate={{ required: "Current Password is required" }}
-          type="password"
-        />
+
         <ChangePassInputField
           title="New Password"
           placeholder="Enter New Password"
@@ -77,6 +77,18 @@ const ChangePassword = () => {
           name="newPass"
           error={errors.newPass}
           validate={{ required: "New Password is required" }}
+          type="password"
+        />
+        <ChangePassInputField
+          title="Confirm New Password"
+          placeholder="Confirm New Password"
+          register={register}
+          name="confirmNewPass"
+          error={errors.confirmNewPass}
+          validate={{
+            required: "Confirm Password is required",
+            validate: validateConfirmPassword,
+          }}
           type="password"
         />
         <GenericButton

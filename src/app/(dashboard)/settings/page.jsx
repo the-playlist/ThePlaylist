@@ -12,7 +12,7 @@ import { SessionProvider } from "next-auth/react";
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(3);
+    const [selectedItemId, setSelectedItemId] = useState(0);
 
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
@@ -22,7 +22,7 @@ const SelectedItemContent =
 
     return (
       <div>
-        <div className=" flex lg:flex-row mt-10 overflow-x-scroll">
+        <div className=" flex lg:flex-row mt-5 overflow-x-scroll">
           {items?.map((item) => {
             return (
               <button
@@ -102,7 +102,7 @@ const page = () => {
       id: 2,
       icon: (color) => <FavSongIcon color={color} />,
       title: "Favourite Songs",
-      desc: "Suc as add all the songs marked favourite to the playlist. ",
+      desc: "Suc as add all the songs marked favourite to the playlist.",
       detail: "",
     },
     {
@@ -115,7 +115,7 @@ const page = () => {
   ];
   return (
     <SessionProvider>
-      <div className="min-h-screen   ">
+      <div className="  overflow-y-auto max-h-screen pb-24 ">
         <SelectableItemContent items={settingArray} />
       </div>
     </SessionProvider>

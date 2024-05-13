@@ -18,11 +18,19 @@ import {
   useUpdateSortOrderOfSongsMutation,
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
+  useUndoDeletedSongsFromPlaylistMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { IoArrowUndo } from "react-icons/io5";
+
+const LAST_ACTION = "LAST_ACTION";
+const ACTION_TYPE = {
+  SINGLE_DEL: 1,
+  CLEAR_LIST: 2,
+};
 
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
@@ -33,7 +41,9 @@ const page = () => {
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
+  const [undoDeletedSongsAPI] = useUndoDeletedSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
+  const [isUndoDisable, setIsUndoDisable] = useState(null);
   const [isStart, setIsStart] = useState(false);
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
@@ -52,8 +62,20 @@ const page = () => {
   }, []);
 
   useEffect(() => {
+    setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
     fetchPlaylistSongList();
   }, []);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!isUndoDisable) {
+        localStorage.setItem(LAST_ACTION, null);
+        setIsUndoDisable(true);
+      }
+    }, 30000);
+
+    return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
+  }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
   const fetchPlaylistSongList = async () => {
     try {
@@ -86,7 +108,15 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id) => {
     removeItemById(id);
-    let response = await deleteSongByIdApi(id);
+    setUndoItemsInStorage({
+      action: ACTION_TYPE.SINGLE_DEL,
+      data: id,
+    });
+
+    let response = await deleteSongByIdApi({
+      id: id,
+      isDeleted: true,
+    });
     socket.emit("addSongToPlaylistApi", id);
     if (response && !response.error) {
       toast(response?.data?.description);
@@ -142,11 +172,47 @@ const page = () => {
     });
   };
 
+  const setUndoItemsInStorage = (data) => {
+    localStorage.setItem(LAST_ACTION, JSON.stringify(data));
+    setIsUndoDisable(false);
+  };
+
   const deleteAllSongsHandler = async () => {
+    setUndoItemsInStorage({
+      action: ACTION_TYPE.CLEAR_LIST,
+      data: playlistSongList,
+    });
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
       toast.success(response?.data?.description);
       fetchPlaylistSongList();
+      socket.emit("addSongToPlaylistApi", null);
+    }
+  };
+
+  const onUndoPressHandler = async () => {
+    const lastAction = JSON.parse(localStorage.getItem(LAST_ACTION));
+    switch (lastAction.action) {
+      case ACTION_TYPE.SINGLE_DEL: // handle the logic for single Delete
+        await deleteSongByIdApi({
+          id: lastAction?.data,
+          isDeleted: false,
+        });
+        socket.emit("addSongToPlaylistApi", lastAction?.data);
+        await fetchPlaylistSongList();
+        localStorage.setItem(LAST_ACTION, null);
+        setIsUndoDisable(true);
+        break;
+      case ACTION_TYPE.CLEAR_LIST: // handle the logic for clear list
+        const listItems = lastAction.data.map((item) => item._id);
+        await undoDeletedSongsAPI({ data: listItems });
+        socket.emit("addSongToPlaylistApi", lastAction?.data);
+        await fetchPlaylistSongList();
+        localStorage.setItem(LAST_ACTION, null);
+        setIsUndoDisable(true);
+
+      default:
+        break;
     }
   };
 
@@ -395,10 +461,19 @@ const page = () => {
               >
                 + Add a Song
               </button>
-              {/* <button className="ml-4 w-1/2  text-base flex items-center bg-white  text-black font-bold py-3 px-4 rounded-md justify-center hover:bg-active-tab">
-              <IoArrowUndo />
-              <span className="ml-2">Undo Action</span>
-            </button> */}
+              <button
+                disabled={isUndoDisable}
+                onClick={onUndoPressHandler}
+                className={`ml-4  w-full shadow-md text-base flex items-center bg-white ${
+                  isUndoDisable &&
+                  "bg-slate-200 cursor-not-allowed text-slate-400"
+                }   text-black font-bold py-3 px-4 rounded-md justify-center ${
+                  !isUndoDisable && "hover:bg-active-tab"
+                }`}
+              >
+                <IoArrowUndo />
+                <span className="ml-2">Undo Action</span>
+              </button>
               {selectSongModal && (
                 <SelectSongModal
                   items={assignSongsList}

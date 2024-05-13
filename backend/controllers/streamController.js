@@ -10,7 +10,7 @@ export const sendStreamRequest = async (req, res, next) => {
 };
 
 export const getStreamRequest = async (req, res, next) => {
-  const requestList = await Stream.find();
+  const requestList = await Stream.find({ isActive: true });
 
   const response = new ResponseModel(
     true,
@@ -56,11 +56,50 @@ export const createStreamUser = (req, res) => {
 
 export const sendStreamRequestToMaster = async (req, res) => {
   const { url, userId, tableNo } = req?.body || {};
-  const request = await Stream.create({ url, userId, tableNo });
+
+  let request;
+
+  const existingRequest = await Stream.findOne({ userId });
+
+  if (existingRequest) {
+    request = await Stream.findOneAndUpdate(
+      { userId },
+      { url, tableNo, isActive: true, isAccepted: false },
+      { runValidators: true, new: true }
+    );
+  } else {
+    request = await Stream.create({ url, userId, tableNo });
+  }
+
   let response = new ResponseModel(
     true,
-    "Request placed successfully",
+    existingRequest
+      ? "Request updated successfully"
+      : "Request placed successfully",
     request
+  );
+  res.status(200).json(response);
+};
+
+export const changeStreamStatus = async (req, res) => {
+  const { id, isActive, isAccepted } = req?.body || {};
+
+  if (isAccepted) {
+    await Stream.findOneAndUpdate({ _id: id }, { isAccepted });
+    await Stream.updateMany({ _id: { $ne: id } }, { isAccepted: false });
+  }
+  await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
+
+  let response = new ResponseModel(true, "status changed successfully");
+  res.status(200).json(response);
+};
+
+export const getLiveStream = async (req, res, next) => {
+  const requestList = await Stream.find({ isAccepted: true, isActive: true });
+  const response = new ResponseModel(
+    true,
+    "Songs fetched successfully.",
+    requestList
   );
   res.status(200).json(response);
 };

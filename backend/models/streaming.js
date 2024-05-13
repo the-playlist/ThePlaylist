@@ -5,6 +5,14 @@ const streamRequestSchema = new Schema(
     url: String,
     tableNo: Number,
     userId: String,
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+    isAccepted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

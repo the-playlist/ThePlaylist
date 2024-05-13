@@ -274,92 +274,166 @@ import {
   StreamCall,
   StreamVideoClient,
 } from "@stream-io/video-react-sdk";
+import {
+  useCall,
+  useCallStateHooks,
+  ParticipantView,
+} from "@stream-io/video-react-sdk";
 
-import { useLazyGetStreamRequestQuery } from "../_utils/redux/slice/emptySplitApi";
+import {
+  useLazyGetStreamRequestQuery,
+  useChangeStreamRequestStatusMutation,
+} from "../_utils/redux/slice/emptySplitApi";
 import ReactHlsPlayer from "react-hls-player";
+import { io } from "socket.io-client";
+import { Listener_URL } from "../_utils/common/constants";
+import { CustomLoader } from "../_components";
 
 const StreamResponse = () => {
+  const [socket, setSocket] = useState();
   const [getStreamRequestListApi, getStreamRequestResponse] =
     useLazyGetStreamRequestQuery();
+  const [changeStatusApi, changeStatusResponse] =
+    useChangeStreamRequestStatusMutation();
   const [content, setContent] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const socket = io(Listener_URL, { autoConnect: false });
+    socket.connect();
+    setSocket(socket);
+    socket.on("acceptedRejectStreamRes", (item) => {
+      setLoading(true);
+      getStreamRequestHandler();
+    });
+    return () => {
+      console.log("Disconnecting socket...");
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     getStreamRequestHandler();
   }, []);
 
   const getStreamRequestHandler = async () => {
+    setContent([]);
     let response = await getStreamRequestListApi();
     if (response?.data?.success) {
       setContent(response?.data?.content);
     }
+    setLoading(false);
   };
-  // const apiKey = "d7r2k5cjtzqj"; // the API key can be found in the "Credentials" section
-  // const token =
-  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiLTU4ODQzMDM1NyJ9.ZHHa6A-pLOWeOjs_XpgxY_u2j4f6lK4jVwr2wo_Z2e8";
 
-  // const user = {
-  //   id: "-588430357",
-  //   name: "Oliver",
-  //   image: "https://getstream.io/random_svg/?id=oliver&name=Oliver",
-  // };
+  const changeStatusHandler = async (data) => {
+    let response = await changeStatusApi(data);
+    if (response?.data.success) {
+      getStreamRequestHandler();
+    }
+  };
 
-  // const client = new StreamVideoClient({ apiKey, user, token });
-
-  // const call = client.call("livestream", "cq3RQ4xwmNvn");
-
-  // call.join({ create: true });
   return (
     <div className="min-h-screen p-12">
-      <div className="flex flex-wrap items-center ">
-        {content?.map((item) => (
-          <div className="card w-96 bg-base-100 shadow-xl m-9">
-            <figure>
-              <ReactHlsPlayer
-                src={item?.url}
-                autoPlay={true}
-                controls={true}
-                // width="100%"
-                // height="100%"
-              />
-            </figure>
-            <div className="card-body">
-              <h2 className="card-title">Table no:{item?.tableNo} </h2>
-              <p>userId: {item?.userId}</p>
-              <div className=" flex justify-between items-center">
-                <div className="card-actions justify-end">
-                  <button className="btn btn-primary">Accept</button>
+      {loading ? (
+        <CustomLoader />
+      ) : (
+        <div className="flex flex-wrap items-center justify-center ">
+          {content?.length > 0 ? (
+            content?.map((item) => {
+              return (
+                <div className="card w-[30%] bg-base-100 shadow-xl mx-7 mb-14">
+                  <figure>
+                    <ReactHlsPlayer
+                      src={item?.url}
+                      autoPlay={true}
+                      controls={true}
+                      width="100%"
+                      height="100%"
+                    />
+                  </figure>
+                  <div className="card-body">
+                    <h2 className="card-title">Table no:{item?.tableNo} </h2>
+                    <p>userId: {item?.userId}</p>
+                    <div className=" flex justify-between items-center">
+                      <div className="card-actions justify-end w-full mr-2">
+                        <button
+                          onClick={() => {
+                            let payload = {
+                              id: item?._id,
+                              isAccepted: true,
+                              isActive: true,
+                            };
+                            changeStatusHandler(payload);
+                            socket.emit("acceptedRejectStreamReq", true);
+                          }}
+                          className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
+                        >
+                          Accept
+                        </button>
+                      </div>
+                      <div className="card-actions justify-end w-full  ml-2">
+                        <button
+                          onClick={() => {
+                            let payload = {
+                              id: item?._id,
+                              isActive: false,
+                            };
+                            changeStatusHandler(payload);
+                            socket.emit("acceptedRejectStreamReq", false);
+                          }}
+                          className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className="card-actions justify-end">
-                  <button className="btn btn-primary">Reject</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* <StreamVideo client={client}>
-        <StreamCall call={call}>
-          <LivestreamLayout
-            muted={false}
-            enableFullscreen={true}
-            showParticipantCount={true}
-            showDuration={true}
-            showLiveBadge={true}
-            showSpeakerName={false}
-            floatingParticipantProps={{
-              muted: false,
-              enableFullscreen: true,
-              showParticipantCount: true,
-              showDuration: true,
-              showLiveBadge: true,
-              showSpeakerName: false,
-              position: "top-right",
-            }}
-          />
-        </StreamCall>
-      </StreamVideo> */}
+              );
+            })
+          ) : (
+            <div>{"No Records Found"}</div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
+export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
+  const {
+    useIsCallLive,
+    useLocalParticipant,
+    useParticipantCount,
+    useCallEgress,
+  } = useCallStateHooks();
+  const totalParticipants = useParticipantCount();
+  const localParticipant = useLocalParticipant();
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+      <div
+        style={{
+          alignSelf: "flex-start",
+          color: "white",
+          backgroundColor: "blue",
+          borderRadius: "8px",
+          padding: "4px 6px",
+        }}
+      >
+        Live: {totalParticipants}
+      </div>
+      <div style={{ flex: 1, width: "100%", height: "auto" }}>
+        {localParticipant && (
+          <ParticipantView
+            participant={localParticipant}
+            // disables the extra UI elements as such:
+            // name, audio, video indicator, etc...
+            ParticipantViewUI={null}
+          />
+        )}
+      </div>
+    </div>
+  );
+};
 export default StreamResponse;

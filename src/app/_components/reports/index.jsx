@@ -33,7 +33,7 @@ const Reports = () => {
     }
   };
   return (
-    <div className="bg-[#fbfbfb]  shadow-lg rounded-lg my-10 p-5">
+    <div className="bg-[#fbfbfb]  shadow  rounded-lg my-5  px-5">
       <div className="flex justify-between items-center">
         <div className="text-black font-semibold text-lg">Most voted songs</div>
         <div className="text-black font-semibold text-lg">
@@ -58,14 +58,14 @@ const Reports = () => {
           <div className="w-3/12">Down Vote</div>
         </div>
         {reportsSongsApiResponse?.isFetching ? (
-          <div className="flex items-center justify-center h-[555px]">
+          <div className="flex items-center justify-center h-[560px]">
             <span className="loading loading-bars loading-xs"></span>
             <span className="loading loading-bars loading-sm"></span>
             <span className="loading loading-bars loading-md"></span>
             <span className="loading loading-bars loading-lg"></span>
           </div>
         ) : (
-          <div className="overflow-y-auto h-[555px]  pb-20 px-1">
+          <div className="overflow-y-auto h-[560px]   pb-20 px-1">
             {reportsList.map((item, index) => (
               <div
                 className={` text-center bg-white drop-shadow rounded-2xl h-16 flex items-center mb-4 px-5`}

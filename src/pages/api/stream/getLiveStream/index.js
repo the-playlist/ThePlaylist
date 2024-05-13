@@ -1,13 +1,10 @@
 import { createRouter } from "next-connect";
 import connectMongoDb from "../../../../../backend/config/dbConnect";
-import {
-  deleteAllSongsFromPlaylist,
-  undoDeleteSongsFromPlaylist,
-} from "../../../../../backend/controllers/playlistController";
+import { getLiveStream } from "../../../../../backend/controllers/streamController";
 import onError from "../../../../../backend/middlewares/errors";
+
 const router = createRouter();
 connectMongoDb();
+router.get(getLiveStream);
 
-router.delete(deleteAllSongsFromPlaylist);
-router.post(undoDeleteSongsFromPlaylist);
 export default router.handler({ onError });

@@ -95,7 +95,7 @@ const WallView = () => {
               ))}
             </table>
             {songList?.length == 0 && (
-              <div className="flex justify-center text-lg items-center h-64 text-black w-full">
+              <div className="flex justify-center text-lg items-center h-64 text-white w-full">
                 No Songs Found
               </div>
             )}
