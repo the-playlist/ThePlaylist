@@ -328,7 +328,7 @@ const StreamResponse = () => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       getStreamRequestHandler();
-      socket.emit("acceptedRejectStreamReq", false);
+      socket.emit("acceptedRejectStreamReq", data?.isActive ? true : false);
     }
   };
 
@@ -363,7 +363,6 @@ const StreamResponse = () => {
                             isActive: true,
                           };
                           changeStatusHandler(payload);
-                          socket.emit("acceptedRejectStreamReq", true);
                         }}
                         className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
                       >
