@@ -402,6 +402,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     };
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
+      socket.emit("acceptedRejectStreamReq");
       setContent(response?.data?.content);
       toast(response?.data?.description);
       handleClick();
@@ -510,7 +511,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
             <button
               className="btn btn-primary bg-primary border-0 text-sm  w-full text-black"
               onClick={() => {
-                socket.emit("acceptedRejectStreamReq");
                 call?.goLive({ start_hls: true });
               }}
             >

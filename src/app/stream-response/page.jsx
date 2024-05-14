@@ -317,7 +317,6 @@ const StreamResponse = () => {
   }, []);
 
   const getStreamRequestHandler = async () => {
-    setContent([]);
     let response = await getStreamRequestListApi();
     if (response?.data?.success) {
       setContent(response?.data?.content);
@@ -329,6 +328,7 @@ const StreamResponse = () => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       getStreamRequestHandler();
+      socket.emit("acceptedRejectStreamReq", false);
     }
   };
 
@@ -336,64 +336,63 @@ const StreamResponse = () => {
     <div className="min-h-screen p-12">
       {loading ? (
         <CustomLoader />
-      ) : (
+      ) : content?.length > 0 ? (
         <div className="flex flex-wrap items-center justify-center ">
-          {content?.length > 0 ? (
-            content?.map((item) => {
-              return (
-                <div className="card w-[30%] bg-base-100 shadow-xl mx-7 mb-14">
-                  <figure>
-                    <ReactHlsPlayer
-                      src={item?.url}
-                      autoPlay={true}
-                      controls={true}
-                      width="100%"
-                      height="100%"
-                    />
-                  </figure>
-                  <div className="card-body">
-                    <h2 className="card-title">Table no:{item?.tableNo} </h2>
-                    <p>userId: {item?.userId}</p>
-                    <div className=" flex justify-between items-center">
-                      <div className="card-actions justify-end w-full mr-2">
-                        <button
-                          onClick={() => {
-                            let payload = {
-                              id: item?._id,
-                              isAccepted: true,
-                              isActive: true,
-                            };
-                            changeStatusHandler(payload);
-                            socket.emit("acceptedRejectStreamReq", true);
-                          }}
-                          className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
-                        >
-                          Accept
-                        </button>
-                      </div>
-                      <div className="card-actions justify-end w-full  ml-2">
-                        <button
-                          onClick={() => {
-                            let payload = {
-                              id: item?._id,
-                              isActive: false,
-                            };
-                            changeStatusHandler(payload);
-                            socket.emit("acceptedRejectStreamReq", false);
-                          }}
-                          className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
-                        >
-                          Reject
-                        </button>
-                      </div>
+          {content?.map((item) => {
+            return (
+              <div className="card w-[30%] bg-base-100 shadow-xl mx-7 mb-14">
+                <figure>
+                  <ReactHlsPlayer
+                    src={item?.url}
+                    autoPlay={true}
+                    controls={true}
+                    width="100%"
+                    height="100%"
+                  />
+                </figure>
+                <div className="card-body">
+                  <h2 className="card-title">Table no:{item?.tableNo} </h2>
+                  <p>userId: {item?.userId}</p>
+                  <div className=" flex justify-between items-center">
+                    <div className="card-actions justify-end w-full mr-2">
+                      <button
+                        onClick={() => {
+                          let payload = {
+                            id: item?._id,
+                            isAccepted: true,
+                            isActive: true,
+                          };
+                          changeStatusHandler(payload);
+                          socket.emit("acceptedRejectStreamReq", true);
+                        }}
+                        className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
+                      >
+                        Accept
+                      </button>
+                    </div>
+                    <div className="card-actions justify-end w-full  ml-2">
+                      <button
+                        onClick={() => {
+                          let payload = {
+                            id: item?._id,
+                            isActive: false,
+                          };
+                          changeStatusHandler(payload);
+                        }}
+                        className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
+                      >
+                        Reject
+                      </button>
                     </div>
                   </div>
                 </div>
-              );
-            })
-          ) : (
-            <div>{"No Records Found"}</div>
-          )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-black text-lg flex h-[90vh] items-center justify-center font-semibold">
+          {"No stream requests yet"}
         </div>
       )}
     </div>
