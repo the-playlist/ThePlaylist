@@ -400,40 +400,40 @@ const StreamResponse = () => {
   );
 };
 
-export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
-  const {
-    useIsCallLive,
-    useLocalParticipant,
-    useParticipantCount,
-    useCallEgress,
-  } = useCallStateHooks();
-  const totalParticipants = useParticipantCount();
-  const localParticipant = useLocalParticipant();
+// export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
+//   const {
+//     useIsCallLive,
+//     useLocalParticipant,
+//     useParticipantCount,
+//     useCallEgress,
+//   } = useCallStateHooks();
+//   const totalParticipants = useParticipantCount();
+//   const localParticipant = useLocalParticipant();
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
-      <div
-        style={{
-          alignSelf: "flex-start",
-          color: "white",
-          backgroundColor: "blue",
-          borderRadius: "8px",
-          padding: "4px 6px",
-        }}
-      >
-        Live: {totalParticipants}
-      </div>
-      <div style={{ flex: 1, width: "100%", height: "auto" }}>
-        {localParticipant && (
-          <ParticipantView
-            participant={localParticipant}
-            // disables the extra UI elements as such:
-            // name, audio, video indicator, etc...
-            ParticipantViewUI={null}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
+//       <div
+//         style={{
+//           alignSelf: "flex-start",
+//           color: "white",
+//           backgroundColor: "blue",
+//           borderRadius: "8px",
+//           padding: "4px 6px",
+//         }}
+//       >
+//         Live: {totalParticipants}
+//       </div>
+//       <div style={{ flex: 1, width: "100%", height: "auto" }}>
+//         {localParticipant && (
+//           <ParticipantView
+//             participant={localParticipant}
+//             // disables the extra UI elements as such:
+//             // name, audio, video indicator, etc...
+//             ParticipantViewUI={null}
+//           />
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
 export default StreamResponse;
