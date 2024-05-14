@@ -390,7 +390,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const changeStatusHandler = async (data) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
-      socket.emit("acceptedRejectStreamReq", false);
+      socket.emit("acceptedRejectStreamReq");
     }
   };
 
