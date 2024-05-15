@@ -1,11 +1,35 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import ReactHlsPlayer from "react-hls-player";
+import React, { useEffect, useState, useRef } from "react";
 import { useLazyGetLiveStreamQuery } from "../_utils/redux/slice/emptySplitApi";
+import StreamRequests from "../_components/stream-requests";
+import { io } from "socket.io-client";
+import { Listener_URL } from "../_utils/common/constants";
+import { ToggleFullScreen } from "../_components";
+import { RiFullscreenFill } from "react-icons/ri";
+import { MdOutlineFullscreenExit } from "react-icons/md";
 
 const JumboTron = () => {
   const [getLiveStreamApi] = useLazyGetLiveStreamQuery();
   const [content, setContent] = useState(null);
+  const elementRef = useRef(null);
+  const [isFullScreen, setIsFullScreen] = useState(false);
+
+  useEffect(() => {
+    const socket = io(Listener_URL, { autoConnect: false });
+    socket.connect();
+
+    socket.on("sendReqToMasterRes", (item) => {
+      getLiveStreamHandler();
+    });
+
+    socket.on("acceptedRejectStreamRes", (item) => {
+      getLiveStreamHandler();
+    });
+    return () => {
+      console.log("Disconnecting socket...");
+      socket.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     getLiveStreamHandler();
@@ -13,6 +37,7 @@ const JumboTron = () => {
 
   const getLiveStreamHandler = async () => {
     let response = await getLiveStreamApi();
+
     if (response?.data?.success) {
       const { content } = response?.data;
       setContent(content[0]);
@@ -20,18 +45,27 @@ const JumboTron = () => {
   };
 
   return (
-    <div className="min-h-screen">
-      {content != null ? (
-        <ReactHlsPlayer
-          src={content?.url}
-          autoPlay={true}
-          controls={true}
-          width="100%"
-          height="100%"
-        />
-      ) : (
-        <div className="text-black">waiting for live stream....</div>
-      )}
+    <div className="min-h-screen p-5 bg-white ">
+      <div className=" float-right">
+        <button
+          onClick={() => {
+            ToggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
+          }}
+        >
+          {!isFullScreen ? (
+            <RiFullscreenFill size={30} color="black" />
+          ) : (
+            <MdOutlineFullscreenExit size={40} color="black" />
+          )}
+        </button>
+      </div>
+      <div ref={elementRef} className="bg-white">
+        {content != null ? (
+          <StreamRequests item={content} fullScreen={true} />
+        ) : (
+          <div className="text-black">waiting for live stream....</div>
+        )}
+      </div>
     </div>
   );
 };

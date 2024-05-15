@@ -14,6 +14,7 @@ const config: Config = {
       borderWidth: {
         "1": "1px",
       },
+
       colors: {
         primary: "#EFC440",
         "dashbord-bg": "#FCFCFC",

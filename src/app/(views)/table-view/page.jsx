@@ -13,7 +13,7 @@ import {
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
-import StreamRequest from "@/app/_components/live-video";
+import LiveVideo from "@/app/_components/live-video";
 import { useSearchParams } from "next/navigation";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 
@@ -195,7 +195,7 @@ const TableView = () => {
 
           {streamPayload ? (
             <>
-              <StreamRequest
+              <LiveVideo
                 setStreamPayload={setStreamPayload}
                 streamPayload={streamPayload}
               />

@@ -55,7 +55,7 @@ export const createStreamUser = (req, res) => {
 };
 
 export const sendStreamRequestToMaster = async (req, res) => {
-  const { url, userId, tableNo } = req?.body || {};
+  const { url, userId, tableNo, callId, token } = req?.body || {};
 
   let request;
 
@@ -64,11 +64,11 @@ export const sendStreamRequestToMaster = async (req, res) => {
   if (existingRequest) {
     request = await Stream.findOneAndUpdate(
       { userId },
-      { url, tableNo, isActive: true, isAccepted: false },
+      { url, tableNo, callId, token, isActive: true, isAccepted: false },
       { runValidators: true, new: true }
     );
   } else {
-    request = await Stream.create({ url, userId, tableNo });
+    request = await Stream.create({ url, userId, tableNo, callId, token });
   }
 
   let response = new ResponseModel(
