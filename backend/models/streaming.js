@@ -5,6 +5,8 @@ const streamRequestSchema = new Schema(
     url: String,
     tableNo: Number,
     userId: String,
+    callId: String,
+    token: String,
     isActive: {
       type: Boolean,
       default: true,

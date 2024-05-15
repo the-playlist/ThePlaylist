@@ -18,7 +18,8 @@ import MinuteSecField from "./minutes-sec-field";
 import ChangePassword from "./change-password";
 import ChangePassInputField from "./change-pass-input-field";
 import Reports from "./reports";
-import StreamRequest from "./live-video";
+import LiveVideo from "./live-video";
+import StreamRequest from "./stream-requests";
 
 export {
   NavBar,
@@ -41,5 +42,6 @@ export {
   ChangePassword,
   ChangePassInputField,
   Reports,
+  LiveVideo,
   StreamRequest,
 };
