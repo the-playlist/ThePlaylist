@@ -83,15 +83,22 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     socket.connect();
     setSocket(socket);
     socket.on("acceptedRejectStreamRes", (item) => {
-      toast(
-        item
-          ? "Now You are live"
-          : "Your stream has been declined by the master "
-      );
-      if (item == false) {
-        call?.stopLive();
+      const { id, isActive } = item;
+      if (id == streamPayload?.callId) {
+        toast(
+          isActive
+            ? "Now You are live"
+            : "Your stream has been declined by the master "
+        );
+        if (isActive == false) {
+          call?.stopLive();
+
+          setStreamPayload(null);
+          setStreamUrl(null);
+          router.replace("/table-view");
+        }
+        setIsActive(false);
       }
-      setIsActive(false);
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -102,7 +109,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const changeStatusHandler = async (data) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
-      socket.emit("sendReqToMasterApi", false);
+      socket.emit("sendReqToMasterApi", streamPayload?.callId, false);
       call?.stopLive();
       call?.endCall();
       setStreamPayload(null);
@@ -121,7 +128,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     };
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
-      socket.emit("sendReqToMasterApi", true);
+      socket.emit("sendReqToMasterApi", streamPayload?.callId, true);
       setContent(response?.data?.content);
       toast(response?.data?.description);
       handleClick();

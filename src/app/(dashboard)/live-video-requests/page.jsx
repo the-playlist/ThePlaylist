@@ -22,7 +22,6 @@ const StreamResponse = () => {
     socket.connect();
     setSocket(socket);
     socket.on("sendReqToMasterRes", (item) => {
-      console.log("item", item);
       getStreamRequestHandler();
     });
 
@@ -52,7 +51,10 @@ const StreamResponse = () => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       getStreamRequestHandler();
-      socket.emit("acceptedRejectStreamReq", data?.isActive ? true : false);
+      socket.emit("acceptedRejectStreamReq", {
+        id: data?.callId,
+        isActive: data?.isActive ? true : false,
+      });
     }
   };
 
@@ -84,6 +86,7 @@ const StreamResponse = () => {
                       <button
                         onClick={() => {
                           let payload = {
+                            callId: item?.callId,
                             id: item?._id,
                             isAccepted: true,
                             isActive: true,
@@ -99,6 +102,7 @@ const StreamResponse = () => {
                       <button
                         onClick={() => {
                           let payload = {
+                            callId: item?.callId,
                             id: item?._id,
                             isActive: false,
                           };

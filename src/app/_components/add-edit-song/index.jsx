@@ -131,7 +131,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                       type="number"
                       placeholder="00"
                       className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
-                      {...register("min", {
+                      {...register("minutes", {
                         required: "Song Duration is required",
                         min: {
                           value: 0,
@@ -153,28 +153,27 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                       type="number"
                       placeholder="00"
                       className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
-                      {...register("introSec", {
+                      {...register("seconds", {
                         min: {
                           value: 0,
-                          message: "Intro seconds cannot be negative",
+                          message: "seconds cannot be negative",
                         },
                         max: {
                           value: 59,
-                          message:
-                            "Maximum intro seconds cannot exceed 59 seconds",
+                          message: "Maximum  seconds cannot exceed 59 seconds",
                         },
                       })}
                     />
                   </div>
                 </div>
-                {errors.min && (
+                {errors.minutes && (
                   <span className=" text-red-900 text-xs font-medium">
-                    {errors.min.message}
+                    {errors.minutes.message}
                   </span>
                 )}
-                {errors.introSec && (
+                {errors.seconds && (
                   <span className=" text-red-900 text-xs font-medium">
-                    {errors.introSec.message}
+                    {errors.seconds.message}
                   </span>
                 )}
               </div>
@@ -188,8 +187,24 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                     type="number"
                     placeholder="00"
                     className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal w-full "
+                    {...register("introSec", {
+                      min: {
+                        value: 0,
+                        message: "Intro seconds cannot be negative",
+                      },
+                      max: {
+                        value: 59,
+                        message:
+                          "Maximum intro seconds cannot exceed 59 seconds",
+                      },
+                    })}
                   />
                 </div>
+                {errors.introSec && (
+                  <span className=" text-red-900 text-xs font-medium">
+                    {errors.introSec.message}
+                  </span>
+                )}
               </div>
             </div>
             <div className="flex w-1/2">

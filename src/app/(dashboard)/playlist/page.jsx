@@ -83,7 +83,11 @@ const page = () => {
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
-        setPlaylistSongList(response?.data?.content?.list);
+        let songList = response?.data?.content?.list;
+        if (songList?.length > 25) {
+          songList = songList.slice(0, 25);
+        }
+        setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }
       setIsLoading(false);
