@@ -5,6 +5,7 @@ import {
   ChangePassIcon,
   ClearSongIcon,
   FavSongIcon,
+  AppearenceIcon,
 } from "@/app/svgs";
 import { ChangePassword, Reports } from "@/app/_components";
 import { SessionProvider } from "next-auth/react";
@@ -87,24 +88,24 @@ const page = () => {
       id: 0,
       icon: (color) => <ChangePassIcon color={color} />,
       title: "Master Password",
-      desc: "Suc as manage master password change or update the password.",
+      desc: "Such as manage master password change or update the password.",
       detail: <ChangePassword />,
     },
     {
       id: 1,
-      icon: (color) => <ClearSongIcon color={color} />,
-      title: "Clear Songs",
-      desc: "Suc as clear all the songs that are listed in the playlist.",
+      icon: (color) => <FavSongIcon color={color} />,
+      title: "Favourite Songs",
+      desc: "Such as add all the songs marked favourite to the playlist.",
+      detail: "",
+    },
+    {
+      id: 2,
+      icon: (color) => <AppearenceIcon color={color} />,
+      title: "Customer Limits & Appearance",
+      desc: "Such as change the customer limits and theme light to dark mode.",
       detail: "",
     },
 
-    {
-      id: 2,
-      icon: (color) => <FavSongIcon color={color} />,
-      title: "Favourite Songs",
-      desc: "Suc as add all the songs marked favourite to the playlist.",
-      detail: "",
-    },
     {
       id: 3,
       icon: (color) => <ReportIcon color={color} />,
