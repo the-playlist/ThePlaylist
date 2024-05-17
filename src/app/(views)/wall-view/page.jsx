@@ -60,9 +60,9 @@ const WallView = () => {
                 }}
               >
                 {!isFullScreen ? (
-                  <RiFullscreenFill size={30} />
+                  <RiFullscreenFill size={30} color="white" />
                 ) : (
-                  <MdOutlineFullscreenExit size={40} />
+                  <MdOutlineFullscreenExit size={40} color="white" />
                 )}
               </button>
             </div>

@@ -11,6 +11,7 @@ import PlaylistIcon from "./playlist";
 import PlayerIcon from "./players";
 import SongIcon from "./song";
 import SettingIcon from "./setting";
+import LiveRequestIcon from "./liveRequest";
 
 export {
   Logo,
@@ -26,4 +27,5 @@ export {
   PlayerIcon,
   SongIcon,
   SettingIcon,
+  LiveRequestIcon,
 };

@@ -4,6 +4,7 @@ import {
   PlayerIcon,
   SongIcon,
   SettingIcon,
+  LiveRequestIcon,
 } from "../svgs";
 
 export const navlinks = [
@@ -36,6 +37,8 @@ export const navlinks = [
   {
     name: "Live Video Requests",
     href: "/live-video-requests",
-    icon: (isActive) => <SettingIcon color={isActive ? "#EFC440" : "#000"} />,
+    icon: (isActive) => (
+      <LiveRequestIcon color={isActive ? "#EFC440" : "#000"} />
+    ),
   },
 ];

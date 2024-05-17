@@ -245,7 +245,7 @@ const page = () => {
             <div className="flex flex-row ">
               {playlistSongList.length > 0 && (
                 <button
-                  className="border-black border rounded p-3 flex-grow-0 mr-2 text-black"
+                  className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
                   onClick={deleteAllSongsHandler}
                 >
                   {deleteAllSongsResponse.isLoading ? (
@@ -253,7 +253,7 @@ const page = () => {
                   ) : (
                     <span className="flex flex-row items-center">
                       <TbMusicX className="mr-2" />
-                      Clear Playlist
+                      Clear Songs
                     </span>
                   )}
                 </button>
