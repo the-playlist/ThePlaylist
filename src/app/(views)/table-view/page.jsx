@@ -127,9 +127,8 @@ const TableView = () => {
   }
 
   const creatStreamUserHandler = async () => {
-    const deviceId = generateDeviceId();
     let payload = {
-      user_id: deviceId,
+      user_id: generateRandomStreamId(8),
       callId: generateRandomStreamId(),
       tableNo: tableNo,
     };
@@ -138,7 +137,7 @@ const TableView = () => {
     const url = `/live-stream?${queryString}`;
 
     // if (response?.data?.success) {
-    router.push(url);
+    router.replace(url);
     // setStreamPayload(response?.data?.content);
     // }
   };
