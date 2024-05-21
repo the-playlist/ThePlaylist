@@ -203,6 +203,7 @@ const page = () => {
           isDeleted: false,
         });
         socket.emit("addSongToPlaylistApi", lastAction?.data);
+        await setPlaylistSongList([]);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
         setIsUndoDisable(true);
@@ -304,11 +305,13 @@ const page = () => {
 
               <DragDropContext
                 onDragEnd={(result) => {
-                  handleDragEnd(result);
+                  if (result?.destination?.index > 1) {
+                    handleDragEnd(result);
+                  }
                 }}
               >
                 <Droppable droppableId="list">
-                  {(provided) => (
+                  {(provided, snapshot) => (
                     <div {...provided?.droppableProps} ref={provided?.innerRef}>
                       {playlistSongList.map((item, index) => {
                         const {
@@ -330,120 +333,124 @@ const page = () => {
                             index={index}
                             isDragDisabled={isLockedSongs}
                           >
-                            {(provided) => (
-                              <>
-                                <div
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  ref={provided.innerRef}
-                                >
+                            {(provided, snapshot) => {
+                              return (
+                                <>
                                   <div
-                                    key={index}
-                                    className={` text-center ${
-                                      isLockedSongs
-                                        ? "bg-top-queue-bg"
-                                        : "bg-white"
-                                    }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    ref={provided.innerRef}
                                   >
-                                    <div className="w-1/12 text-start font-extrabold text-lg">
-                                      {!isLockedSongs ? (
-                                        <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
-                                          <HiOutlineArrowsUpDown />
-                                        </div>
-                                      ) : (
-                                        index + 1
-                                      )}
-                                    </div>
-                                    <div className="w-2/12">{title}</div>
-                                    <div className="w-1/12">
-                                      {!isLockedSongs && (
-                                        <div className="flex items-center justify-center">
-                                          <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2">
-                                              <IoIosArrowUp
-                                                size={18}
-                                                color={"white"}
-                                              />
-                                            </div>
-                                            {upVote}
-                                          </div>
-                                          <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
-                                            <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
-                                              <IoIosArrowDown
-                                                size={18}
-                                                color={"white"}
-                                              />
-                                            </div>
-                                            {downVote}
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                    <div className="w-3/12">{playerName}</div>
-                                    <div className="w-2/12 flex items-center justify-center">
-                                      <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                                        {introSec}
-                                      </div>
-                                    </div>
                                     <div
-                                      className={`w-2/12 flex items-center justify-center `}
+                                      key={index}
+                                      className={` text-center ${
+                                        isLockedSongs
+                                          ? "bg-top-queue-bg"
+                                          : "bg-white"
+                                      }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                     >
-                                      <div
-                                        className={` ${
-                                          index > 1
-                                            ? "bg-[#F7F7F7]"
-                                            : "bg-white"
-                                        } rounded-3xl px-5 py-2`}
-                                      >
-                                        {category}
+                                      <div className="w-1/12 text-start font-extrabold text-lg">
+                                        {!isLockedSongs ? (
+                                          <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
+                                            <HiOutlineArrowsUpDown />
+                                          </div>
+                                        ) : (
+                                          index + 1
+                                        )}
                                       </div>
-                                    </div>
-                                    <div className="">
-                                      <div className="flex items-center justify-end">
-                                        {index === 0 && (
-                                          <SongCountdownTimer
-                                            duration={songDuration}
-                                            advanceTheQueue={() =>
-                                              deleteSongFromPlaylistHandler(
-                                                playlistSongList[0]?._id
-                                              )
-                                            }
-                                            playlistSongList={playlistSongList}
-                                            isStart={isStart}
-                                            setIsStart={setIsStart}
-                                          />
-                                        )}
-                                        {isFav && (
-                                          <FaHeart
-                                            className={`${
-                                              isLockedSongs
-                                                ? "text-white"
-                                                : "text-primary"
-                                            }`}
-                                            size={20}
-                                          />
-                                        )}
+                                      <div className="w-2/12">{title}</div>
+                                      <div className="w-1/12">
                                         {!isLockedSongs && (
-                                          <button
-                                            onClick={() => {
-                                              deleteSongFromPlaylistHandler(
-                                                item?._id
-                                              );
-                                            }}
-                                            className=" hover:cursor-pointer ml-5"
-                                          >
-                                            <FaTrashAlt
-                                              className="text-red-500"
+                                          <div className="flex items-center justify-center">
+                                            <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
+                                              <div className="flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2">
+                                                <IoIosArrowUp
+                                                  size={18}
+                                                  color={"white"}
+                                                />
+                                              </div>
+                                              {upVote}
+                                            </div>
+                                            <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
+                                              <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
+                                                <IoIosArrowDown
+                                                  size={18}
+                                                  color={"white"}
+                                                />
+                                              </div>
+                                              {downVote}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="w-3/12">{playerName}</div>
+                                      <div className="w-2/12 flex items-center justify-center">
+                                        <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                                          {introSec}
+                                        </div>
+                                      </div>
+                                      <div
+                                        className={`w-2/12 flex items-center justify-center `}
+                                      >
+                                        <div
+                                          className={` ${
+                                            index > 1
+                                              ? "bg-[#F7F7F7]"
+                                              : "bg-white"
+                                          } rounded-3xl px-5 py-2`}
+                                        >
+                                          {category}
+                                        </div>
+                                      </div>
+                                      <div className="">
+                                        <div className="flex items-center justify-end">
+                                          {index === 0 && (
+                                            <SongCountdownTimer
+                                              duration={songDuration}
+                                              advanceTheQueue={() =>
+                                                deleteSongFromPlaylistHandler(
+                                                  playlistSongList[0]?._id
+                                                )
+                                              }
+                                              playlistSongList={
+                                                playlistSongList
+                                              }
+                                              isStart={isStart}
+                                              setIsStart={setIsStart}
+                                            />
+                                          )}
+                                          {isFav && (
+                                            <FaHeart
+                                              className={`${
+                                                isLockedSongs
+                                                  ? "text-white"
+                                                  : "text-primary"
+                                              }`}
                                               size={20}
                                             />
-                                          </button>
-                                        )}
+                                          )}
+                                          {!isLockedSongs && (
+                                            <button
+                                              onClick={() => {
+                                                deleteSongFromPlaylistHandler(
+                                                  item?._id
+                                                );
+                                              }}
+                                              className=" hover:cursor-pointer ml-5"
+                                            >
+                                              <FaTrashAlt
+                                                className="text-red-500"
+                                                size={20}
+                                              />
+                                            </button>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              </>
-                            )}
+                                </>
+                              );
+                            }}
                           </Draggable>
                         );
                       })}
