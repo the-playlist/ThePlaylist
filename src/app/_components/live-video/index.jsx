@@ -106,13 +106,15 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           router.replace("/table-view");
         }
         setIsActive(false);
+      } else if (currentLive != null) {
+        if (currentLive != id) {
+          let payload = {
+            id: content?._id,
+            isActive: false,
+          };
+          changeStatusHandler(payload);
+        }
       }
-      // else if (currentLive != null && currentLive != id) {
-      //   call?.stopLive();
-      //   setStreamPayload(null);
-      //   setStreamUrl(null);
-      //   router.replace("/table-view");
-      // }
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -127,7 +129,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
         isTimeOut
           ? "Stream request time out"
           : isTimeOut == false
-          ? "Stream request called"
+          ? "Stream request cancelled"
           : response?.data?.description
       );
       socket.emit("sendReqToMasterApi", {
@@ -150,7 +152,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       callId: streamPayload?.callId,
       token: streamPayload?.token,
     };
-
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
       socket.emit("sendReqToMasterApi", {
@@ -159,6 +160,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       });
       setContent(response?.data?.content);
       toast(response?.data?.description);
+
       handleClick();
     }
   };
@@ -193,6 +195,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const handleClick = () => {
     setIsActive(true);
     setTimer(60);
+    setIsRequestSent(true);
   };
 
   return (
@@ -259,8 +262,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
               disabled={isRequestSent}
               className="btn btn-primary bg-primary disabled:bg-gray-400 disabled:text-white border-0 text-sm  w-full text-black"
               onClick={() => {
-                setIsRequestSent(true);
-                scrollToButton();
+                // scrollToButton();
                 call?.goLive({ start_hls: true });
               }}
             >

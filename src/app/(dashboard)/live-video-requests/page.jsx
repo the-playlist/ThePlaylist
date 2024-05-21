@@ -70,18 +70,21 @@ const StreamResponse = () => {
           <div className="flex flex-wrap items-center justify-start ">
             {streamContent?.map((item) => {
               return item?.isAccepted ? (
-                <LiveVideo
-                  item={item}
-                  socket={socket}
-                  onStopClick={() => {
-                    let payload = {
-                      callId: item?.callId,
-                      id: item?._id,
-                      isActive: false,
-                    };
-                    changeStatusHandler(payload);
-                  }}
-                />
+                <div className="flex w-full flex-col">
+                  <span className=" text-lg font-semibold mb-2">Live View</span>
+                  <LiveVideo
+                    item={item}
+                    socket={socket}
+                    onStopClick={() => {
+                      let payload = {
+                        callId: item?.callId,
+                        id: item?._id,
+                        isActive: false,
+                      };
+                      changeStatusHandler(payload);
+                    }}
+                  />
+                </div>
               ) : (
                 <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
                   <div className="flex justify-between items-center mb-3 ">
