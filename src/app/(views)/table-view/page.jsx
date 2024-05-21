@@ -126,15 +126,19 @@ const TableView = () => {
   }
 
   const creatStreamUserHandler = async () => {
-    const deviceId = generateDeviceId();
-    let response = await createStreamUserApi({
-      user_id: deviceId,
+    let payload = {
+      user_id: generateRandomStreamId(8),
       callId: generateRandomStreamId(),
       tableNo: tableNo,
-    });
-    if (response?.data?.success) {
-      setStreamPayload(response?.data?.content);
-    }
+    };
+    // let response = await createStreamUserApi(payload);
+    const queryString = new URLSearchParams(payload).toString();
+    const url = `/live-stream?${queryString}`;
+
+    // if (response?.data?.success) {
+    router.replace(url);
+    // setStreamPayload(response?.data?.content);
+    // }
   };
   const ActionButtons = ({ index, item }) => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
