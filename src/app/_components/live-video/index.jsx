@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   StreamCall,
   StreamVideo,
@@ -30,9 +30,7 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
   };
 
   const client = new StreamVideoClient({ apiKey, user, token });
-
   const call = client.call("livestream", callId);
-
   call.join({ create: true });
 
   return (
@@ -49,6 +47,7 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
 
 export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const router = useRouter();
+
   const call = useCall();
   const {
     useIsCallLive,
@@ -67,6 +66,15 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const [content, setContent] = useState({});
   const [streamUrl, setStreamUrl] = useState(null);
   const [socket, setSocket] = useState();
+  const [currentLive, setCurrentLive] = useState(null);
+  const [isRequestSent, setIsRequestSent] = useState(false);
+  const buttonRef = useRef(null);
+
+  const scrollToButton = () => {
+    if (buttonRef.current) {
+      buttonRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
     setStreamUrl(egress?.hls?.playlist_url);
@@ -84,20 +92,28 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     setSocket(socket);
     socket.on("acceptedRejectStreamRes", (item) => {
       const { id, isActive } = item;
+      setCurrentLive(id);
       if (id == streamPayload?.callId) {
         toast(
           isActive
             ? "Now You are live"
-            : "Your stream has been declined by the master "
+            : "Your request has been declined by the master"
         );
         if (isActive == false) {
           call?.stopLive();
-
           setStreamPayload(null);
           setStreamUrl(null);
           router.replace("/table-view");
         }
         setIsActive(false);
+      } else if (currentLive != null) {
+        if (currentLive != id) {
+          let payload = {
+            id: content?._id,
+            isActive: false,
+          };
+          changeStatusHandler(payload);
+        }
       }
     });
     return () => {
@@ -106,10 +122,20 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     };
   }, []);
 
-  const changeStatusHandler = async (data) => {
+  const changeStatusHandler = async (data, isTimeOut) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
-      socket.emit("sendReqToMasterApi", streamPayload?.callId, false);
+      toast(
+        isTimeOut
+          ? "Stream request time out"
+          : isTimeOut == false
+          ? "Stream request cancelled"
+          : response?.data?.description
+      );
+      socket.emit("sendReqToMasterApi", {
+        id: streamPayload?.callId,
+        isActive: false,
+      });
       call?.stopLive();
       call?.endCall();
       setStreamPayload(null);
@@ -121,16 +147,20 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const streamRequestHandler = async () => {
     let payload = {
       url: streamUrl,
-      tableNo: streamPayload?.tableNo || 0,
+      tableNo: streamPayload?.tableNo != "null" ? streamPayload?.tableNo : 0,
       userId: streamPayload?.user_id,
       callId: streamPayload?.callId,
       token: streamPayload?.token,
     };
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
-      socket.emit("sendReqToMasterApi", streamPayload?.callId, true);
+      socket.emit("sendReqToMasterApi", {
+        id: streamPayload?.callId,
+        isActive: true,
+      });
       setContent(response?.data?.content);
       toast(response?.data?.description);
+
       handleClick();
     }
   };
@@ -143,16 +173,13 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           if (prevTimer <= 1) {
             clearInterval(intervalId);
             call?.stopLive();
-            // call?.endCall();
             setIsActive(false);
-            // setStreamPayload(null);
-            // setStreamUrl(null);
-            // router.replace("/table-view");
+            setIsRequestSent(false);
             let payload = {
               id: content?._id,
               isActive: false,
             };
-            changeStatusHandler(payload);
+            changeStatusHandler(payload, true);
             return 60;
           }
           return prevTimer - 1;
@@ -168,12 +195,13 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const handleClick = () => {
     setIsActive(true);
     setTimer(60);
+    setIsRequestSent(true);
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
       {isActive && (
-        <div className="text-white text-md">
+        <div className="text-white text-md px-5">
           {`Your request has been sent to master: `}
           <span className="countdown font-mono text-lg  text-white">
             <span style={{ "--value": timer }}> </span>
@@ -181,7 +209,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           </span>
         </div>
       )}
-      <div className="flex w-full  min-h-[80vh]">
+      <div className="flex w-full h-[100vh]">
         {localParticipant && (
           <ParticipantView
             participant={localParticipant}
@@ -190,23 +218,31 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
         )}
       </div>
       <div className="text-white sticky bottom-0 flex ">
-        <div className="w-1/2 p-2">
-          <button
-            className="btn btn-primary bg-primary border-0  w-full text-black"
-            onClick={() => {
-              call?.stopLive();
-              call?.endCall();
-              setStreamPayload(null);
-              setStreamUrl(null);
-              router.replace("/table-view");
-            }}
-          >
-            Go Back
-          </button>
-        </div>
-
-        {isCallLive ? (
+        {currentLive != streamPayload?.callId && (
           <div className="w-1/2 p-2">
+            <button
+              className="btn btn-primary bg-primary border-0  w-full text-black"
+              onClick={() => {
+                if (!isCallLive) {
+                  call?.endCall();
+                  setStreamPayload(null);
+                  setStreamUrl(null);
+                  router.replace("./table-view");
+                } else {
+                  let payload = {
+                    id: content?._id,
+                    isActive: false,
+                  };
+                  changeStatusHandler(payload, false);
+                }
+              }}
+            >
+              Go Back
+            </button>
+          </div>
+        )}
+        {isCallLive && currentLive == streamPayload?.callId ? (
+          <div className="w-full p-2">
             <button
               className="btn btn-primary bg-primary border-0 w-full text-sm text-black"
               onClick={() => {
@@ -223,8 +259,10 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
         ) : (
           <div className="w-1/2 p-2">
             <button
-              className="btn btn-primary bg-primary border-0 text-sm  w-full text-black"
+              disabled={isRequestSent}
+              className="btn btn-primary bg-primary disabled:bg-gray-400 disabled:text-white border-0 text-sm  w-full text-black"
               onClick={() => {
+                // scrollToButton();
                 call?.goLive({ start_hls: true });
               }}
             >

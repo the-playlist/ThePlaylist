@@ -19,11 +19,15 @@ const JumboTron = () => {
     socket.connect();
 
     socket.on("sendReqToMasterRes", (item) => {
-      getLiveStreamHandler();
+      if (item?.id == content?.callId) {
+        getLiveStreamHandler();
+      }
     });
 
     socket.on("acceptedRejectStreamRes", (item) => {
-      getLiveStreamHandler();
+      if (content == null || item?.id != content?.callId) {
+        getLiveStreamHandler();
+      }
     });
     return () => {
       console.log("Disconnecting socket...");

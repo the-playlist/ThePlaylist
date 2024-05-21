@@ -14,10 +14,11 @@ import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import LiveVideo from "@/app/_components/live-video";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { IoArrowBackCircleOutline } from "react-icons/io5";
 
 const TableView = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const tableNo = searchParams.get("tableno");
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
@@ -188,7 +189,7 @@ const TableView = () => {
   };
 
   return (
-    <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
+    <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto   px-5 pt-5">
       {loading ? (
         <CustomLoader bgColor={"bg-white"} />
       ) : (
@@ -197,56 +198,47 @@ const TableView = () => {
             <Logo />
           </div>
 
-          {streamPayload ? (
-            <>
-              <LiveVideo
-                setStreamPayload={setStreamPayload}
-                streamPayload={streamPayload}
-              />
-            </>
-          ) : (
-            <div className="mb-30">
-              {performer.length === 0 && (
-                <div className="flex items-center text-white justify-center flex-1 mt-20 font-semibold text-lg">
-                  The playlist is empty.
-                </div>
-              )}
-              {performer?.map((item, index) => {
-                return (
-                  <div
-                    className={`flex  ${
-                      index < 2 ? "bg-top-queue-bg" : ""
-                    } rounded-md flex-wrap my-2`}
-                  >
-                    <div className="w-1/2  text-start flex items-center">
-                      {index < 2 ? (
-                        <p className="mx-5 font-extrabold text-lg  ">{`${
-                          index < 2 ? index + 1 : ""
-                        }`}</p>
-                      ) : (
-                        <ActionButtons key={index} index={index} item={item} />
-                      )}
-                      <p
-                        className={`font-semibold capitalize ${
-                          index < 2 ? "text-black" : "text-white"
-                        }  text-sm lg:text-lg`}
-                      >
-                        {item?.title}
-                      </p>
-                    </div>
-                    <div
-                      className={`w-1/2 p-4 text-end capitalize ${
+          <div className="mb-32">
+            {performer.length === 0 && (
+              <div className="flex items-center text-white justify-center flex-1 mt-20 font-semibold text-lg">
+                The playlist is empty.
+              </div>
+            )}
+            {performer?.map((item, index) => {
+              return (
+                <div
+                  className={`flex  ${
+                    index < 2 ? "bg-top-queue-bg" : ""
+                  } rounded-md flex-wrap my-2`}
+                >
+                  <div className="w-1/2  text-start flex items-center">
+                    {index < 2 ? (
+                      <p className="mx-5 font-extrabold text-lg  ">{`${
+                        index < 2 ? index + 1 : ""
+                      }`}</p>
+                    ) : (
+                      <ActionButtons key={index} index={index} item={item} />
+                    )}
+                    <p
+                      className={`font-semibold capitalize ${
                         index < 2 ? "text-black" : "text-white"
-                      } text-sm lg:text-lg`}
+                      }  text-sm lg:text-lg`}
                     >
-                      {item?.artist}
-                    </div>
+                      {item?.title}
+                    </p>
                   </div>
-                );
-              })}
-              <ButtonsAtEnd />
-            </div>
-          )}
+                  <div
+                    className={`w-1/2 p-4 text-end capitalize ${
+                      index < 2 ? "text-black" : "text-white"
+                    } text-sm lg:text-lg`}
+                  >
+                    {item?.artist}
+                  </div>
+                </div>
+              );
+            })}
+            <ButtonsAtEnd />
+          </div>
         </>
       )}
     </div>

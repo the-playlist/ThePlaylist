@@ -11,7 +11,7 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "./style.css";
 
-const StreamRequests = ({ item, fullScreen }) => {
+const StreamRequests = ({ item, fullScreen, isAccepted }) => {
   const { callId, token } = item;
   const apiKey = "d7r2k5cjtzqj";
   const user = {
@@ -21,10 +21,8 @@ const StreamRequests = ({ item, fullScreen }) => {
   };
   const client = new StreamVideoClient({ apiKey, user, token });
   const call = client.call("livestream", callId);
-
   call.camera.disable();
   call.microphone.disable();
-
   call.join();
 
   return (
@@ -46,8 +44,6 @@ const StreamRequests = ({ item, fullScreen }) => {
                     showParticipantCount={false}
                     showDuration={true}
                     showLiveBadge={true}
-                    // showParticipantCount={false}
-                    //   showSpeakerName={true}
                     muted={false}
                   />
                 </StreamTheme>
@@ -58,8 +54,7 @@ const StreamRequests = ({ item, fullScreen }) => {
               style={{
                 display: "flex",
                 flexDirection: "column",
-
-                height: "14rem",
+                height: isAccepted ? "24rem" : "14rem",
               }}
             >
               <div style={{ flex: 1 }}>
@@ -67,8 +62,6 @@ const StreamRequests = ({ item, fullScreen }) => {
                   showParticipantCount={false}
                   showDuration={false}
                   showLiveBadge={false}
-                  // showParticipantCount={false}
-                  //   showSpeakerName={true}
                   muted={false}
                 />
               </div>
