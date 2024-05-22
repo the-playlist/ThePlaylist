@@ -29,9 +29,30 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
     image: "https://getstream.io/random_svg/?id=oliver&name=Playlist",
   };
 
-  const client = new StreamVideoClient({ apiKey, user, token });
-  const call = client.call("livestream", callId);
-  call.join({ create: true });
+  const [client, setClient] = useState(null);
+  const [call, setCall] = useState(null);
+
+  useEffect(() => {
+    const initCall = async () => {
+      const client = new StreamVideoClient({ apiKey, user, token });
+      const call = client.call("livestream", callId);
+      await call.join({ create: true });
+      await call.goLive({ start_hls: true });
+      setClient(client);
+      setCall(call);
+    };
+
+    initCall();
+
+    return () => {
+      if (call) {
+        call.stopLive();
+        call.endCall();
+      }
+    };
+  }, []);
+
+  if (!client || !call) return null;
 
   return (
     <StreamVideo client={client}>
@@ -47,8 +68,8 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
 
 export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const router = useRouter();
-
   const call = useCall();
+
   const {
     useIsCallLive,
     useLocalParticipant,
@@ -235,9 +256,9 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       </div>
       <div className="text-white sticky bottom-0 flex ">
         {currentLive != streamPayload?.callId && (
-          <div className="w-1/2 p-2">
+          <div className="w-full p-2">
             <button
-              className="btn btn-primary bg-primary border-0  w-full text-black"
+              className="btn btn-primary bg-primary border-0 hover:bg-yellow-500  w-full text-black"
               onClick={() => {
                 if (!isCallLive) {
                   call?.endCall();
@@ -253,14 +274,14 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
                 }
               }}
             >
-              Go Back
+              Cancel Stream Request
             </button>
           </div>
         )}
-        {isCallLive && currentLive == streamPayload?.callId ? (
+        {isCallLive && currentLive == streamPayload?.callId && (
           <div className="w-full p-2">
             <button
-              className="btn btn-primary bg-primary border-0 w-full text-sm text-black"
+              className="btn btn-primary bg-primary border-0 w-full text-sm hover:bg-yellow-500 text-black"
               onClick={() => {
                 let payload = {
                   id: content?._id,
@@ -271,18 +292,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
               }}
             >
               Stop Livestream
-            </button>
-          </div>
-        ) : (
-          <div className="w-1/2 p-2">
-            <button
-              disabled={isRequestSent}
-              className="btn btn-primary bg-primary disabled:bg-gray-400 disabled:text-white border-0 text-sm  w-full text-black"
-              onClick={() => {
-                call?.goLive({ start_hls: true });
-              }}
-            >
-              Request to Start Livestream
             </button>
           </div>
         )}
