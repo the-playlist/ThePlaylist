@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   StreamCall,
   StreamVideo,
@@ -68,13 +68,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const [socket, setSocket] = useState();
   const [currentLive, setCurrentLive] = useState(null);
   const [isRequestSent, setIsRequestSent] = useState(false);
-  const buttonRef = useRef(null);
-
-  const scrollToButton = () => {
-    if (buttonRef.current) {
-      buttonRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
   useEffect(() => {
     setStreamUrl(egress?.hls?.playlist_url);
@@ -101,6 +94,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
         );
         if (isActive == false) {
           call?.stopLive();
+          call?.endCall();
           setStreamPayload(null);
           setStreamUrl(null);
           router.replace("/table-view");
@@ -108,11 +102,13 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
         setIsActive(false);
       }
       if (recentActive?.callId == streamPayload?.callId) {
-        let payload = {
-          id: recentActive?._id,
-          isActive: false,
-        };
-        removeRecentLiveStream(payload, socket, id == streamPayload?.callId);
+        if (isActive) {
+          let payload = {
+            id: recentActive?._id,
+            isActive: false,
+          };
+          removeRecentLiveStream(payload, socket, id == streamPayload?.callId);
+        }
       }
     });
     return () => {
@@ -176,6 +172,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       socket?.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: true,
+        streamPayload: streamPayload,
       });
       setContent(response?.data?.content);
       toast(response?.data?.description);
@@ -282,7 +279,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
               disabled={isRequestSent}
               className="btn btn-primary bg-primary disabled:bg-gray-400 disabled:text-white border-0 text-sm  w-full text-black"
               onClick={() => {
-                // scrollToButton();
                 call?.goLive({ start_hls: true });
               }}
             >
