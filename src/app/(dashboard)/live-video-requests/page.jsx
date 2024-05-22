@@ -9,6 +9,7 @@ import { Listener_URL } from "../../_utils/common/constants";
 import { CustomLoader, StreamRequest } from "@/app/_components";
 import { FaRegStopCircle } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
+import { toast } from "react-toastify";
 
 const StreamResponse = () => {
   const [socket, setSocket] = useState();
@@ -24,6 +25,10 @@ const StreamResponse = () => {
     socket.connect();
     setSocket(socket);
     socket.on("sendReqToMasterRes", (item) => {
+      const { stopByUser } = item;
+      if (stopByUser) {
+        toast("Stream has been stopped by user");
+      }
       getStreamRequestHandler();
     });
 
@@ -69,7 +74,7 @@ const StreamResponse = () => {
       {loading ? (
         <CustomLoader />
       ) : streamContent?.length > 0 ? (
-        <div className=" h-[90vh] overflow-y-scroll mb-32">
+        <div className=" h-[90vh] overflow-y-scroll mb-36">
           <div className="flex flex-wrap items-center justify-start ">
             {streamContent?.map((item) => {
               return item?.isAccepted ? (

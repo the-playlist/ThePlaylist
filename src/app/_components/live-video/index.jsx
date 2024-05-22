@@ -150,6 +150,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       socket.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: false,
+        stopByUser: data?.stopByUser,
       });
       call?.stopLive();
       call?.endCall();
@@ -264,6 +265,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
                 let payload = {
                   id: content?._id,
                   isActive: false,
+                  stopByUser: true,
                 };
                 changeStatusHandler(payload);
               }}
