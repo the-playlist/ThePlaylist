@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { memo } from "react";
 import {
   LivestreamLayout,
   StreamCall,
@@ -11,19 +11,19 @@ import {
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import "./style.css";
 
-const StreamRequests = ({ item, fullScreen, isAccepted }) => {
-  const { callId, token } = item;
+const StreamRequests = memo(({ item, fullScreen, isAccepted }) => {
+  const { callId, token, userId } = item;
   const apiKey = "d7r2k5cjtzqj";
   const user = {
-    id: item?.userId,
+    id: userId,
     name: "Stream-Viewer",
     image: "https://getstream.io/random_svg/?id=oliver&name=Stream-Viewer",
   };
   const client = new StreamVideoClient({ apiKey, user, token });
   const call = client.call("livestream", callId);
+  call.join();
   call.camera.disable();
   call.microphone.disable();
-  call.join();
 
   return (
     <div>
@@ -71,6 +71,6 @@ const StreamRequests = ({ item, fullScreen, isAccepted }) => {
       </StreamVideo>
     </div>
   );
-};
+});
 
 export default StreamRequests;

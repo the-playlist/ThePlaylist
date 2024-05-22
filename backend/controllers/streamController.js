@@ -13,11 +13,21 @@ export const getStreamRequest = async (req, res, next) => {
   const requestList = await Stream.find({ isActive: true }).sort({
     isAccepted: -1,
   });
+  const acceptedRequests = requestList.filter(
+    (request) => request.isAccepted == true
+  );
+  const activeRequests = requestList.filter(
+    (request) => request.isActive && !request.isAccepted
+  );
+  let content = {
+    isAcceptedRequests: acceptedRequests,
+    isActiveRequests: activeRequests,
+  };
 
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
-    requestList
+    content
   );
   res.status(200).json(response);
 };

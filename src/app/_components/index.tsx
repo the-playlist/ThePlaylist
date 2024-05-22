@@ -20,6 +20,7 @@ import ChangePassInputField from "./change-pass-input-field";
 import Reports from "./reports";
 import LiveVideo from "./live-video";
 import StreamRequest from "./stream-requests";
+import CurrentLiveVideo from "./currently-live";
 
 export {
   NavBar,
@@ -44,4 +45,5 @@ export {
   Reports,
   LiveVideo,
   StreamRequest,
+  CurrentLiveVideo,
 };
