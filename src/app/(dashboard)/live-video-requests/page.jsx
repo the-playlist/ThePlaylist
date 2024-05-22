@@ -165,7 +165,7 @@ const LiveVideo = ({ item, onStopClick, socket }) => {
         <div className=" ">
           <div className="flex items-center  ">
             <div className="bg-[#f0ece0] px-5 py-3 rounded-tl-md rounded-br-md ">
-              Table no:{0}
+              Table no:{item?.tableNo}
             </div>
             <div className="bg-[#E70012] text-white px-3 py-1 hover:bg-[#E70012]  ml-2 text-base rounded-tl-md rounded-br-md flex items-center ">
               <GoDotFill />
@@ -183,7 +183,7 @@ const LiveVideo = ({ item, onStopClick, socket }) => {
             <div className="card-actions justify-end w-full mr-2">
               <button
                 onClick={onStopClick}
-                className="btn btn-primary bg-[#E70012] border-0  text-white  w-full"
+                className="btn btn-primary bg-[#E70012] border-0  hover:bg-red-600 text-white  w-full"
               >
                 <FaRegStopCircle size={25} />
                 Stop Live

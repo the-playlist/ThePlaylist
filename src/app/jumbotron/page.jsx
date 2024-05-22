@@ -19,7 +19,7 @@ const JumboTron = () => {
     socket.connect();
 
     socket.on("sendReqToMasterRes", (item) => {
-      if (item?.id == content?.callId) {
+      if (item?.stopByUser) {
         getLiveStreamHandler();
       }
     });

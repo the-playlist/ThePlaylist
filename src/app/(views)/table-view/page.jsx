@@ -137,7 +137,7 @@ const TableView = () => {
     const url = `/live-stream?${queryString}`;
 
     // if (response?.data?.success) {
-    router.replace(url);
+    router.push(url);
     // setStreamPayload(response?.data?.content);
     // }
   };

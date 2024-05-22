@@ -112,7 +112,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           id: recentActive?._id,
           isActive: false,
         };
-        removeRecentLiveStream(payload, socket);
+        removeRecentLiveStream(payload, socket, id == streamPayload?.callId);
       }
     });
     return () => {
@@ -121,10 +121,12 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     };
   }, []);
 
-  const removeRecentLiveStream = async (data, socket) => {
+  const removeRecentLiveStream = async (data, socket, showMessage) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
-      toast(response?.data?.description);
+      if (!showMessage) {
+        toast(response?.data?.description);
+      }
       socket.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: false,
@@ -169,6 +171,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       token: streamPayload?.token,
     };
     const response = await sendStreamReqApi(payload);
+
     if (response?.data.success) {
       socket?.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
