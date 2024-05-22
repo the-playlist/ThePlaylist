@@ -20,7 +20,7 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 const TableView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tableNo = searchParams.get("tableNo");
+  const tableNo = searchParams.get("tableno");
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -133,7 +133,7 @@ const TableView = () => {
     // let response = await createStreamUserApi(payload);
     const queryString = new URLSearchParams(payload).toString();
     const url = `/live-stream?${queryString}`;
-
+    debugger;
     // if (response?.data?.success) {
     router.push(url);
     // setStreamPayload(response?.data?.content);
