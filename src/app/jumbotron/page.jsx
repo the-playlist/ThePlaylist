@@ -19,7 +19,7 @@ const JumboTron = () => {
     socket.connect();
 
     socket.on("sendReqToMasterRes", (item) => {
-      if (item?.id == content?.callId) {
+      if (item?.stopByUser) {
         getLiveStreamHandler();
       }
     });
@@ -49,25 +49,17 @@ const JumboTron = () => {
   };
 
   return (
-    <div className="min-h-screen p-5 bg-white ">
-      <div className=" float-right">
-        <button
-          onClick={() => {
-            ToggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
-          }}
-        >
-          {!isFullScreen ? (
-            <RiFullscreenFill size={30} color="black" />
-          ) : (
-            <MdOutlineFullscreenExit size={40} color="black" />
-          )}
-        </button>
-      </div>
-      <div ref={elementRef} className="bg-white">
+    <div className="min-h-screen p-5 bg-[#272a30] ">
+      <div className="bg-[#272a30]">
         {content != null ? (
           <StreamRequests item={content} fullScreen={true} />
         ) : (
-          <div className="text-black">waiting for live stream....</div>
+          <div className="flex items-center justify-center">
+            <span className=" bg-white mr-2 loading loading-spinner loading-md"></span>
+            <div className="text-white text-2xl">
+              Waiting for the livestream to start
+            </div>
+          </div>
         )}
       </div>
     </div>
