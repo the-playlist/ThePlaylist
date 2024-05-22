@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { Listener_URL } from "@/app/_utils/common/constants";
 
-const LiveVideo = ({ streamPayload, setStreamPayload }) => {
+const LiveVideo = ({ streamPayload, setStreamPayload, tableNo }) => {
   const { token, user_id, callId } = streamPayload;
   const apiKey = "d7r2k5cjtzqj";
   const user = {
@@ -60,13 +60,18 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
         <MyLivestreamUI
           setStreamPayload={setStreamPayload}
           streamPayload={streamPayload}
+          tableNo={tableNo}
         />
       </StreamCall>
     </StreamVideo>
   );
 };
 
-export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
+export const MyLivestreamUI = ({
+  streamPayload,
+  setStreamPayload,
+  tableNo,
+}) => {
   const router = useRouter();
   const call = useCall();
   const {
@@ -116,7 +121,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           call?.endCall();
           setStreamPayload(null);
           setStreamUrl(null);
-          router.replace("/table-view");
+          router.replace(`/table-view?tableNo=${tableNo}`);
         }
         setIsActive(false);
       }
@@ -150,7 +155,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       call?.endCall();
       setStreamPayload(null);
       setStreamUrl(null);
-      router.replace("/table-view");
+      router.replace(`/table-view?tableNo=${tableNo}`);
     }
   };
 
@@ -173,20 +178,20 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       call?.endCall();
       setStreamPayload(null);
       setStreamUrl(null);
-      router.replace("/table-view");
+      router.replace(`/table-view?tableNo=${tableNo}`);
     }
   };
 
   const streamRequestHandler = async () => {
     let payload = {
       url: streamUrl,
-      tableNo: streamPayload?.tableNo != "null" ? streamPayload?.tableNo : 0,
+      tableNo:
+        streamPayload?.tableNo != "null" ? streamPayload?.tableNo : tableNo,
       userId: streamPayload?.user_id,
       callId: streamPayload?.callId,
       token: streamPayload?.token,
     };
     const response = await sendStreamReqApi(payload);
-
     if (response?.data.success) {
       socket?.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
@@ -261,7 +266,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
                   call?.endCall();
                   setStreamPayload(null);
                   setStreamUrl(null);
-                  router.replace("./table-view");
+                  router.replace(`/table-view?tableNo=${tableNo}`);
                 } else {
                   let payload = {
                     id: content?._id,
