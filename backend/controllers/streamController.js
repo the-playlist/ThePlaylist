@@ -10,7 +10,9 @@ export const sendStreamRequest = async (req, res, next) => {
 };
 
 export const getStreamRequest = async (req, res, next) => {
-  const requestList = await Stream.find({ isActive: true });
+  const requestList = await Stream.find({ isActive: true }).sort({
+    isAccepted: -1,
+  });
 
   const response = new ResponseModel(
     true,
@@ -73,9 +75,7 @@ export const sendStreamRequestToMaster = async (req, res) => {
 
   let response = new ResponseModel(
     true,
-    existingRequest
-      ? "Request updated successfully"
-      : "Request placed successfully",
+    existingRequest ? "Request sent successfully" : "Request sent successfully",
     request
   );
   res.status(200).json(response);
@@ -90,7 +90,10 @@ export const changeStreamStatus = async (req, res) => {
   }
   await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
 
-  let response = new ResponseModel(true, "status changed successfully");
+  let response = new ResponseModel(
+    true,
+    `${isActive == false && "Request Declined"}`
+  );
   res.status(200).json(response);
 };
 
@@ -98,7 +101,7 @@ export const getLiveStream = async (req, res, next) => {
   const requestList = await Stream.find({ isAccepted: true, isActive: true });
   const response = new ResponseModel(
     true,
-    "Songs fetched successfully.",
+    "Streams fetched successfully.",
     requestList
   );
   res.status(200).json(response);

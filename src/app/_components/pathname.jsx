@@ -35,7 +35,7 @@ export const navlinks = [
     icon: (isActive) => <SettingIcon color={isActive ? "#EFC440" : "#000"} />,
   },
   {
-    name: "Live Video Requests",
+    name: "Live Requests",
     href: "/live-video-requests",
     icon: (isActive) => (
       <LiveRequestIcon color={isActive ? "#EFC440" : "#000"} />
