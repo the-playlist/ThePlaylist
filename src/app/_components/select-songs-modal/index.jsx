@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { MdClear } from "react-icons/md";
 import _ from "lodash";
+import { useRouter } from "next/navigation";
 import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -114,58 +115,69 @@ const SelectSongModal = ({
     }
   }, [playersList]);
   const activeSongsCount = playersList?.filter((item) => item.isChecked).length;
+  const router = useRouter();
+
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
         <div className="modal-box  w-1/2 max-w-4xl min-h-1.5 pb-4  p-0 bg-[#fafafafa]">
-          <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
-            <div className="flex justify-between items-center">
-              <div>{`${title} (${activeSongsCount}) `}</div>
-              <button onClick={closeModal}>
-                <MdClear size={20} />
-              </button>
+          {playersList?.length == 0 && (
+            <div className="p-4">
+              <span>
+                There is no currently Active Player, Please Go the Duty Screen
+                and mark attandance.
+              </span>
             </div>
-
-            <div className="relative w-1/3 my-4 flex items-center ">
-              <input
-                type="text"
-                placeholder="Search by Title/PlayerName"
-                value={searchTerm}
-                onBlur={() => {
-                  setSearchTerm(searchTerm.trim());
-                }}
-                onChange={handleSearch}
-                className="block w-full py-5 pl-10 pr-4 border placeholder:text-base border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
-              />
-              <svg
-                className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
-              </svg>
-              {searchTerm?.length > 0 && (
-                <button
-                  className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
-                  onClick={() => setSearchTerm("")}
-                >
-                  <MdClear size={20} className="text-gray-400" />
+          )}
+          {playersList?.length > 0 && (
+            <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
+              <div className="flex justify-between items-center">
+                <div>{`${title} (${activeSongsCount}) `}</div>
+                <button onClick={closeModal}>
+                  <MdClear size={20} />
                 </button>
-              )}
-            </div>
-            {activeSongsCount > SONGS_LIMIT && (
-              <div className="flex w-4/6 text-left text-red-600">
-                {`There is limit that playlist should have only ${SONGS_LIMIT} songs. Please Select only ${SONGS_LIMIT} songs`}
               </div>
-            )}
-            <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-              <div className="w-3/12 ">
-                <div className="flex items-center">
-                  {/* <input
+
+              <div className="relative w-1/3 my-4 flex items-center ">
+                <input
+                  type="text"
+                  placeholder="Search by Title/PlayerName"
+                  value={searchTerm}
+                  onBlur={() => {
+                    setSearchTerm(searchTerm.trim());
+                  }}
+                  onChange={handleSearch}
+                  className="block w-full py-5 pl-10 pr-4 border placeholder:text-base border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                />
+                <svg
+                  className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
+                </svg>
+                {searchTerm?.length > 0 && (
+                  <button
+                    className="absolute right-0 top-4 hover:pointer rounded-r-lg px-4 py-2 "
+                    onClick={() => setSearchTerm("")}
+                  >
+                    <MdClear size={20} className="text-gray-400" />
+                  </button>
+                )}
+              </div>
+              {activeSongsCount > SONGS_LIMIT && (
+                <div className="flex w-4/6 text-left text-red-600">
+                  {`There is limit that playlist should have only ${SONGS_LIMIT} songs. Please Select only ${SONGS_LIMIT} songs`}
+                </div>
+              )}
+              <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+                <div className="w-3/12 ">
+                  <div className="flex items-center">
+                    {/* <input
                     type="checkbox"
                     onClick={() => {
                       setPlayersList((prevPlayerList) =>
@@ -182,14 +194,15 @@ const SelectSongModal = ({
                     )}
                     className="checkbox mr-3 checkbox-success"
                   /> */}
-                  Title
+                    Title
+                  </div>
                 </div>
+                <div className="w-3/12">Player</div>
+                <div className="w-3/12">Category</div>
+                <div className="w-3/12">Intro Seconds</div>
               </div>
-              <div className="w-3/12">Player</div>
-              <div className="w-3/12">Category</div>
-              <div className="w-3/12">Intro Seconds</div>
             </div>
-          </div>
+          )}
           <div className="overflow-y-auto px-4">
             {playersList?.map((item, index) => {
               const matchesSearch =
@@ -270,12 +283,17 @@ const SelectSongModal = ({
                 activeSongsCount > SONGS_LIMIT
               }
               loading={AddSongsToPlaylistResponse?.isLoading}
-              text={btnText}
+              text={playersList?.length == 0 ? "Duty Screen" : btnText}
               onClick={() => {
-                const selectedPlayers = playersList.filter(
-                  (item) => item.isChecked == true
-                );
-                getDesiredOuptut(selectedPlayers);
+                debugger;
+                if (playersList?.length == 0) {
+                  router.push("/duty");
+                } else {
+                  const selectedPlayers = playersList.filter(
+                    (item) => item.isChecked == true
+                  );
+                  getDesiredOuptut(selectedPlayers);
+                }
               }}
             />
           </div>
