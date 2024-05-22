@@ -115,9 +115,7 @@ const StreamResponse = () => {
                   return (
                     <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
                       <div className="flex justify-between items-center mb-3 ">
-                        <h2 className="card-title">
-                          Table no:{item?.tableNo}{" "}
-                        </h2>
+                        <h2 className="card-title">Table no:{item?.tableNo}</h2>
                       </div>
                       <div className="bg-black h-56 rounded-md">
                         <figure>

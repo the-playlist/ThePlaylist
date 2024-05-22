@@ -42,6 +42,7 @@ const Livestream = () => {
         <LiveVideo
           setStreamPayload={setStreamPayload}
           streamPayload={streamPayload}
+          tableNo={tableNo}
         />
       )}
     </div>

@@ -20,10 +20,8 @@ import { IoArrowBackCircleOutline } from "react-icons/io5";
 const TableView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tableNo = searchParams.get("tableno");
+  const tableNo = searchParams.get("tableNo");
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
-  const [createStreamUserApi] = useCreateStreamUserMutation();
-  const [streamPayload, setStreamPayload] = useState(null);
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
