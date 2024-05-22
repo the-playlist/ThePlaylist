@@ -93,9 +93,9 @@ const StreamResponse = () => {
                   <div className="flex justify-between items-center mb-3 ">
                     <h2 className="card-title">Table no:{item?.tableNo} </h2>
 
-                    <div className="border-2 rounded-full border-black ">
+                    {/* <div className="border-2 rounded-full border-black ">
                       <span className="card-title text-sm p-1">20 </span>
-                    </div>
+                    </div> */}
                   </div>
                   <div className="bg-black h-56 rounded-md">
                     <figure>
@@ -162,7 +162,7 @@ const LiveVideo = ({ item, onStopClick, socket }) => {
             <div className="bg-[#f0ece0] px-5 py-3 rounded-tl-md rounded-br-md ">
               Table no:{0}
             </div>
-            <div className="bg-[#E70012] text-white px-3 py-1  ml-2 text-base rounded-tl-md rounded-br-md flex items-center ">
+            <div className="bg-[#E70012] text-white px-3 py-1 hover:bg-[#E70012]  ml-2 text-base rounded-tl-md rounded-br-md flex items-center ">
               <GoDotFill />
               <span>Live</span>
             </div>

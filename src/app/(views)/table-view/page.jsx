@@ -104,7 +104,7 @@ const TableView = () => {
           onClick={() => {
             creatStreamUserHandler();
           }}
-          className="ml-4 w-full text-base flex items-center bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white lg:hover:bg-gray-400"
+          className="ml-4 w-full text-base flex items-center  bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400"
         >
           <FaVideo size={16} className="mr-2" /> Live Video
         </button>
