@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { Listener_URL } from "@/app/_utils/common/constants";
 
-const LiveVideo = ({ streamPayload, setStreamPayload, tableNo }) => {
+const LiveVideo = ({ streamPayload, setStreamPayload, tableno }) => {
   const { token, user_id, callId } = streamPayload;
   const apiKey = "d7r2k5cjtzqj";
   const user = {
@@ -60,7 +60,7 @@ const LiveVideo = ({ streamPayload, setStreamPayload, tableNo }) => {
         <MyLivestreamUI
           setStreamPayload={setStreamPayload}
           streamPayload={streamPayload}
-          tableNo={tableNo}
+          tableno={tableno}
         />
       </StreamCall>
     </StreamVideo>
@@ -70,7 +70,7 @@ const LiveVideo = ({ streamPayload, setStreamPayload, tableNo }) => {
 export const MyLivestreamUI = ({
   streamPayload,
   setStreamPayload,
-  tableNo,
+  tableno,
 }) => {
   const router = useRouter();
   const call = useCall();
@@ -121,7 +121,7 @@ export const MyLivestreamUI = ({
           call?.endCall();
           setStreamPayload(null);
           setStreamUrl(null);
-          router.replace(`/table-view?tableNo=${tableNo}`);
+          router.replace(`/table-view?tableno=${tableno}`);
         }
         setIsActive(false);
       }
@@ -155,7 +155,7 @@ export const MyLivestreamUI = ({
       call?.endCall();
       setStreamPayload(null);
       setStreamUrl(null);
-      router.replace(`/table-view?tableNo=${tableNo}`);
+      router.replace(`/table-view?tableno=${tableno}`);
     }
   };
 
@@ -178,15 +178,15 @@ export const MyLivestreamUI = ({
       call?.endCall();
       setStreamPayload(null);
       setStreamUrl(null);
-      router.replace(`/table-view?tableNo=${tableNo}`);
+      router.replace(`/table-view?tableno=${tableno}`);
     }
   };
 
   const streamRequestHandler = async () => {
     let payload = {
       url: streamUrl,
-      tableNo:
-        streamPayload?.tableNo != "null" ? streamPayload?.tableNo : tableNo,
+      tableno:
+        streamPayload?.tableno != "null" ? streamPayload?.tableno : tableno,
       userId: streamPayload?.user_id,
       callId: streamPayload?.callId,
       token: streamPayload?.token,
@@ -266,7 +266,7 @@ export const MyLivestreamUI = ({
                   call?.endCall();
                   setStreamPayload(null);
                   setStreamUrl(null);
-                  router.replace(`/table-view?tableNo=${tableNo}`);
+                  router.replace(`/table-view?tableno=${tableno}`);
                 } else {
                   let payload = {
                     id: content?._id,

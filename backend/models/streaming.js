@@ -3,7 +3,7 @@ import mongoose, { Schema } from "mongoose";
 const streamRequestSchema = new Schema(
   {
     url: String,
-    tableNo: Number,
+    tableno: Number,
     userId: String,
     callId: String,
     token: String,

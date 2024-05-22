@@ -10,7 +10,7 @@ const Livestream = () => {
   const searchParams = useSearchParams();
   const user_id = searchParams.get("user_id");
   const callId = searchParams.get("callId");
-  const tableNo = searchParams.get("tableNo");
+  const tableno = searchParams.get("tableno");
   const [createStreamUserApi] = useCreateStreamUserMutation();
   const [streamPayload, setStreamPayload] = useState(null);
 
@@ -18,13 +18,13 @@ const Livestream = () => {
     if (user_id && callId) {
       creatStreamUserHandler();
     }
-  }, [user_id, callId, tableNo]);
+  }, [user_id, callId, tableno]);
 
   const creatStreamUserHandler = async () => {
     let payload = {
       user_id: user_id,
       callId: callId,
-      tableNo: tableNo,
+      tableno: tableno,
     };
 
     let response = await createStreamUserApi(payload);
@@ -42,7 +42,7 @@ const Livestream = () => {
         <LiveVideo
           setStreamPayload={setStreamPayload}
           streamPayload={streamPayload}
-          tableNo={tableNo}
+          tableno={tableno}
         />
       )}
     </div>

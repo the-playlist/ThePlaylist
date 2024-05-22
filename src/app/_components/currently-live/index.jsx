@@ -10,7 +10,7 @@ const CurrentLiveVideo = memo(({ item, onStopClick, socket }) => {
         <div className=" ">
           <div className="flex items-center  ">
             <div className="bg-[#f0ece0] px-5 py-3 rounded-tl-md rounded-br-md ">
-              Table no:{item?.tableNo}
+              Table no:{item?.tableno}
             </div>
             <div className="bg-[#E70012] text-white px-3 py-1 hover:bg-[#E70012]  ml-2 text-base rounded-tl-md rounded-br-md flex items-center ">
               <GoDotFill />

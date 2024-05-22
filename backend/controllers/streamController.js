@@ -46,7 +46,7 @@ export const deleteStreamRequest = async (req, res, next) => {
 };
 
 export const createStreamUser = (req, res) => {
-  const { user_id, callId, tableNo } = req.body;
+  const { user_id, callId, tableno } = req.body;
   const api_secret_key = process.env.STREAM_SECRET_KEY;
   const api_key = process.env.STREAM_API_KEY;
 
@@ -57,7 +57,7 @@ export const createStreamUser = (req, res) => {
       token,
       user_id,
       callId,
-      tableNo,
+      tableno,
     });
     res.status(200).json(response);
   } catch (error) {
@@ -67,7 +67,7 @@ export const createStreamUser = (req, res) => {
 };
 
 export const sendStreamRequestToMaster = async (req, res) => {
-  const { url, userId, tableNo, callId, token } = req?.body || {};
+  const { url, userId, tableno, callId, token } = req?.body || {};
 
   let request;
 
@@ -76,11 +76,11 @@ export const sendStreamRequestToMaster = async (req, res) => {
   if (existingRequest) {
     request = await Stream.findOneAndUpdate(
       { userId },
-      { url, tableNo, callId, token, isActive: true, isAccepted: false },
+      { url, tableno, callId, token, isActive: true, isAccepted: false },
       { runValidators: true, new: true }
     );
   } else {
-    request = await Stream.create({ url, userId, tableNo, callId, token });
+    request = await Stream.create({ url, userId, tableno, callId, token });
   }
 
   let response = new ResponseModel(
