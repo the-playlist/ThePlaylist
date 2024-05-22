@@ -24,6 +24,8 @@ const StreamResponse = () => {
   const [changeStatusApi, changeStatusResponse] =
     useChangeStreamRequestStatusMutation();
   const [streamContent, setStreamContent] = useState([]);
+  const [streamAcceptedContent, setStreamAcceptedContent] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [recentActive, setRecentActive] = useState(null);
   useEffect(() => {
@@ -57,10 +59,13 @@ const StreamResponse = () => {
   const getStreamRequestHandler = async () => {
     let response = await getStreamRequestListApi();
     if (response?.data?.success) {
-      const { content } = response?.data;
-      setStreamContent(content);
-      if (content[0]?.isAccepted) {
-        setRecentActive(content[0]);
+      const {
+        content: { isAcceptedRequests, isActiveRequests },
+      } = response?.data;
+      setStreamContent(isActiveRequests);
+      setStreamAcceptedContent(isAcceptedRequests[0]);
+      if (isAcceptedRequests[0]?.isAccepted) {
+        setRecentActive(isAcceptedRequests[0]);
       }
     }
     setLoading(false);
@@ -82,81 +87,84 @@ const StreamResponse = () => {
     <div className="min-h-screen py-10 ">
       {loading ? (
         <CustomLoader />
-      ) : streamContent?.length > 0 ? (
-        <div className=" h-[90vh] overflow-y-scroll mb-36">
-          <div className="flex flex-wrap items-center justify-start ">
-            {streamContent.map((item, index) => {
-              return item?.isAccepted ? (
-                <div className="flex w-full flex-col">
-                  <span className=" text-lg font-semibold mb-2">Live View</span>
-                  <CurrentLiveVideo
-                    item={item}
-                    socket={socket}
-                    onStopClick={() => {
-                      let payload = {
-                        callId: item?.callId,
-                        id: item?._id,
-                        isActive: false,
-                      };
-                      changeStatusHandler(payload);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
-                  <div className="flex justify-between items-center mb-3 ">
-                    <h2 className="card-title">Table no:{item?.tableNo} </h2>
-                  </div>
-                  <div className="bg-black h-56 rounded-md">
-                    <figure>
-                      <StreamRequest item={item} socket={socket} />
-                    </figure>
-                  </div>
-                  <div className="mt-3">
-                    <div className=" flex justify-between items-center">
-                      <div className="card-actions justify-end w-full mr-2">
-                        <button
-                          onClick={() => {
-                            let payload = {
-                              callId: item?.callId,
-                              id: item?._id,
-                              isAccepted: true,
-                              isActive: true,
-                            };
+      ) : (
+        <div className=" h-[90vh] overflow-y-scroll pb-10">
+          {streamAcceptedContent && (
+            <div className="flex w-full flex-col">
+              <span className=" text-lg font-semibold mb-2">Live View</span>
+              <CurrentLiveVideo
+                item={streamAcceptedContent}
+                socket={socket}
+                onStopClick={() => {
+                  let payload = {
+                    callId: streamAcceptedContent?.callId,
+                    id: streamAcceptedContent?._id,
+                    isActive: false,
+                  };
+                  changeStatusHandler(payload);
+                }}
+              />
+            </div>
+          )}
+          {streamContent?.length > 0 ? (
+            <div className="flex flex-wrap items-center justify-start ">
+              {streamContent.map((item, index) => {
+                return (
+                  <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
+                    <div className="flex justify-between items-center mb-3 ">
+                      <h2 className="card-title">Table no:{item?.tableNo} </h2>
+                    </div>
+                    <div className="bg-black h-56 rounded-md">
+                      <figure>
+                        <StreamRequest item={item} socket={socket} />
+                      </figure>
+                    </div>
+                    <div className="mt-3">
+                      <div className=" flex justify-between items-center">
+                        <div className="card-actions justify-end w-full mr-2">
+                          <button
+                            onClick={() => {
+                              let payload = {
+                                callId: item?.callId,
+                                id: item?._id,
+                                isAccepted: true,
+                                isActive: true,
+                              };
 
-                            changeStatusHandler(payload);
-                          }}
-                          className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
-                        >
-                          Accept
-                        </button>
-                      </div>
-                      <div className="card-actions justify-end w-full  ml-2">
-                        <button
-                          onClick={() => {
-                            let payload = {
-                              callId: item?.callId,
-                              id: item?._id,
-                              isActive: false,
-                            };
+                              changeStatusHandler(payload);
+                            }}
+                            className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
+                          >
+                            Accept
+                          </button>
+                        </div>
+                        <div className="card-actions justify-end w-full  ml-2">
+                          <button
+                            onClick={() => {
+                              let payload = {
+                                callId: item?.callId,
+                                id: item?._id,
+                                isActive: false,
+                              };
 
-                            changeStatusHandler(payload);
-                          }}
-                          className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
-                        >
-                          Reject
-                        </button>
+                              changeStatusHandler(payload);
+                            }}
+                            className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
+                          >
+                            Reject
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : (
-        <div className="text-black text-lg flex h-[90vh] items-center justify-center font-semibold">
-          {"No stream requests yet"}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-black text-lg flex h-[90vh] items-center justify-center font-semibold">
+              {"No stream requests yet"}
+            </div>
+          )}
         </div>
       )}
     </div>
