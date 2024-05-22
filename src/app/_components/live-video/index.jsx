@@ -91,9 +91,9 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     socket.connect();
     setSocket(socket);
     socket.on("acceptedRejectStreamRes", (item) => {
-      const { id, isActive } = item;
-      setCurrentLive(id);
+      const { id, isActive, recentActive } = item;
       if (id == streamPayload?.callId) {
+        setCurrentLive(id);
         toast(
           isActive
             ? "Now You are live"
@@ -106,14 +106,13 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
           router.replace("/table-view");
         }
         setIsActive(false);
-      } else if (currentLive != null) {
-        if (currentLive != id) {
-          let payload = {
-            id: content?._id,
-            isActive: false,
-          };
-          changeStatusHandler(payload);
-        }
+      }
+      if (recentActive?.callId == streamPayload?.callId) {
+        let payload = {
+          id: recentActive?._id,
+          isActive: false,
+        };
+        removeRecentLiveStream(payload, socket);
       }
     });
     return () => {
@@ -121,6 +120,22 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
       socket.disconnect();
     };
   }, []);
+
+  const removeRecentLiveStream = async (data, socket) => {
+    let response = await changeStatusApi(data);
+    if (response?.data.success) {
+      toast(response?.data?.description);
+      socket.emit("sendReqToMasterApi", {
+        id: streamPayload?.callId,
+        isActive: false,
+      });
+      call?.stopLive();
+      call?.endCall();
+      setStreamPayload(null);
+      setStreamUrl(null);
+      router.replace("/table-view");
+    }
+  };
 
   const changeStatusHandler = async (data, isTimeOut) => {
     let response = await changeStatusApi(data);
@@ -154,7 +169,7 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
     };
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
-      socket.emit("sendReqToMasterApi", {
+      socket?.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: true,
       });

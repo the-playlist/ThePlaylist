@@ -18,7 +18,7 @@ const StreamResponse = () => {
     useChangeStreamRequestStatusMutation();
   const [streamContent, setStreamContent] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [liveContent, setLiveContent] = useState(null);
+  const [recentActive, setRecentActive] = useState(null);
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -42,9 +42,11 @@ const StreamResponse = () => {
 
   const getStreamRequestHandler = async () => {
     let response = await getStreamRequestListApi();
-
     if (response?.data?.success) {
       const { content } = response?.data;
+      if (content[0]?.isAccepted) {
+        setRecentActive(content[0]);
+      }
       setStreamContent(content);
     }
     setLoading(false);
@@ -57,6 +59,7 @@ const StreamResponse = () => {
       socket.emit("acceptedRejectStreamReq", {
         id: data?.callId,
         isActive: data?.isActive ? true : false,
+        recentActive: recentActive,
       });
     }
   };
@@ -110,7 +113,7 @@ const StreamResponse = () => {
                               isAccepted: true,
                               isActive: true,
                             };
-                            setLiveContent(item);
+
                             changeStatusHandler(payload);
                           }}
                           className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
