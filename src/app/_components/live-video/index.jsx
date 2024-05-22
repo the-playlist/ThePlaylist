@@ -69,7 +69,6 @@ const LiveVideo = ({ streamPayload, setStreamPayload }) => {
 export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const router = useRouter();
   const call = useCall();
-
   const {
     useIsCallLive,
     useLocalParticipant,
@@ -88,7 +87,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
   const [streamUrl, setStreamUrl] = useState(null);
   const [socket, setSocket] = useState();
   const [currentLive, setCurrentLive] = useState(null);
-  const [isRequestSent, setIsRequestSent] = useState(false);
 
   useEffect(() => {
     setStreamUrl(egress?.hls?.playlist_url);
@@ -211,7 +209,6 @@ export const MyLivestreamUI = ({ streamPayload, setStreamPayload }) => {
             clearInterval(intervalId);
             call?.stopLive();
             setIsActive(false);
-            setIsRequestSent(false);
             let payload = {
               id: content?._id,
               isActive: false,
