@@ -21,7 +21,9 @@ import Reports from "./reports";
 import LiveVideo from "./live-video";
 import StreamRequest from "./stream-requests";
 import CurrentLiveVideo from "./currently-live";
-
+import PlaylistComponent from "./playlist-component";
+import AppearanceTabs from "./appearance";
+import ViewMode from "./view-mode";
 export {
   NavBar,
   Loader,
@@ -46,4 +48,7 @@ export {
   LiveVideo,
   StreamRequest,
   CurrentLiveVideo,
+  PlaylistComponent,
+  AppearanceTabs,
+  ViewMode,
 };

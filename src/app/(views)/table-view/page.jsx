@@ -8,24 +8,25 @@ import Link from "next/link";
 import {
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
-  useCreateStreamUserMutation,
+  useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
-import LiveVideo from "@/app/_components/live-video";
 import { useRouter, useSearchParams } from "next/navigation";
-import { IoArrowBackCircleOutline } from "react-icons/io5";
 
 const TableView = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
+
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
+  const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
+
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
-  const id = searchParams.get("id") || 0;
+  const [themeMode, setThemeMode] = useState(false);
 
   function generateDeviceId() {
     const combinedId =
@@ -63,6 +64,11 @@ const TableView = () => {
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
     });
+    socket.on("themeChangeByMasterRes", (item) => {
+      const { title } = item;
+      getThemeByTitleHandler(title);
+    });
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -71,6 +77,7 @@ const TableView = () => {
 
   useEffect(() => {
     fetchPlaylistSongList();
+    getThemeByTitleHandler("Table View");
   }, []);
 
   const fetchPlaylistSongList = async () => {
@@ -86,14 +93,26 @@ const TableView = () => {
     }
   };
 
+  const getThemeByTitleHandler = async (title) => {
+    let response = await getThemeByTitleApi(title);
+    if (response && !response.isError) {
+      const { mode } = response?.data?.content;
+      setThemeMode(mode);
+    }
+  };
+
   const ButtonsAtEnd = ({ onCamPress }) => {
     return (
-      <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
+      <div
+        className={`fixed bottom-0 left-0 w-full ${
+          themeMode ? "bg-white" : "bg-[#1F1F1F]"
+        } flex justify-end p-4`}
+      >
         <Link
           href={"/add-song"}
           className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
         >
-          <div className="rounded-full bg-[#1F1F1F] mr-2 p-1">
+          <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
             <IoAdd size={16} color="white" />
           </div>
           Add a Song
@@ -130,14 +149,9 @@ const TableView = () => {
       callId: generateRandomStreamId(),
       tableno: tableno,
     };
-    // let response = await createStreamUserApi(payload);
     const queryString = new URLSearchParams(payload).toString();
     const url = `/live-stream?${queryString}`;
-    debugger;
-    // if (response?.data?.success) {
     router.push(url);
-    // setStreamPayload(response?.data?.content);
-    // }
   };
   const ActionButtons = ({ index, item }) => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
@@ -169,36 +183,51 @@ const TableView = () => {
         <button
           onClick={() => toggleButton(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote == true ? "bg-green-500" : "bg-[#3A3B3E]"
+            item?.upVote == true
+              ? "bg-green-500"
+              : themeMode
+              ? "bg-white"
+              : "bg-[#3A3B3E]"
           }`}
         >
-          <IoIosArrowUp size={18} color={"white"} />
+          <IoIosArrowUp size={18} color={themeMode ? "black" : "white"} />
         </button>
         <button
           onClick={() => toggleButton(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote === false ? "bg-red-500" : "bg-[#3A3B3E]"
+            item?.upVote === false
+              ? "bg-red-500"
+              : themeMode
+              ? "bg-white"
+              : "bg-[#3A3B3E]"
           } ml-2`}
         >
-          <IoIosArrowDown size={18} color={"white"} />
+          <IoIosArrowDown size={18} color={themeMode ? "black" : "white"} />
         </button>
       </div>
     );
   };
 
   return (
-    <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto   px-5 pt-5">
+    <div
+      className={`overflow-x-auto ${
+        themeMode ? "bg-white" : "bg-[#1F1F1F]"
+      } h-screen overflow-y-scroll mx-auto   px-5 pt-5`}
+    >
       {loading ? (
-        <CustomLoader bgColor={"bg-white"} />
+        <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
       ) : (
         <>
           <div className=" flex items-center justify-center m-5">
             <Logo />
           </div>
-
           <div className="mb-32">
             {performer.length === 0 && (
-              <div className="flex items-center text-white justify-center flex-1 mt-20 font-semibold text-lg">
+              <div
+                className={`flex items-center ${
+                  themeMode ? "text-black" : "text-white"
+                } justify-center flex-1 mt-20 font-semibold text-lg`}
+              >
                 The playlist is empty.
               </div>
             )}
@@ -219,7 +248,11 @@ const TableView = () => {
                     )}
                     <p
                       className={`font-semibold capitalize ${
-                        index < 2 ? "text-black" : "text-white"
+                        index < 2
+                          ? "text-black"
+                          : themeMode
+                          ? "text-black"
+                          : "text-white"
                       }  text-sm lg:text-lg`}
                     >
                       {item?.title}
@@ -227,7 +260,11 @@ const TableView = () => {
                   </div>
                   <div
                     className={`w-1/2 p-4 text-end capitalize ${
-                      index < 2 ? "text-black" : "text-white"
+                      index < 2
+                        ? "text-black"
+                        : themeMode
+                        ? "text-black"
+                        : "text-white"
                     } text-sm lg:text-lg`}
                   >
                     {item?.artist}

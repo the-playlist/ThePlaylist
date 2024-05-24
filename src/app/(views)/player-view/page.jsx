@@ -4,17 +4,22 @@ import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import { CustomLoader, ToggleFullScreen } from "@/app/_components";
-import { useLazyGetSongsFromPlaylistQuery } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useLazyGetSongsFromPlaylistQuery,
+  useLazyGetThemeByTitleQuery,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 
 const PerformerView = () => {
-  const [getPlaylistSongListApi, getPlaylistSongListResponse] =
-    useLazyGetSongsFromPlaylistQuery();
+  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
+  const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
+
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
+  const [themeMode, setThemeMode] = useState(false);
 
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
@@ -22,6 +27,10 @@ const PerformerView = () => {
 
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
+    });
+    socket.on("themeChangeByMasterRes", (item) => {
+      const { title } = item;
+      getThemeByTitleHandler(title);
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -31,6 +40,7 @@ const PerformerView = () => {
 
   useEffect(() => {
     fetchPlaylistSongList();
+    getThemeByTitleHandler("Player View");
   }, []);
 
   const fetchPlaylistSongList = async () => {
@@ -44,12 +54,21 @@ const PerformerView = () => {
       console.error("Fetch failed:", error);
     }
   };
-
+  const getThemeByTitleHandler = async (title) => {
+    let response = await getThemeByTitleApi(title);
+    if (response && !response.isError) {
+      const { mode } = response?.data?.content;
+      setThemeMode(mode);
+    }
+  };
   return (
-    <div className=" bg-[#1F1F1F] min-h-screen" ref={ref}>
+    <div
+      className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
+      ref={ref}
+    >
       <div className="overflow-x-auto mx-auto p-10 ">
         {loading ? (
-          <CustomLoader bgColor={"bg-white"} />
+          <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
         ) : (
           <>
             <div className=" float-right">
@@ -59,9 +78,15 @@ const PerformerView = () => {
                 }}
               >
                 {!isFullScreen ? (
-                  <RiFullscreenFill size={30} color="white" />
+                  <RiFullscreenFill
+                    size={30}
+                    color={themeMode ? "black" : "white"}
+                  />
                 ) : (
-                  <MdOutlineFullscreenExit size={40} color="white" />
+                  <MdOutlineFullscreenExit
+                    size={40}
+                    color={themeMode ? "black" : "white"}
+                  />
                 )}
               </button>
             </div>
@@ -80,7 +105,13 @@ const PerformerView = () => {
               ${
                 index < 2
                   ? "bg-yellow-400 text-black"
-                  : "bg-[#303134] text-white"
+                  : `
+                  ${
+                    themeMode
+                      ? "bg-[#F0F0F0] text-black"
+                      : "bg-[#303134] text-white"
+                  }
+                  `
               }`}
                 >
                   <tr className="rounded-l-lg">

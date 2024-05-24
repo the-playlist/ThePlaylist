@@ -9,6 +9,8 @@ import {
   songReports,
 } from "../aggregation/playlist";
 import { forEach, forIn } from "lodash";
+import Players from "../models/players";
+import mongoose from "mongoose";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -161,4 +163,112 @@ export const undoDeleteSongsFromPlaylist = async (req, res, next) => {
   }
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
+};
+
+function calculateExpirationTime() {
+  const currentDate = new Date();
+  const tomorrowDate = new Date(currentDate);
+  tomorrowDate.setDate(currentDate.getDate() + 1);
+  tomorrowDate.setHours(0, 0, 0, 0);
+  return tomorrowDate;
+}
+
+export const addSongToPlaylistByCustomer = async (req, res) => {
+  const { songId } = req.body;
+
+  if (!songId) {
+    return res.status(400).json({ message: "Song ID is required" });
+  }
+  try {
+    // Fetch players assigned to the song and are on duty
+    const players = await Players.aggregate([
+      {
+        $match: {
+          assignSongs: new mongoose.Types.ObjectId(songId),
+          "duty.status": true,
+        },
+      },
+      {
+        $lookup: {
+          from: "playlists",
+          localField: "_id",
+          foreignField: "assignedPlayer",
+          as: "playlistEntries",
+          pipeline: [
+            {
+              $match: {
+                songData: new mongoose.Types.ObjectId(songId),
+                isDeleted: false,
+              },
+            },
+          ],
+        },
+      },
+      {
+        $addFields: {
+          isInPlaylist: { $gt: [{ $size: "$playlistEntries" }, 0] },
+        },
+      },
+      {
+        $sort: { createdAt: 1 }, // Sort players by createdAt in ascending order
+      },
+      {
+        $project: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          phone: 1,
+          isInPlaylist: 1,
+          playlistEntries: 1,
+        },
+      },
+    ]);
+
+    let playerToAssign = null;
+
+    if (players.length > 0) {
+      // Find a player who is not in the playlist
+      playerToAssign = players.find((player) => !player.isInPlaylist);
+
+      // If all players are already in the playlist, select the second player
+      if (!playerToAssign) {
+        // If the first and last players are the same, select the second player
+        if (
+          players.length > 1 &&
+          players[0]._id.equals(players[players.length - 1]._id)
+        ) {
+          playerToAssign = players[1];
+        } else {
+          playerToAssign = players[0];
+        }
+      }
+    }
+
+    if (playerToAssign) {
+      // Assign the song to this player
+      const newPlaylistEntry = new Playlist({
+        assignedPlayer: playerToAssign._id,
+        songData: new mongoose.Types.ObjectId(songId),
+        expiresAt: calculateExpirationTime(),
+      });
+      await newPlaylistEntry.save();
+      const response = new ResponseModel(
+        true,
+        "Song added to playlist successfully",
+        {
+          message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
+          player: playerToAssign,
+        }
+      );
+      res.status(200).json(response);
+    } else {
+      res.status(200).json({
+        message: "No players available to assign the song",
+        players,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error: error.message });
+  }
 };
