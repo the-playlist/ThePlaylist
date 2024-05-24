@@ -5,9 +5,13 @@ import {
   useLazyGetOnDutyPlayerSongListQuery,
   useLazyGetAssignSongsWithPlayersQuery,
   useAddSongsToPlaylistMutation,
+  useAddSongToPlaylistByCustomerMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { IoSearchOutline } from "react-icons/io5";
+import { toast } from "react-toastify";
+import { Listener_URL } from "../_utils/common/constants";
+import { io } from "socket.io-client";
 
 const Typeahead = () => {
   const [getAssignSongsApi, getAssignSongsResponse] =
@@ -15,6 +19,7 @@ const Typeahead = () => {
 
   const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
     useAddSongsToPlaylistMutation();
+  const [addSongToPlaylistByUserApi] = useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -22,7 +27,17 @@ const Typeahead = () => {
   const [songsListApi, songsListResponse] =
     useLazyGetOnDutyPlayerSongListQuery();
   const [songList, setSongList] = useState([]);
+  const [socket, setSocket] = useState();
+  useEffect(() => {
+    const socket = io(Listener_URL, { autoConnect: false });
+    socket.connect();
+    setSocket(socket);
 
+    return () => {
+      console.log("Disconnecting socket...");
+      socket.disconnect();
+    };
+  }, []);
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -57,6 +72,7 @@ const Typeahead = () => {
   const fetchAssignSongsList = async () => {
     try {
       let response = await getAssignSongsApi(null);
+
       if (response && !response.isError) {
         let data = response?.data?.content;
         setFilteredOptions(data);
@@ -66,20 +82,19 @@ const Typeahead = () => {
       console.error("Fetch failed:", error);
     }
   };
-  const addSongsHandler = async () => {
-    let payload = {
-      songData: selectedSong?._id,
-      assignedPlayer: record?.selectedPlayers?._id,
-      sortOrder: index,
-    };
-    // try {
-    //   let response = await addSongToPlaylistApi(data);
-    //   if (response && !response.error) {
-    //     toast.success(response?.data?.description);
-    //   }
-    // } catch (error) {
-    //   toast.success(error?.message || "Something went wrong.");
-    // }
+  const addSongsHandler = async (id) => {
+    try {
+      let response = await addSongToPlaylistByUserApi({ songId: id });
+      if (response && !response.error) {
+        toast.success(response?.data?.description);
+        socket.emit("addSongToPlaylistApi", id);
+        setInputValue("");
+        setSelectedSong(null);
+        router.back();
+      }
+    } catch (error) {
+      toast.success(error?.message || "Something went wrong.");
+    }
   };
   return (
     <>
@@ -118,7 +133,7 @@ const Typeahead = () => {
           <span className="loading loading-spinner loading-md bg-white"></span>
         </div>
       ) : (
-        <ul className="z-10 w-full  bg-[#1F1F1F]  mt-10 mb-32 overflow-y-auto ">
+        <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">
           {filteredOptions?.map((option) => (
             <div className="border-b-1 border-[#323335]">
               <button
@@ -171,9 +186,7 @@ const Typeahead = () => {
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
-            router.back();
-            setInputValue("");
-            setSelectedSong(null);
+            addSongsHandler(selectedSong?._id);
           }}
           className={`flex w-full items-center ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"

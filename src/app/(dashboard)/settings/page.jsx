@@ -7,13 +7,13 @@ import {
   FavSongIcon,
   AppearenceIcon,
 } from "@/app/svgs";
-import { ChangePassword, Reports } from "@/app/_components";
+import { ChangePassword, Reports, AppearanceTabs } from "@/app/_components";
 import { SessionProvider } from "next-auth/react";
 
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(0);
+    const [selectedItemId, setSelectedItemId] = useState(2);
 
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
@@ -23,7 +23,7 @@ const SelectedItemContent =
 
     return (
       <div>
-        <div className=" flex lg:flex-row mt-5 overflow-x-scroll">
+        <div className=" container mx-auto flex lg:flex-row mt-5 overflow-x-scroll">
           {items?.map((item) => {
             return (
               <button
@@ -103,7 +103,7 @@ const page = () => {
       icon: (color) => <AppearenceIcon color={color} />,
       title: "Customer Limits & Appearance",
       desc: "Such as change the customer limits and theme light to dark mode.",
-      detail: "",
+      detail: <AppearanceTabs />,
     },
 
     {

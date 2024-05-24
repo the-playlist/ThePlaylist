@@ -55,6 +55,9 @@ const page = () => {
     socket.on("votingResponse", (item) => {
       fetchPlaylistSongList();
     });
+    socket.on("addSongToPlaylistApiResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     setSocket(socket);
     return () => {
       console.log("Disconnecting socket...");
@@ -243,7 +246,7 @@ const page = () => {
                 <FaForward />
               </button>
             )}
-            <div className="flex flex-row ">
+            <div className="flex flex-row  ">
               {playlistSongList.length > 0 && (
                 <button
                   className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
@@ -402,8 +405,8 @@ const page = () => {
                                           {category}
                                         </div>
                                       </div>
-                                      <div className="">
-                                        <div className="flex items-center justify-end">
+                                      <div className="w-1/12">
+                                        <div className="flex items-center justify-end ">
                                           {index === 0 && (
                                             <SongCountdownTimer
                                               duration={songDuration}

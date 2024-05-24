@@ -29,6 +29,10 @@ const endPoints = {
   GET_STREAM_REQUEST: "api/stream/getStreamRequest",
   CHANGE_STREAM_REQUEST_STATUS: "api/stream/changeStreamStatus",
   GET_LIVE_STREAM: "api/stream/getLiveStream",
+  ADD_SONG_TO_PLAYLIST_BY_CUSTOMER: "api/playlist/addSongToPlaylistByCustomer",
+  GET_THEME_LIST: "api/theme/getThemeList",
+  ADD_UPDATE_THEME: "api/theme/addUpdateTheme",
+  GET_THEME_BY_TITLE: "api/theme/getThemeByTitle?title=",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -202,6 +206,26 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    addSongToPlaylistByCustomer: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.ADD_SONG_TO_PLAYLIST_BY_CUSTOMER}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getThemeList: builder.query({
+      query: () => endPoints.GET_THEME_LIST,
+    }),
+    addUpdateTheme: builder.mutation({
+      query: (body) => ({
+        url: endPoints.ADD_UPDATE_THEME,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getThemeByTitle: builder.query({
+      query: (body: any) => `${endPoints.GET_THEME_BY_TITLE}${body}`,
+    }),
   }),
 
   // tag use for invalidate api
@@ -236,4 +260,8 @@ export const {
   useUndoDeletedSongsFromPlaylistMutation,
   useChangeStreamRequestStatusMutation,
   useLazyGetLiveStreamQuery,
+  useAddSongToPlaylistByCustomerMutation,
+  useLazyGetThemeListQuery,
+  useAddUpdateThemeMutation,
+  useLazyGetThemeByTitleQuery,
 } = emptySplitApi;
