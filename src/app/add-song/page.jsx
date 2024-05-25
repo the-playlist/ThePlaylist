@@ -74,7 +74,7 @@ const Typeahead = () => {
       let response = await getAssignSongsApi(null);
 
       if (response && !response.isError) {
-        let data = response?.data?.content;
+        let data = response?.data?.content?.list;
         setFilteredOptions(data);
         setSongList(data);
       }

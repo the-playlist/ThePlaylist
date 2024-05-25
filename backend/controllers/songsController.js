@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import Players from "../models/players";
 import Songs from "../models/songs";
 import ResponseModel from "./responseModel";
+import Playlist from "../models/playlist";
 
 export const addUpdateSong = async (req, res, next) => {
   const id = req?.body?.id;
@@ -221,10 +222,13 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
         $match: { _id: new mongoose.Types.ObjectId(id) },
       });
     }
-
     data = await Songs.aggregate(pipeline);
   }
-  const response = new ResponseModel(true, "Songs fetched successfully.", data);
+  const playlistCount = await Playlist.countDocuments({ isDeleted: false });
+  const response = new ResponseModel(true, "Songs fetched successfully.", {
+    list: data,
+    playlistCount: playlistCount,
+  });
   res.status(200).json(response);
 };
 export const deleteSongById = async (req, res, next) => {

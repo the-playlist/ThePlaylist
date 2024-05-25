@@ -4,15 +4,18 @@ import React, { useEffect, useRef, useState } from "react";
 import { MdClear } from "react-icons/md";
 import _ from "lodash";
 import { useRouter } from "next/navigation";
-import { useAddSongsToPlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useAddSongsToPlaylistMutation,
+  useLazyGetLimitByTitleQuery,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import GenericButton from "../generic-button";
-
-const SONGS_LIMIT = 25;
+import { FaCircleInfo } from "react-icons/fa6";
 
 const SelectSongModal = ({
+  playlistCount,
   title,
   openModal,
   closeModal,
@@ -20,11 +23,14 @@ const SelectSongModal = ({
   items,
   fetchList,
 }) => {
+  const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
+  const [songLimit, setSongLimit] = useState(0);
   const [socket, setSocket] = useState();
   const reff = useRef();
   const [status, setStatus] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -51,8 +57,18 @@ const SelectSongModal = ({
 
   useEffect(() => {
     const tempArr = addSelectedPlayers(items);
+    getLimitByTitleHandler();
     setPlayersList(tempArr);
   }, []);
+
+  const getLimitByTitleHandler = async () => {
+    let response = await getLimitByTitleApi("Queue Limit");
+    if (response && !response.isError) {
+      const { value } = response?.data?.content;
+
+      setSongLimit(value || 0);
+    }
+  };
 
   function addSelectedPlayers(data) {
     return data.map((item, index) => {
@@ -63,7 +79,7 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        isChecked: index < SONGS_LIMIT,
+        isChecked: songLimit - playlistCount > index,
       };
     });
   }
@@ -169,9 +185,9 @@ const SelectSongModal = ({
                   </button>
                 )}
               </div>
-              {activeSongsCount > SONGS_LIMIT && (
+              {activeSongsCount > songLimit && (
                 <div className="flex w-4/6 text-left text-red-600">
-                  {`There is limit that playlist should have only ${SONGS_LIMIT} songs. Please Select only ${SONGS_LIMIT} songs`}
+                  {`There is limit that playlist should have only ${songLimit} songs. Please Select only ${songLimit} songs`}
                 </div>
               )}
               <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
@@ -276,16 +292,25 @@ const SelectSongModal = ({
               }
             })}
           </div>
-          <div className="sticky -bottom-5 w-full flex justify-end px-4 pb-4  bg-[#fafafa]">
+          <div className="sticky -bottom-5 w-full   px-4 pb-4  bg-[#fafafa]">
+            {activeSongsCount > songLimit - playlistCount && (
+              <div className="flex  text-sm items-center justify-center my-2">
+                <FaCircleInfo size={12} />
+                <span className="ml-2 text-black">
+                  Please Increase Limit of Playlist to add More Songs into
+                  Playlist
+                </span>
+              </div>
+            )}
             <GenericButton
               disabled={
                 AddSongsToPlaylistResponse?.isLoading ||
-                activeSongsCount > SONGS_LIMIT
+                activeSongsCount > songLimit ||
+                activeSongsCount > songLimit - playlistCount
               }
               loading={AddSongsToPlaylistResponse?.isLoading}
               text={playersList?.length == 0 ? "Duty Screen" : btnText}
               onClick={() => {
-                debugger;
                 if (playersList?.length == 0) {
                   router.push("/duty");
                 } else {
