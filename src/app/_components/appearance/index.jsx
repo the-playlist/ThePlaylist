@@ -144,7 +144,7 @@ const AppearanceTabs = () => {
           } transition-opacity duration-500`}
         >
           {getLimitListRes?.isFetching ? (
-            <CustomLoader isTop={true} />
+            <CustomLoader />
           ) : (
             limitList?.map((item, index) => {
               return (
@@ -249,7 +249,7 @@ const AppearanceTabs = () => {
           <div className=" ">
             <div className="flex flex-col gap-3 ">
               {getThemeListRes?.isFetching ? (
-                <CustomLoader isTop={true} />
+                <CustomLoader />
               ) : (
                 modeList?.map((item) => {
                   return (
