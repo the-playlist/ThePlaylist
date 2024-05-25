@@ -48,7 +48,7 @@ const page = () => {
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-
+  const [playlistCount, setPlaylistCount] = useState(0);
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -87,9 +87,6 @@ const page = () => {
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
-        if (songList?.length > 25) {
-          songList = songList.slice(0, 25);
-        }
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }
@@ -106,8 +103,9 @@ const page = () => {
     try {
       let response = await getAssignSongsApi(null);
       if (response && !response.isError) {
-        let data = response?.data?.content;
-        setAssignSongsList(data);
+        const { list, playlistCount } = response?.data?.content;
+        setPlaylistCount(playlistCount);
+        setAssignSongsList(list);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -490,6 +488,7 @@ const page = () => {
               </button>
               {selectSongModal && (
                 <SelectSongModal
+                  playlistCount={playlistCount}
                   items={assignSongsList}
                   btnText={"Add"}
                   title={"Select songs"}

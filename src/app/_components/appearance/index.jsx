@@ -5,14 +5,20 @@ import ViewMode from "../view-mode";
 import {
   useLazyGetThemeListQuery,
   useAddUpdateThemeMutation,
+  useLazyGetLimitListQuery,
+  useAddUpdateLimitMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { Listener_URL } from "@/app/_utils/common/constants";
+import { IoMdAdd, IoIosRemove } from "react-icons/io";
 
 const AppearanceTabs = () => {
   const [getThemeListApi] = useLazyGetThemeListQuery();
+  const [getLimitListApi] = useLazyGetLimitListQuery();
   const [addUpdateThemeApi] = useAddUpdateThemeMutation();
+  const [addUpdateLimitApi] = useAddUpdateLimitMutation();
+
   const [activeTab, setActiveTab] = useState(1);
 
   const handleTabClick = (tabNumber) => {
@@ -20,6 +26,8 @@ const AppearanceTabs = () => {
   };
 
   const [modeList, setModeList] = useState(null);
+  const [limitList, setLimitList] = useState(null);
+
   const [socket, setSocket] = useState(null);
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
@@ -44,8 +52,35 @@ const AppearanceTabs = () => {
     addUpdateThemeHandler(payload);
   };
 
+  const changeLimitHandler = (id, mode, value, heading) => {
+    if (mode == "time") {
+      setLimitList((prevLimitList) =>
+        prevLimitList.map((list) =>
+          list._id === id
+            ? {
+                ...list,
+                time: value,
+              }
+            : list
+        )
+      );
+    } else {
+      setLimitList((prevLimitList) =>
+        prevLimitList.map((list) =>
+          list._id === id
+            ? {
+                ...list,
+                value: mode == "add" ? list?.value + 1 : list?.value - 1,
+              }
+            : list
+        )
+      );
+    }
+  };
+
   useEffect(() => {
     getThemeApiHandler();
+    getLimitApiHandler();
   }, []);
 
   const addUpdateThemeHandler = async (payload) => {
@@ -56,6 +91,13 @@ const AppearanceTabs = () => {
       getThemeApiHandler();
     }
   };
+  const addUpdateLimitHandler = async (payload) => {
+    let response = await addUpdateLimitApi(payload);
+    if (response && !response.isError) {
+      toast.success(response?.data?.description);
+      getThemeApiHandler();
+    }
+  };
 
   const getThemeApiHandler = async () => {
     let response = await getThemeListApi();
@@ -63,6 +105,14 @@ const AppearanceTabs = () => {
       setModeList(response?.data?.content);
     }
   };
+
+  const getLimitApiHandler = async () => {
+    let response = await getLimitListApi();
+    if (response && !response.isError) {
+      setLimitList(response?.data?.content);
+    }
+  };
+
   return (
     <div className="container mx-auto  py-8 ">
       <div className="flex mb-4 w-full relative bg-white drop-shadow rounded-3xl px-4 py-3">
@@ -92,38 +142,98 @@ const AppearanceTabs = () => {
             activeTab === 1 ? "block" : "hidden"
           } transition-opacity duration-500`}
         >
-          <div
-            className="
-          bg-white py-4 px-3 rounded-lg drop-shadow
-          "
-          >
-            <span className="text-lg font-semibold">Song Limit</span>
-            <div className=" flex justify-between items-center mt-3">
-              <div className="  w-3/4">
-                <div className=" flex items-center w-full">
-                  <span>Song:</span>
-                  <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex px-2 mx-3 ">
-                    <button className=" p-2 border-r text-center text-lg">
-                      -
-                    </button>
-                    <input className="w-full" />
-                    <button className=" p-2 border-l text-center text-lg">
-                      +
-                    </button>
-                  </div>
+          {limitList?.map((item, index) => {
+            return (
+              <div className=" bg-white py-4 px-3 rounded-lg drop-shadow mb-5">
+                <span className="text-lg font-semibold">{item?.heading}</span>
+                <div className=" flex justify-between items-center mt-3">
+                  <div className="  w-3/4">
+                    <div className=" flex items-center w-full">
+                      <span>{item?.title}:</span>
+                      <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex  ml-2 mr-5 h-12  ">
+                        <button
+                          disabled={item?.value == 0}
+                          onClick={() => {
+                            changeLimitHandler(
+                              item?._id,
+                              "subtract",
+                              item?.value + 1,
+                              item?.heading
+                            );
+                          }}
+                          className="p-3   border-r text-center text-lg"
+                        >
+                          <IoIosRemove />
+                        </button>
+                        <input
+                          className="w-full  text-center m-auto focus:outline-none"
+                          value={item?.value}
+                        />
+                        <button
+                          onClick={() => {
+                            changeLimitHandler(
+                              item?._id,
+                              "add",
+                              item?.value + 1,
+                              item?.heading
+                            );
+                          }}
+                          className="p-3  border-l  text-center text-lg"
+                        >
+                          <IoMdAdd />
+                        </button>
+                      </div>
 
-                  <span>Time:</span>
-                  <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex px-2 mx-2 ">
-                    <input className="w-full" />
-                    <div className=" p-2 border-l text-center text-lg">Min</div>
+                      {item?.subTitle && (
+                        <>
+                          <span>{item?.subTitle}:</span>
+                          <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex  mx-2 h-12 p-1 ">
+                            <input
+                              type="number"
+                              className="w-full px-3  focus:outline-none"
+                              value={item?.time}
+                              onChange={(e) => {
+                                changeLimitHandler(
+                                  item?._id,
+                                  "time",
+                                  e?.target?.value,
+                                  item?.heading
+                                );
+                              }}
+                            />
+                            <div className="p-2 flex items-center justify-center  text-center text-sm bg-gray-300">
+                              Min
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="  w-1/3">
+                    <GenericButton
+                      text="Update"
+                      onClick={() => {
+                        let payload;
+                        if (index == 2) {
+                          payload = {
+                            heading: item?.heading,
+                            value: item?.value,
+                          };
+                        } else {
+                          payload = {
+                            heading: item?.heading,
+                            value: item?.value,
+                            time: item?.time,
+                          };
+                        }
+                        addUpdateLimitHandler(payload);
+                      }}
+                    />
                   </div>
                 </div>
               </div>
-              <div className="  w-1/3">
-                <GenericButton text="Update" />
-              </div>
-            </div>
-          </div>
+            );
+          })}
         </div>
 
         <div

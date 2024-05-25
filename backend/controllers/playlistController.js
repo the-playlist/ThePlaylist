@@ -30,6 +30,8 @@ export const addSongsToPlaylist = async (req, res, next) => {
 
 export const getSongsFromPlaylist = async (req, res, next) => {
   const playlist = await Playlist.aggregate(songFromPlaylist);
+  const playlistCount = await Playlist.countDocuments({ isDeleted: false });
+
   const { isFavortiteListType } = await PlaylistType.findOne({
     _id: "662b7a6e80f2c908c92a0b3d",
   }).lean();
@@ -57,6 +59,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   const response = new ResponseModel(true, "Songs fetched successfully.", {
     list: flattenedPlaylist,
     isFavortiteListType: isFavortiteListType,
+    playlistCount, // Add playlistCount to the response object
   });
   res.status(200).json(response);
 };

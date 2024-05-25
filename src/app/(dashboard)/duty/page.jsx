@@ -25,7 +25,7 @@ const DutyScreen = () => {
   const popUpRef = useRef(null);
   const [staffList, setStaffList] = useState([]);
   const [assignSongsList, setAssignSongsList] = useState([]);
-
+  const [playlistCount, setPlaylistCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI] = useUpdateDutyStatusMutation();
@@ -71,8 +71,9 @@ const DutyScreen = () => {
     try {
       let response = await getAssignSongsApi(null);
       if (response && !response.isError) {
-        let data = response?.data?.content;
-        setAssignSongsList(data);
+        const { list, playlistCount } = response?.data?.content;
+        setPlaylistCount(playlistCount);
+        setAssignSongsList(list);
       }
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -261,6 +262,7 @@ const DutyScreen = () => {
               </div>
               {selectSongModal && (
                 <SelectSongModal
+                  playlistCount={playlistCount}
                   items={assignSongsList}
                   btnText={"Push to Queue"}
                   title={"Push to Queue"}

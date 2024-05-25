@@ -33,6 +33,9 @@ const endPoints = {
   GET_THEME_LIST: "api/theme/getThemeList",
   ADD_UPDATE_THEME: "api/theme/addUpdateTheme",
   GET_THEME_BY_TITLE: "api/theme/getThemeByTitle?title=",
+  GET_LIMIT_LIST: "api/limit/getLimitList",
+  ADD_UPDATE_LIMIT: "api/limit/addUpdateLimit",
+  GET_LIMIT_BY_TITLE: "api/limit/getLimitByTitle?heading=",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -226,6 +229,19 @@ export const emptySplitApi = createApi({
     getThemeByTitle: builder.query({
       query: (body: any) => `${endPoints.GET_THEME_BY_TITLE}${body}`,
     }),
+    getLimitList: builder.query({
+      query: () => endPoints.GET_LIMIT_LIST,
+    }),
+    addUpdateLimit: builder.mutation({
+      query: (body) => ({
+        url: endPoints.ADD_UPDATE_LIMIT,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getLimitByTitle: builder.query({
+      query: (body: any) => `${endPoints.GET_LIMIT_BY_TITLE}${body}`,
+    }),
   }),
 
   // tag use for invalidate api
@@ -264,4 +280,7 @@ export const {
   useLazyGetThemeListQuery,
   useAddUpdateThemeMutation,
   useLazyGetThemeByTitleQuery,
+  useLazyGetLimitListQuery,
+  useAddUpdateLimitMutation,
+  useLazyGetLimitByTitleQuery,
 } = emptySplitApi;
