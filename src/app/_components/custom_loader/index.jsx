@@ -1,12 +1,8 @@
 import React from "react";
 
-const CustomLoader = ({ bgColor, isTop }) => {
+const CustomLoader = ({ bgColor }) => {
   return (
-    <div
-      className={`${
-        isTop ? " h-44" : "min-h-screen"
-      }  flex justify-center items-center`}
-    >
+    <div className=" min-h-screen flex justify-center items-center">
       <span
         className={`loading loading-bars loading-xs ${bgColor ? bgColor : ""}`}
       ></span>
