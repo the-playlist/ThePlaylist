@@ -14,8 +14,6 @@ import { Listener_URL } from "../../_utils/common/constants";
 import GenericButton from "../generic-button";
 import { FaCircleInfo } from "react-icons/fa6";
 
-const songLimits = 25;
-
 const SelectSongModal = ({
   playlistCount,
   title,
@@ -64,9 +62,10 @@ const SelectSongModal = ({
   }, []);
 
   const getLimitByTitleHandler = async () => {
-    let response = await getLimitByTitleApi("getLimitByTitleApi");
+    let response = await getLimitByTitleApi("Queue Limit");
     if (response && !response.isError) {
       const { value } = response?.data?.content;
+
       setSongLimit(value || 0);
     }
   };
@@ -80,7 +79,7 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        isChecked: songLimits - playlistCount > index,
+        isChecked: songLimit - playlistCount > index,
       };
     });
   }
@@ -186,9 +185,9 @@ const SelectSongModal = ({
                   </button>
                 )}
               </div>
-              {activeSongsCount > songLimits && (
+              {activeSongsCount > songLimit && (
                 <div className="flex w-4/6 text-left text-red-600">
-                  {`There is limit that playlist should have only ${songLimits} songs. Please Select only ${songLimits} songs`}
+                  {`There is limit that playlist should have only ${songLimit} songs. Please Select only ${songLimit} songs`}
                 </div>
               )}
               <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
@@ -294,7 +293,7 @@ const SelectSongModal = ({
             })}
           </div>
           <div className="sticky -bottom-5 w-full   px-4 pb-4  bg-[#fafafa]">
-            {activeSongsCount > songLimits - playlistCount && (
+            {activeSongsCount > songLimit - playlistCount && (
               <div className="flex  text-sm items-center justify-center my-2">
                 <FaCircleInfo size={12} />
                 <span className="ml-2 text-black">
@@ -306,8 +305,8 @@ const SelectSongModal = ({
             <GenericButton
               disabled={
                 AddSongsToPlaylistResponse?.isLoading ||
-                activeSongsCount > songLimits ||
-                activeSongsCount > songLimits - playlistCount
+                activeSongsCount > songLimit ||
+                activeSongsCount > songLimit - playlistCount
               }
               loading={AddSongsToPlaylistResponse?.isLoading}
               text={playersList?.length == 0 ? "Duty Screen" : btnText}
