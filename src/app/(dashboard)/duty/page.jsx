@@ -164,7 +164,7 @@ const DutyScreen = () => {
               </div>
             </div>
           </dialog>
-          {staffList?.length > 0 && (
+          {staffList?.length > 0 ? (
             <>
               <div className="px-2">
                 <h2 className="font-bold my-5">
@@ -276,6 +276,10 @@ const DutyScreen = () => {
                 />
               )}
             </>
+          ) : (
+            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+              No Players found
+            </div>
           )}
         </>
       )}

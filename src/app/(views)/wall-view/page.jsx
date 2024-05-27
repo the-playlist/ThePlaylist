@@ -21,7 +21,7 @@ const WallView = () => {
   const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
-
+  let screenName = "Wall View";
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -31,7 +31,9 @@ const WallView = () => {
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
-      getThemeByTitleHandler(title);
+      if (screenName == title) {
+        getThemeByTitleHandler(title);
+      }
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -41,7 +43,7 @@ const WallView = () => {
 
   useEffect(() => {
     fetchPlaylistSongList();
-    getThemeByTitleHandler("Wall View");
+    getThemeByTitleHandler(screenName);
   }, []);
 
   const fetchPlaylistSongList = async () => {

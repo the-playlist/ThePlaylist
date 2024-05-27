@@ -27,7 +27,6 @@ const SelectSongModal = ({
   const [songLimit, setSongLimit] = useState(0);
   const [socket, setSocket] = useState();
   const reff = useRef();
-  const [status, setStatus] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
 
@@ -56,22 +55,21 @@ const SelectSongModal = ({
     useAddSongsToPlaylistMutation();
 
   useEffect(() => {
-    const tempArr = addSelectedPlayers(items);
+    let tempArr = addSelectedPlayers(items);
     getLimitByTitleHandler();
     setPlayersList(tempArr);
-  }, []);
+  }, [songLimit]);
 
   const getLimitByTitleHandler = async () => {
     let response = await getLimitByTitleApi("Queue Limit");
     if (response && !response.isError) {
       const { value } = response?.data?.content;
-
       setSongLimit(value || 0);
     }
   };
 
   function addSelectedPlayers(data) {
-    return data.map((item, index) => {
+    return data?.map((item, index) => {
       const selectedPlayer =
         item.assignedPlayers && item.assignedPlayers.length > 0
           ? item.assignedPlayers[0]
@@ -122,14 +120,6 @@ const SelectSongModal = ({
     return transformedRecords;
   };
 
-  useEffect(() => {
-    const allStatus = playersList.every((player) => player.isChecked === true);
-    if (allStatus) {
-      setStatus(true);
-    } else {
-      setStatus(false);
-    }
-  }, [playersList]);
   const activeSongsCount = playersList?.filter((item) => item.isChecked).length;
   const router = useRouter();
 
@@ -192,26 +182,7 @@ const SelectSongModal = ({
               )}
               <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
                 <div className="w-3/12 ">
-                  <div className="flex items-center">
-                    {/* <input
-                    type="checkbox"
-                    onClick={() => {
-                      setPlayersList((prevPlayerList) =>
-                        prevPlayerList.map((player) => ({
-                          ...player,
-                          isChecked: status ? false : true,
-                        }))
-                      );
-                      setStatus(!status);
-                    }}
-                    defaultChecked={false}
-                    checked={playersList.every(
-                      (player) => player.isChecked === true
-                    )}
-                    className="checkbox mr-3 checkbox-success"
-                  /> */}
-                    Title
-                  </div>
+                  <div className="flex items-center">Title</div>
                 </div>
                 <div className="w-3/12">Player</div>
                 <div className="w-3/12">Category</div>
@@ -231,7 +202,7 @@ const SelectSongModal = ({
                 return (
                   <div className="text-base bg-white  font-medium text-black  items-center flex  mb-2  p-5 rounded-lg ">
                     <div className="w-3/12 text-center ">
-                      <div className="flex items-center">
+                      <div className="flex items-start ">
                         <input
                           type="checkbox"
                           onClick={() => {

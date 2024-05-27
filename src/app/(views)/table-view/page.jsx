@@ -4,25 +4,29 @@ import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import Link from "next/link";
+
 import {
   useAddUpdateVoteMutation,
   useLazyGetTableViewSongsQuery,
   useLazyGetThemeByTitleQuery,
+  useLazyGetLimitListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
 
 const TableView = () => {
+  let screenName = "Table View";
   const router = useRouter();
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
-
+  const [getLimitListApi] = useLazyGetLimitListQuery();
   const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
-
+  const [votingLimit, setVotingLimit] = useState(null);
+  const [queueLimit, setQueueLimit] = useState(0);
   const [performer, setPerformers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
@@ -63,12 +67,17 @@ const TableView = () => {
     setSocket(socket);
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
+      getLimitApiHandler();
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
-      getThemeByTitleHandler(title);
+      if (screenName == title) {
+        getThemeByTitleHandler(title);
+      }
     });
-
+    socket.on("limitChangeByMasterRes", (item) => {
+      getLimitApiHandler();
+    });
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -77,7 +86,10 @@ const TableView = () => {
 
   useEffect(() => {
     fetchPlaylistSongList();
-    getThemeByTitleHandler("Table View");
+
+    getThemeByTitleHandler(screenName);
+
+    getLimitApiHandler();
   }, []);
 
   const fetchPlaylistSongList = async () => {
@@ -101,6 +113,16 @@ const TableView = () => {
     }
   };
 
+  const getLimitApiHandler = async () => {
+    let response = await getLimitListApi();
+    if (response && !response.isError) {
+      const queueLimit = response?.data?.content[2]?.value;
+      const voteLimit = response?.data?.content[1];
+      setQueueLimit(queueLimit || 0);
+      setVotingLimit(voteLimit);
+    }
+  };
+
   const ButtonsAtEnd = ({ onCamPress }) => {
     return (
       <div
@@ -108,15 +130,24 @@ const TableView = () => {
           themeMode ? "bg-white" : "bg-[#1F1F1F]"
         } flex justify-end p-4`}
       >
-        <Link
-          href={"/add-song"}
-          className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
+        <button
+          disabled={performer?.length >= queueLimit}
+          onClick={() => {
+            router.push("/add-song");
+          }}
+          className=" text-base w-full items-center bg-top-queue-bg hover:cursor-pointer disabled:bg-gray-300 disabled:text-gray-200 hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
         >
-          <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
-            <IoAdd size={16} color="white" />
+          <div className="flex items-center justify-center">
+            <div
+              className={`rounded-full ${
+                performer?.length >= queueLimit ? "bg-gray-200" : "bg-[#1F1F1F]"
+              } mr-2 p-1`}
+            >
+              <IoAdd size={16} color="white" />
+            </div>
+            Add a Song
           </div>
-          Add a Song
-        </Link>
+        </button>
         <button
           onClick={() => {
             creatStreamUserHandler();
@@ -153,8 +184,38 @@ const TableView = () => {
     const url = `/live-stream?${queryString}`;
     router.push(url);
   };
+
   const ActionButtons = ({ index, item }) => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
+
+    const handleVote = (isTrue) => {
+      const currentTime = new Date().getTime();
+      const prevVoteTime = parseInt(localStorage.getItem("prevVoteTime"), 10);
+      const voteCount = parseInt(localStorage.getItem("voteCount"), 10) || 0;
+      const timeLimit = votingLimit?.time * 60000;
+      const voteCountLimit = votingLimit?.value;
+
+      if (!prevVoteTime) {
+        localStorage.setItem("prevVoteTime", currentTime);
+        localStorage.setItem("voteCount", 1);
+        toggleButton(isTrue);
+        return;
+      }
+      const timeDifference = currentTime - prevVoteTime;
+      if (timeDifference > timeLimit) {
+        localStorage.setItem("prevVoteTime", currentTime);
+        localStorage.setItem("voteCount", 1);
+        toggleButton(isTrue);
+      } else {
+        if (voteCount < voteCountLimit) {
+          localStorage.setItem("voteCount", voteCount + 1);
+          toggleButton(isTrue);
+        } else {
+          toast.error("Vote limit reached. Please try again later.");
+        }
+      }
+    };
+
     const toggleButton = async (isTrue) => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
@@ -177,11 +238,10 @@ const TableView = () => {
         isUpVote: isTrue,
       });
     };
-
     return (
       <div className="flex mr-5">
         <button
-          onClick={() => toggleButton(true)}
+          onClick={() => handleVote(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.upVote == true
               ? "bg-green-500"
@@ -193,7 +253,7 @@ const TableView = () => {
           <IoIosArrowUp size={18} color={themeMode ? "black" : "white"} />
         </button>
         <button
-          onClick={() => toggleButton(false)}
+          onClick={() => handleVote(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.upVote === false
               ? "bg-red-500"

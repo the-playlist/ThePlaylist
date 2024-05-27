@@ -65,57 +65,65 @@ const Players = () => {
               }}
             />
           </div>
-          <div className=" max-h-[80vh] overflow-y-auto">
-            <table className="table table-auto w-full  border-separate border-spacing-y-5 rounded-2xl px-1 ">
-              <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-                <tr className="text-black text-lg font-thin sticky absolute">
-                  <th></th>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Songs</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {playersList?.map((item, index) => (
-                  <tr className="h-20 text-black text-lg  bg-white shadow rounded-2xl ">
-                    <th className="rounded-l-2xl">{index + 1}</th>
-                    <td>{item?.firstName}</td>
-                    <td>{item?.lastName}</td>
-                    <td>{item?.email}</td>
-                    <td>{`+1${item?.phone}`}</td>
-                    <td>
-                      <SongIcon
-                        onClick={() => {
-                          if (item?.assignSongs?.length > 0) {
-                            setCurrentPlayerInfo(item);
-                            document?.getElementById("my_modal_5")?.showModal();
-                          }
-                        }}
-                        count={item?.assignSongs?.length}
-                      />
-                    </td>
-                    <td className="rounded-r-2xl">
-                      <OptionButton
-                        item={item}
-                        index={index}
-                        onEditPeess={() => {
-                          setCurrentPlayerInfo(item);
-                          setAddModalOpens(true);
-                        }}
-                        onDeletePress={() => {
-                          setCurrentPlayerInfo(item);
-                          setDeletePlayerModal(true);
-                        }}
-                      />
-                    </td>
+          {playersList?.length > 0 ? (
+            <div className=" max-h-[80vh] overflow-y-auto">
+              <table className="table table-auto w-full  border-separate border-spacing-y-5 rounded-2xl px-1 ">
+                <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
+                  <tr className="text-black text-lg font-thin sticky absolute">
+                    <th></th>
+                    <th>First Name</th>
+                    <th>Last Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Songs</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {playersList?.map((item, index) => (
+                    <tr className="h-20 text-black text-lg  bg-white shadow rounded-2xl ">
+                      <th className="rounded-l-2xl">{index + 1}</th>
+                      <td>{item?.firstName}</td>
+                      <td>{item?.lastName}</td>
+                      <td>{item?.email}</td>
+                      <td>{`+1${item?.phone}`}</td>
+                      <td>
+                        <SongIcon
+                          onClick={() => {
+                            if (item?.assignSongs?.length > 0) {
+                              setCurrentPlayerInfo(item);
+                              document
+                                ?.getElementById("my_modal_5")
+                                ?.showModal();
+                            }
+                          }}
+                          count={item?.assignSongs?.length}
+                        />
+                      </td>
+                      <td className="rounded-r-2xl">
+                        <OptionButton
+                          item={item}
+                          index={index}
+                          onEditPeess={() => {
+                            setCurrentPlayerInfo(item);
+                            setAddModalOpens(true);
+                          }}
+                          onDeletePress={() => {
+                            setCurrentPlayerInfo(item);
+                            setDeletePlayerModal(true);
+                          }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+              No Players found
+            </div>
+          )}
         </div>
       )}
       {addModalOpens && (

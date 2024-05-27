@@ -67,71 +67,78 @@ const SongsManagment = () => {
               + Add New Song
             </button>
           </div>
-          <div className=" max-h-[80vh] overflow-y-auto">
-            <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
-              <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-                <tr className="text-black text-lg font-thin">
-                  <th></th>
-                  <th>Title</th>
-                  <th>Artist</th>
-                  <th className=" text-center">Qualified</th>
-                  <th className=" text-center">Intro Sec</th>
-                  <th className=" text-center">Category</th>
-                  <th className=" text-center"> Mark as Fav</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {songsList?.map((item, index) => (
-                  <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
-                    <th className="rounded-l-2xl">{index + 1}</th>
-
-                    <td>{item?.title}</td>
-                    <td>{item?.artist}</td>
-                    <td className=" text-center flex justify-center  items-center h-20">
-                      <SongIcon
-                        onClick={() => {
-                          if (item?.qualifiedPlayers?.length > 0) {
-                            setCurrentSongInfo(item);
-                            document?.getElementById("my_modal_5")?.showModal();
-                          }
-                        }}
-                        isUser
-                        count={item?.qualifiedCount}
-                      />
-                    </td>
-                    <td className=" text-center">{`:${
-                      item?.introSec || "N/A"
-                    }`}</td>
-                    <td className=" text-center">
-                      <span className="text-center font-semibold bg-option p-2 rounded-lg">
-                        {item?.category || "N/A"}
-                      </span>
-                    </td>
-                    <td className=" text-center flex justify-center  items-center h-20">
-                      <FavIcon id={item._id} isFav_={item.isFav} />
-                    </td>
-                    <td className="rounded-r-2xl">
-                      {
-                        <OptionButton
-                          item={item}
-                          index={index}
-                          onEditPeess={() => {
-                            setCurrentSongInfo(item);
-                            setAddNewSongModal(true);
-                          }}
-                          onDeletePress={() => {
-                            setCurrentSongInfo(item);
-                            setDeleteSongModal(true);
-                          }}
-                        />
-                      }
-                    </td>
+          {songsList?.length > 0 ? (
+            <div className=" max-h-[80vh] overflow-y-auto">
+              <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
+                <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
+                  <tr className="text-black text-lg font-thin">
+                    <th></th>
+                    <th>Title</th>
+                    <th>Artist</th>
+                    <th className=" text-center">Qualified</th>
+                    <th className=" text-center">Intro Sec</th>
+                    <th className=" text-center">Category</th>
+                    <th className=" text-center"> Mark as Fav</th>
+                    <th></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {songsList?.map((item, index) => (
+                    <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
+                      <th className="rounded-l-2xl">{index + 1}</th>
+                      <td>{item?.title}</td>
+                      <td>{item?.artist}</td>
+                      <td className=" text-center flex justify-center  items-center h-20">
+                        <SongIcon
+                          onClick={() => {
+                            if (item?.qualifiedPlayers?.length > 0) {
+                              setCurrentSongInfo(item);
+                              document
+                                ?.getElementById("my_modal_5")
+                                ?.showModal();
+                            }
+                          }}
+                          isUser
+                          count={item?.qualifiedCount}
+                        />
+                      </td>
+                      <td className=" text-center">{`:${
+                        item?.introSec || "N/A"
+                      }`}</td>
+                      <td className=" text-center">
+                        <span className="text-center font-semibold bg-option p-2 rounded-lg">
+                          {item?.category || "N/A"}
+                        </span>
+                      </td>
+                      <td className=" text-center flex justify-center  items-center h-20">
+                        <FavIcon id={item._id} isFav_={item.isFav} />
+                      </td>
+                      <td className="rounded-r-2xl">
+                        {
+                          <OptionButton
+                            item={item}
+                            index={index}
+                            onEditPeess={() => {
+                              setCurrentSongInfo(item);
+                              setAddNewSongModal(true);
+                            }}
+                            onDeletePress={() => {
+                              setCurrentSongInfo(item);
+                              setDeleteSongModal(true);
+                            }}
+                          />
+                        }
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+              No Songs found
+            </div>
+          )}
           {addNewSongModal && (
             <AddEditSong
               currentInfo={currentSongInfo}

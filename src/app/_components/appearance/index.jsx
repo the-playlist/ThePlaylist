@@ -19,8 +19,8 @@ const AppearanceTabs = () => {
   const [getLimitListApi, getLimitListRes] = useLazyGetLimitListQuery();
   const [addUpdateThemeApi] = useAddUpdateThemeMutation();
   const [addUpdateLimitApi] = useAddUpdateLimitMutation();
-
   const [activeTab, setActiveTab] = useState(1);
+  const [btnLoader, setBtnLoader] = useState(null);
 
   const handleTabClick = (tabNumber) => {
     setActiveTab(tabNumber);
@@ -30,6 +30,7 @@ const AppearanceTabs = () => {
   const [limitList, setLimitList] = useState(null);
 
   const [socket, setSocket] = useState(null);
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -96,8 +97,10 @@ const AppearanceTabs = () => {
     let response = await addUpdateLimitApi(payload);
     if (response && !response.isError) {
       toast.success(response?.data?.description);
+      socket.emit("limitChangeByMasterApi", { title: payload?.title });
       getThemeApiHandler();
     }
+    setBtnLoader(null);
   };
 
   const getThemeApiHandler = async () => {
@@ -154,9 +157,9 @@ const AppearanceTabs = () => {
                     <div className="  w-3/4">
                       <div className=" flex items-center w-full">
                         <span>{item?.title}:</span>
-                        <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex  ml-2 mr-5 h-12  ">
+                        <div className=" bg-white rounded-md drop-shadow border w-1/3 flex  ml-2 mr-5 h-12  ">
                           <button
-                            disabled={item?.value == 0}
+                            disabled={item?.value == 1}
                             onClick={() => {
                               changeLimitHandler(
                                 item?._id,
@@ -191,21 +194,24 @@ const AppearanceTabs = () => {
                         {item?.subTitle && (
                           <>
                             <span>{item?.subTitle}:</span>
-                            <div className=" bg-white rounded-sm drop-shadow border w-1/3 flex  mx-2 h-12 p-1 ">
+                            <div className=" bg-white rounded-md drop-shadow border w-1/3 flex  mx-2 h-12 p-1 ">
                               <input
                                 type="number"
-                                className="w-full px-3  focus:outline-none"
+                                className="w-full px-3 focus:outline-none"
                                 value={item?.time}
+                                min="1"
                                 onChange={(e) => {
+                                  const value = e.target.value;
+                                  const limitedValue = value < 1 ? 1 : value;
                                   changeLimitHandler(
                                     item?._id,
                                     "time",
-                                    e?.target?.value,
+                                    limitedValue,
                                     item?.heading
                                   );
                                 }}
                               />
-                              <div className="p-2 flex items-center justify-center  text-center text-sm bg-gray-300">
+                              <div className="p-2 flex items-center justify-center text-[#989B9E] font-semibold text-center text-sm bg-[#F2F2F2] rounded-sm">
                                 Min
                               </div>
                             </div>
@@ -215,6 +221,8 @@ const AppearanceTabs = () => {
                     </div>
                     <div className="  w-1/3">
                       <GenericButton
+                        disabled={btnLoader != null}
+                        loading={index == btnLoader}
                         text="Update"
                         onClick={() => {
                           let payload;
@@ -230,6 +238,7 @@ const AppearanceTabs = () => {
                               time: item?.time,
                             };
                           }
+                          setBtnLoader(index);
                           addUpdateLimitHandler(payload);
                         }}
                       />

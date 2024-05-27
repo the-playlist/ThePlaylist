@@ -4,32 +4,37 @@ import { MdClear } from "react-icons/md";
 import {
   useLazyGetOnDutyPlayerSongListQuery,
   useLazyGetAssignSongsWithPlayersQuery,
-  useAddSongsToPlaylistMutation,
   useAddSongToPlaylistByCustomerMutation,
+  useLazyGetLimitByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
-import { IoSearchOutline } from "react-icons/io5";
 import { toast } from "react-toastify";
 import { Listener_URL } from "../_utils/common/constants";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
+  let limitTitle = "Song Limit";
+  const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
-
-  const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
-    useAddSongsToPlaylistMutation();
   const [addSongToPlaylistByUserApi] = useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState();
-  const [songsListApi, songsListResponse] =
-    useLazyGetOnDutyPlayerSongListQuery();
+  const [songsListApi] = useLazyGetOnDutyPlayerSongListQuery();
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
+  const [songLimit, setSongLimit] = useState(null);
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
+    socket.on("limitChangeByMasterRes", (item) => {
+      const { title } = item;
+      if (limitTitle == title) {
+        getLimitByTitleHandler(title);
+      }
+    });
     socket.connect();
     setSocket(socket);
 
@@ -59,6 +64,7 @@ const Typeahead = () => {
   useEffect(() => {
     fetchSongsList();
     fetchAssignSongsList();
+    getLimitByTitleHandler(limitTitle);
   }, []);
 
   const fetchSongsList = async () => {
@@ -72,7 +78,6 @@ const Typeahead = () => {
   const fetchAssignSongsList = async () => {
     try {
       let response = await getAssignSongsApi(null);
-
       if (response && !response.isError) {
         let data = response?.data?.content?.list;
         setFilteredOptions(data);
@@ -80,6 +85,34 @@ const Typeahead = () => {
       }
     } catch (error) {
       console.error("Fetch failed:", error);
+    }
+  };
+
+  const handleSong = (id) => {
+    const currentTime = new Date().getTime();
+    const prevSongTime = parseInt(localStorage.getItem("prevSongTime"), 10);
+    const songCount = parseInt(localStorage.getItem("songCount"), 10) || 0;
+    const timeLimit = songLimit?.time * 60000;
+    const songCountLimit = songLimit?.value;
+
+    if (!prevSongTime) {
+      localStorage.setItem("prevSongTime", currentTime);
+      localStorage.setItem("songCount", 1);
+      addSongsHandler(id);
+      return;
+    }
+    const timeDifference = currentTime - prevSongTime;
+    if (timeDifference > timeLimit) {
+      localStorage.setItem("prevSongTime", currentTime);
+      localStorage.setItem("songCount", 1);
+      addSongsHandler(id);
+    } else {
+      if (songCount < songCountLimit) {
+        localStorage.setItem("songCount", songCount + 1);
+        addSongsHandler(id);
+      } else {
+        toast.error("Song limit reached. Please try again later.");
+      }
     }
   };
   const addSongsHandler = async (id) => {
@@ -96,9 +129,21 @@ const Typeahead = () => {
       toast.success(error?.message || "Something went wrong.");
     }
   };
+
+  const getLimitByTitleHandler = async (title) => {
+    let response = await getLimitByTitleApi(title);
+    if (response && !response.isError) {
+      const songLimit = response?.data?.content;
+      setSongLimit(songLimit);
+    }
+  };
+
   return (
     <>
-      <div className="fixed top-12 left-0  bg-[#1F1F1F] right-0 flex  p-4">
+      <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
+        <div className="mb-2 text-base font-medium text-white">
+          Select a Song
+        </div>
         <div className="relative flex  bg-[#303134]  w-full rounded-lg">
           <input
             type="text"
@@ -186,7 +231,7 @@ const Typeahead = () => {
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
-            addSongsHandler(selectedSong?._id);
+            handleSong(selectedSong?._id);
           }}
           className={`flex w-full items-center ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
@@ -207,7 +252,6 @@ const Typeahead = () => {
 const AddSong = () => {
   return (
     <div className="overflow-x-auto bg-[#1F1F1F] h-screen overflow-y-scroll mx-auto  px-5 pt-5">
-      <div className="mb-2 text-base font-medium text-white">Select a Song</div>
       <Typeahead />
     </div>
   );

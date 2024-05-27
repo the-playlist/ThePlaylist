@@ -14,13 +14,12 @@ import { Listener_URL } from "../../_utils/common/constants";
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
-
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
-
+  let screenName = "Player View";
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -30,7 +29,9 @@ const PerformerView = () => {
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
-      getThemeByTitleHandler(title);
+      if (screenName == title) {
+        getThemeByTitleHandler(title);
+      }
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -40,7 +41,7 @@ const PerformerView = () => {
 
   useEffect(() => {
     fetchPlaylistSongList();
-    getThemeByTitleHandler("Player View");
+    getThemeByTitleHandler(screenName);
   }, []);
 
   const fetchPlaylistSongList = async () => {
