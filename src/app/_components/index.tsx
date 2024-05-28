@@ -24,6 +24,8 @@ import CurrentLiveVideo from "./currently-live";
 import PlaylistComponent from "./playlist-component";
 import AppearanceTabs from "./appearance";
 import ViewMode from "./view-mode";
+import CountDown from "./count-down";
+
 export {
   NavBar,
   Loader,
@@ -51,4 +53,5 @@ export {
   PlaylistComponent,
   AppearanceTabs,
   ViewMode,
+  CountDown,
 };

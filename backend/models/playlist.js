@@ -21,6 +21,10 @@ const playlistSchema = new mongoose.Schema(
     },
     isDeleted: { type: Boolean, default: false },
     expiresAt: { type: Date, default: Date.now, index: { expires: "1m" } },
+    sortByMaster: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

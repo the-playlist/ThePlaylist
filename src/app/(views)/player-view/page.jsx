@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
-import { CustomLoader, ToggleFullScreen } from "@/app/_components";
+import { CustomLoader, ToggleFullScreen, CountDown } from "@/app/_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
@@ -19,6 +19,9 @@ const PerformerView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+
   let screenName = "Player View";
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
@@ -27,6 +30,12 @@ const PerformerView = () => {
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
     });
+    socket.on("advanceTheQueueRes", (item) => {
+      const { time } = item;
+      setSeconds(time);
+      setTimerRunning(true);
+    });
+
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -38,6 +47,17 @@ const PerformerView = () => {
       socket.disconnect();
     };
   }, []);
+
+  useEffect(() => {
+    let timer;
+    if (timerRunning && seconds > 0) {
+      timer = setTimeout(() => {
+        setSeconds(seconds - 1);
+      }, 1000);
+    }
+
+    return () => clearTimeout(timer);
+  }, [seconds, timerRunning]);
 
   useEffect(() => {
     fetchPlaylistSongList();
@@ -136,6 +156,7 @@ const PerformerView = () => {
                 </tbody>
               ))}
             </table>
+            <CountDown openModal={seconds > 0} timer={seconds} />
           </>
         )}
       </div>

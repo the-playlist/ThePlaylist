@@ -84,9 +84,11 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(null);
+      console.log("response", response);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
+        console.log("songList", songList);
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }
@@ -123,6 +125,10 @@ const page = () => {
       isDeleted: true,
     });
     socket.emit("addSongToPlaylistApi", id);
+    socket.emit("advanceTheQueueApi", {
+      time: 10,
+    });
+
     if (response && !response.error) {
       toast(response?.data?.description);
     } else {
@@ -142,12 +148,15 @@ const page = () => {
     const destinationIndex = result.destination.index;
     const updatedPlaylist = [...playlistSongList];
     const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
-    updatedPlaylist.splice(destinationIndex, 0, reorderedItem);
+    const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
+
+    updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
     setPlaylistSongList([...updatedPlaylist]);
 
     const updatedArr = updatedPlaylist.map((item, index) => ({
       id: item._id,
       newSortOrder: index,
+      sortByMaster: item?.sortByMaster,
     }));
     updateSongsOrderHandler(updatedArr);
   };
@@ -325,7 +334,9 @@ const page = () => {
                           songDuration,
                           isFav,
                           sortOrder,
+                          sortByMaster,
                         } = item || {};
+
                         const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable
@@ -347,6 +358,8 @@ const page = () => {
                                       className={` text-center ${
                                         isLockedSongs
                                           ? "bg-top-queue-bg"
+                                          : sortByMaster
+                                          ? "bg-green-400"
                                           : "bg-white"
                                       }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                     >
@@ -387,7 +400,7 @@ const page = () => {
                                       <div className="w-3/12">{playerName}</div>
                                       <div className="w-2/12 flex items-center justify-center">
                                         <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                                          {introSec}
+                                          {introSec || 0}
                                         </div>
                                       </div>
                                       <div
