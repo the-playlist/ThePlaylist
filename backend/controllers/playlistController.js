@@ -11,7 +11,6 @@ import {
 import { forEach, forIn } from "lodash";
 import Players from "../models/players";
 import mongoose from "mongoose";
-import moment from "moment";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -36,6 +35,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   const { isFavortiteListType } = await PlaylistType.findOne({
     _id: "662b7a6e80f2c908c92a0b3d",
   }).lean();
+
   // After populating, flatten the objects and rename properties
   let flattenedPlaylist = playlist.map((item) => ({
     _id: item._id,
@@ -52,18 +52,86 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     upVote: item.upVoteCount,
     downVote: item.downVoteCount,
     sortOrder: item.sortOrder,
+    sortByMaster: item?.sortByMaster,
   }));
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
+
+  // Separate first two songs
+  const firstTwoSongs = flattenedPlaylist.slice(0, 2);
+
+  // Filter sortByMaster songs and remaining songs
+  const sortByMasterSongs = flattenedPlaylist.filter(
+    (song) => song.sortByMaster
+  );
+
+  const remainingSongs = flattenedPlaylist
+    .slice(2) // Exclude first two songs
+    .filter((song) => !song.sortByMaster);
+
+  // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
+  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // Apply algorithm to remaining songs (excluding first two and sortByMaster)
+  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
+
+  // Sort remaining songs based on upVote - downVote (descending)
+  modifiedRemainingSongs.sort(
+    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+  );
+
+  // Create a map to store sortByMaster songs with their original sortOrder
+  const sortByMasterMap = new Map();
+  for (const song of sortByMasterSongs) {
+    sortByMasterMap.set(song.sortOrder, song);
+  }
+
+  // Insert sortByMaster songs into a new final playlist based on their sortOrder
+  const finalPlaylist = [];
+  for (let i = 0; i < flattenedPlaylist.length; i++) {
+    if (sortByMasterMap.has(i)) {
+      finalPlaylist.push(sortByMasterMap.get(i));
+      sortByMasterMap.delete(i); // Remove inserted song from the map
+    } else {
+      finalPlaylist.push(
+        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+      );
+    }
+  }
+
   const response = new ResponseModel(true, "Songs fetched successfully.", {
-    list: flattenedPlaylist,
+    list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
     playlistCount, // Add playlistCount to the response object
   });
   res.status(200).json(response);
 };
+
+// New function to apply song sequence algorithm
+function applySongSequenceAlgorithm(songs) {
+  const modifiedSongs = [];
+  let lastPlayerId = null;
+  let songCountSinceLastPlayer = 0; // Track songs since last player
+
+  for (const song of songs) {
+    if (
+      songCountSinceLastPlayer >= 3 ||
+      song.assignedPlayerId !== lastPlayerId
+    ) {
+      modifiedSongs.push(song);
+      lastPlayerId = song.assignedPlayerId;
+      songCountSinceLastPlayer = 0;
+    } else {
+      // Skip song if player performed last or needs 3-song gap
+      songCountSinceLastPlayer++;
+    }
+  }
+
+  return modifiedSongs;
+}
+
 export const getSongsReportList = async (req, res, next) => {
   const songsList = await Song.aggregate(songReports);
   // After populating, flatten the objects and rename properties
@@ -96,6 +164,7 @@ export const getSongsForTableView = async (req, res, next) => {
     upVote: item.upVote,
     downVote: item.downVote,
     sortOrder: item.sortOrder,
+    sortByMaster: item.sortByMaster,
   }));
 
   const votList = await Vote.find({ customerId: deviceId }).lean();
@@ -114,8 +183,48 @@ export const getSongsForTableView = async (req, res, next) => {
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
+
+  const firstTwoSongs = flattenedPlaylist.slice(0, 2);
+
+  // Filter sortByMaster songs and remaining songs
+  const sortByMasterSongs = flattenedPlaylist.filter(
+    (song) => song.sortByMaster
+  );
+  const remainingSongs = flattenedPlaylist
+    .slice(2)
+    .filter((song) => !song.sortByMaster);
+
+  // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
+  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // Apply algorithm to remaining songs (excluding first two and sortByMaster)
+  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
+
+  // Sort remaining songs based on upVote - downVote (descending)
+  modifiedRemainingSongs.sort(
+    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+  );
+
+  // Create a map to store sortByMaster songs with their original sortOrder
+  const sortByMasterMap = new Map();
+  for (const song of sortByMasterSongs) {
+    sortByMasterMap.set(song.sortOrder, song);
+  }
+
+  // Insert sortByMaster songs into a new final playlist based on their sortOrder
+  const finalPlaylist = [];
+  for (let i = 0; i < flattenedPlaylist.length; i++) {
+    if (sortByMasterMap.has(i)) {
+      finalPlaylist.push(sortByMasterMap.get(i));
+      sortByMasterMap.delete(i); // Remove inserted song from the map
+    } else {
+      finalPlaylist.push(
+        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+      );
+    }
+  }
   const response = new ResponseModel(true, "Songs fetched successfully.", {
-    list: flattenedPlaylist,
+    list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
   });
   res.status(200).json(response);
@@ -129,6 +238,7 @@ export const updateSongsOrder = async (req, res, next) => {
       {
         $set: {
           sortOrder: item.newSortOrder,
+          sortByMaster: item.sortByMaster,
         },
       }
     );
