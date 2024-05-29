@@ -23,8 +23,24 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
+import {
+  Listener_URL,
+  PLAYING_STAE,
+  TIMER,
+} from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
+import { useDispatch } from "react-redux";
+import {
+  setCurrentSong,
+  setPlayingState,
+  setPlaylistLength,
+  setSongsListUpdate,
+  setPlaylistSongList as setPlayListSongListLocalStoage,
+  setCurrentSongSecond,
+} from "@/app/_utils/redux/slice/playlist-list";
+import { useSelector } from "react-redux";
+import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
+import ConfirmationPopup from "@/app/_components/confirmation-popup";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -44,11 +60,20 @@ const page = () => {
   const [undoDeletedSongsAPI] = useUndoDeletedSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [isUndoDisable, setIsUndoDisable] = useState(null);
-  const [isStart, setIsStart] = useState(false);
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [playlistCount, setPlaylistCount] = useState(0);
+  const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
+  const dispatch = useDispatch();
+
+  const playingState = useSelector(
+    (state) => state?.playlistReducer?.playingState
+  );
+  const currentSongSecond = useSelector(
+    (state) => state?.playlistReducer?.currentSongSecond
+  );
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
@@ -70,6 +95,39 @@ const page = () => {
   }, []);
 
   useEffect(() => {
+    debugger;
+    if (playlistSongList.length > 0) {
+      const storedSeconds = parseInt(currentSongSecond);
+      const initialSongDuration = convertTimeToSeconds(
+        playlistSongList[0].songDuration
+      );
+      const { playerName, title, _id } = playlistSongList[0];
+      dispatch(setPlayListSongListLocalStoage(playlistSongList));
+      dispatch(
+        setCurrentSong({ title: title, playerName: playerName, id: _id })
+      );
+
+      if (storedSeconds == 0 && storedSeconds === initialSongDuration) {
+        return;
+      }
+
+      if (!storedSeconds) {
+        dispatch(setCurrentSongSecond(initialSongDuration));
+        return;
+      }
+
+      if (initialSongDuration > storedSeconds) {
+        dispatch(setCurrentSongSecond(storedSeconds));
+        return;
+      }
+
+      dispatch(setCurrentSongSecond(initialSongDuration));
+    }
+
+    return () => {};
+  }, [playlistSongList]);
+
+  useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!isUndoDisable) {
         localStorage.setItem(LAST_ACTION, null);
@@ -88,7 +146,10 @@ const page = () => {
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
-        console.log("songList", songList);
+        dispatch(setPlaylistLength(songList?.length));
+        if (songList?.length > 25) {
+          songList = songList.slice(0, 25);
+        }
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }
@@ -114,12 +175,16 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
+    debugger;
     removeItemById(id);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
-
+    if (playlistSongList.length === 1) {
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setSongsListUpdate());
+    }
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
@@ -192,14 +257,18 @@ const page = () => {
   };
 
   const deleteAllSongsHandler = async () => {
-    setUndoItemsInStorage({
-      action: ACTION_TYPE.CLEAR_LIST,
-      data: playlistSongList,
-    });
+    dispatch(setCurrentSongSecond(0));
+    dispatch(setSongsListUpdate());
+
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
+      setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
       fetchPlaylistSongList();
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setSongsListUpdate());
+      dispatch(setPlayingState(false));
+      dispatch(setSongsListUpdate());
       socket.emit("addSongToPlaylistApi", null);
     }
   };
@@ -244,8 +313,18 @@ const page = () => {
           >
             {playlistSongList?.length > 0 && (
               <button
-                onClick={() => {
+                onClick={async () => {
                   deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+
+                  if (playlistSongList.length > 0) {
+                    const songDuration = convertTimeToSeconds(
+                      playlistSongList[1].songDuration
+                    );
+                    dispatch(setCurrentSongSecond(songDuration));
+                  } else {
+                    dispatch(setCurrentSongSecond(0));
+                  }
+                  dispatch(setSongsListUpdate());
                 }}
                 className="flex items-center hover:cursor-pointer bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4  lg:text-lg justify-center rounded-lg"
               >
@@ -257,16 +336,12 @@ const page = () => {
               {playlistSongList.length > 0 && (
                 <button
                   className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
-                  onClick={deleteAllSongsHandler}
+                  onClick={() => setIsConfirmationPopup(true)}
                 >
-                  {deleteAllSongsResponse.isLoading ? (
-                    <Loader />
-                  ) : (
-                    <span className="flex flex-row items-center">
-                      <TbMusicX className="mr-2" />
-                      Clear Songs
-                    </span>
-                  )}
+                  <span className="flex flex-row items-center">
+                    <TbMusicX className="mr-2" />
+                    Clear Songs
+                  </span>
                 </button>
               )}
               <button
@@ -331,7 +406,6 @@ const page = () => {
                           playerName,
                           introSec,
                           category,
-                          songDuration,
                           isFav,
                           sortOrder,
                           sortByMaster,
@@ -420,7 +494,7 @@ const page = () => {
                                         <div className="flex items-center justify-end ">
                                           {index === 0 && (
                                             <SongCountdownTimer
-                                              duration={songDuration}
+                                              duration={currentSongSecond}
                                               advanceTheQueue={() =>
                                                 deleteSongFromPlaylistHandler(
                                                   playlistSongList[0]?._id
@@ -429,8 +503,7 @@ const page = () => {
                                               playlistSongList={
                                                 playlistSongList
                                               }
-                                              isStart={isStart}
-                                              setIsStart={setIsStart}
+                                              isStart={playingState}
                                             />
                                           )}
                                           {isFav && (
@@ -510,6 +583,16 @@ const page = () => {
                   closeModal={() => {
                     setSelectSongModal(false);
                   }}
+                />
+              )}
+
+              {isConfirmationPopup && (
+                <ConfirmationPopup
+                  isLoading={deleteAllSongsResponse?.isLoading}
+                  title={"Are you sure to remove all songs from playlist?"}
+                  onYesPress={deleteAllSongsHandler}
+                  closeModal={() => setIsConfirmationPopup(false)}
+                  openModal={isConfirmationPopup}
                 />
               )}
             </div>
