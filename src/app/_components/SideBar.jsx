@@ -56,39 +56,42 @@ const SideBar = () => {
   }, []);
 
   const deleteSongFromPlaylistHandler = async (id) => {
-    debugger;
-    if (playlistSongList?.length === 1) {
-      dispatch(setCurrentSongSecond(0));
-    }
-    let response = await deleteSongByIdApi({
-      id: id,
-      isDeleted: true,
-    });
-    socket.emit("addSongToPlaylistApi", id);
-    if (response && !response.error) {
-      const index = playlistSongList.findIndex((i) => i._id == currentSong.id);
-
-      if (playlistSongList.length > 1) {
-        const { playerName, title, _id } = playlistSongList[index + 1];
-        dispatch(setPlaylistSongList(playlistSongList));
-        dispatch(
-          setCurrentSong({ title: title, playerName: playerName, id: _id })
-        );
-
-        const songDuration = convertTimeToSeconds(
-          playlistSongList[index + 1].songDuration
-        );
-        if (playlistSongList.length === index + 1) {
-        }
-
-        dispatch(setCurrentSongSecond(songDuration));
-      } else {
+    if (id) {
+      if (playlistSongList?.length === 1) {
         dispatch(setCurrentSongSecond(0));
-        dispatch(setPlayingState(false));
       }
-      dispatch(setSongsListUpdate());
-    } else {
-      toast.error(response?.data?.description || "Something Went Wrong...");
+      let response = await deleteSongByIdApi({
+        id: id,
+        isDeleted: true,
+      });
+      socket.emit("addSongToPlaylistApi", id);
+      if (response && !response.error) {
+        const index = playlistSongList.findIndex(
+          (i) => i._id == currentSong.id
+        );
+
+        if (playlistSongList.length > 1) {
+          const { playerName, title, _id } = playlistSongList[index + 1];
+          dispatch(setPlaylistSongList(playlistSongList));
+          dispatch(
+            setCurrentSong({ title: title, playerName: playerName, id: _id })
+          );
+
+          const songDuration = convertTimeToSeconds(
+            playlistSongList[index + 1].songDuration
+          );
+          if (playlistSongList.length === index + 1) {
+          }
+
+          dispatch(setCurrentSongSecond(songDuration));
+        } else {
+          dispatch(setCurrentSongSecond(0));
+          dispatch(setPlayingState(false));
+        }
+        dispatch(setSongsListUpdate());
+      } else {
+        toast.error(response?.data?.description || "Something Went Wrong...");
+      }
     }
   };
 
