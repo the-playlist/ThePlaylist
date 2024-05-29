@@ -112,35 +112,6 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   res.status(200).json(response);
 };
 
-// // New function to apply song sequence algorithm
-// function applySongSequenceAlgorithm(songs) {
-//   const modifiedSongs = [];
-//   const remainingSongs = [];
-
-//   let lastPlayerName = null;
-//   let lastCategory = null;
-//   let songCountSinceLastPlayer = 0; // Track songs since last player
-
-//   for (const song of songs) {
-//     if (
-//       songCountSinceLastPlayer >= 3 ||
-//       (song.playerName !== lastPlayerName &&
-//         (lastCategory !== "Ballad" || song.category !== "Ballad"))
-//     ) {
-//       modifiedSongs.push(song);
-//       lastPlayerName = song.playerName;
-//       lastCategory = song.category;
-//       songCountSinceLastPlayer = 0;
-//     } else {
-//       // Skip song if player performed last or needs 3-song gap
-//       remainingSongs.push(song);
-//       songCountSinceLastPlayer++;
-//     }
-//   }
-
-//   return [...modifiedSongs, ...remainingSongs];
-// }
-
 function applySongSequenceAlgorithm(songs) {
   const modifiedSongs = [];
   const remainingSongs = [];
