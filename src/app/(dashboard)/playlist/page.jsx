@@ -29,6 +29,7 @@ import {
   TIMER,
 } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
+import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
 import {
   setCurrentSong,
@@ -189,6 +190,7 @@ const page = () => {
       id: id,
       isDeleted: true,
     });
+
     socket.emit("addSongToPlaylistApi", id);
     socket.emit("advanceTheQueueApi", {
       time: 10,
@@ -410,7 +412,10 @@ const page = () => {
                           sortOrder,
                           sortByMaster,
                         } = item || {};
-
+                        const trimmedTitle =
+                          title?.length > 15
+                            ? `${title?.slice(0, 12)}...`
+                            : title;
                         const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable
@@ -432,21 +437,34 @@ const page = () => {
                                       className={` text-center ${
                                         isLockedSongs
                                           ? "bg-top-queue-bg"
-                                          : sortByMaster
-                                          ? "bg-green-400"
                                           : "bg-white"
                                       }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                     >
                                       <div className="w-1/12 text-start font-extrabold text-lg">
                                         {!isLockedSongs ? (
                                           <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
-                                            <HiOutlineArrowsUpDown />
+                                            {sortByMaster ? (
+                                              <SortByMasterIcon />
+                                            ) : (
+                                              <HiOutlineArrowsUpDown />
+                                            )}
                                           </div>
                                         ) : (
                                           index + 1
                                         )}
                                       </div>
-                                      <div className="w-2/12">{title}</div>
+                                      <div className="w-2/12">
+                                        {title?.length > 12 ? (
+                                          <div class="group relative m-12 flex justify-center">
+                                            <span class="absolute top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                                              {title}
+                                            </span>
+                                            {trimmedTitle}
+                                          </div>
+                                        ) : (
+                                          title
+                                        )}
+                                      </div>
                                       <div className="w-1/12">
                                         {!isLockedSongs && (
                                           <div className="flex items-center justify-center">
