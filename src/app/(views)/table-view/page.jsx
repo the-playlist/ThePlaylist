@@ -131,7 +131,7 @@ const TableView = () => {
         } flex justify-end p-4`}
       >
         <button
-          disabled={performer?.length >= queueLimit}
+          disabled={performer?.length <= queueLimit}
           onClick={() => {
             router.push("/add-song");
           }}
@@ -140,7 +140,7 @@ const TableView = () => {
           <div className="flex items-center justify-center">
             <div
               className={`rounded-full ${
-                performer?.length >= queueLimit ? "bg-gray-200" : "bg-[#1F1F1F]"
+                performer?.length <= queueLimit ? "bg-gray-200" : "bg-[#1F1F1F]"
               } mr-2 p-1`}
             >
               <IoAdd size={16} color="white" />

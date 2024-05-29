@@ -63,9 +63,9 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
   // Filter sortByMaster songs and remaining songs
-  const sortByMasterSongs = flattenedPlaylist.filter(
-    (song) => song.sortByMaster
-  );
+  // const sortByMasterSongs = flattenedPlaylist.filter(
+  //   (song) => song.sortByMaster
+  // );
 
   const remainingSongs = flattenedPlaylist
     .slice(2) // Exclude first two songs
@@ -84,9 +84,12 @@ export const getSongsFromPlaylist = async (req, res, next) => {
 
   // Create a map to store sortByMaster songs with their original sortOrder
   const sortByMasterMap = new Map();
-  for (const song of sortByMasterSongs) {
-    sortByMasterMap.set(song.sortOrder, song);
-  }
+
+  flattenedPlaylist.forEach((song, index) => {
+    if (index > 1 && song.sortByMaster) {
+      sortByMasterMap.set(index, song);
+    }
+  });
 
   // Insert sortByMaster songs into a new final playlist based on their sortOrder
   const finalPlaylist = [];
@@ -109,27 +112,85 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   res.status(200).json(response);
 };
 
-// New function to apply song sequence algorithm
+// // New function to apply song sequence algorithm
+// function applySongSequenceAlgorithm(songs) {
+//   const modifiedSongs = [];
+//   const remainingSongs = [];
+
+//   let lastPlayerName = null;
+//   let lastCategory = null;
+//   let songCountSinceLastPlayer = 0; // Track songs since last player
+
+//   for (const song of songs) {
+//     if (
+//       songCountSinceLastPlayer >= 3 ||
+//       (song.playerName !== lastPlayerName &&
+//         (lastCategory !== "Ballad" || song.category !== "Ballad"))
+//     ) {
+//       modifiedSongs.push(song);
+//       lastPlayerName = song.playerName;
+//       lastCategory = song.category;
+//       songCountSinceLastPlayer = 0;
+//     } else {
+//       // Skip song if player performed last or needs 3-song gap
+//       remainingSongs.push(song);
+//       songCountSinceLastPlayer++;
+//     }
+//   }
+
+//   return [...modifiedSongs, ...remainingSongs];
+// }
+
 function applySongSequenceAlgorithm(songs) {
   const modifiedSongs = [];
-  let lastPlayerId = null;
-  let songCountSinceLastPlayer = 0; // Track songs since last player
+  const remainingSongs = [];
+  const comedySongs = [];
 
+  // Separate comedy songs from others
   for (const song of songs) {
-    if (
-      songCountSinceLastPlayer >= 3 ||
-      song.assignedPlayerId !== lastPlayerId
-    ) {
-      modifiedSongs.push(song);
-      lastPlayerId = song.assignedPlayerId;
-      songCountSinceLastPlayer = 0;
+    if (song.category === "Comedy") {
+      comedySongs.push(song);
     } else {
-      // Skip song if player performed last or needs 3-song gap
-      songCountSinceLastPlayer++;
+      remainingSongs.push(song);
     }
   }
 
-  return modifiedSongs;
+  let lastPlayerName = null;
+  let lastCategory = null;
+
+  while (remainingSongs.length > 0) {
+    let songAdded = false;
+
+    for (let i = 0; i < remainingSongs.length; i++) {
+      const song = remainingSongs[i];
+
+      if (
+        (lastPlayerName === null || song.playerName !== lastPlayerName) &&
+        (lastCategory === null ||
+          lastCategory !== "Ballad" ||
+          song.category !== "Ballad")
+      ) {
+        modifiedSongs.push(song);
+        lastPlayerName = song.playerName;
+        lastCategory = song.category;
+        remainingSongs.splice(i, 1); // Remove the song from the remaining list
+        songAdded = true;
+        break;
+      }
+    }
+
+    if (!songAdded) {
+      // If no song was added in this iteration, it means we cannot find a suitable song
+      // and need to force add a song to avoid infinite loop
+      const song = remainingSongs.shift(); // Get the first remaining song
+      modifiedSongs.push(song);
+      lastPlayerName = song.playerName;
+      lastCategory = song.category;
+    }
+  }
+
+  // Concatenate comedy songs to the end of the result
+  return [...modifiedSongs, ...comedySongs];
 }
 
 export const getSongsReportList = async (req, res, next) => {
@@ -258,6 +319,7 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
   await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
+
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

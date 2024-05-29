@@ -78,6 +78,7 @@ const SelectSongModal = ({
         ...item,
         selectedPlayers: selectedPlayer,
         isChecked: songLimit - playlistCount > index,
+        // isChecked: index < 10,
       };
     });
   }
