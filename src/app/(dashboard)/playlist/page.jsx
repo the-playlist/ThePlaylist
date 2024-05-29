@@ -39,7 +39,7 @@ import {
   setCurrentSongSecond,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
-import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
+import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 
 const LAST_ACTION = "LAST_ACTION";
