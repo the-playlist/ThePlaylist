@@ -46,6 +46,7 @@ export const songsForTableView = [
       downVote: 1,
       sortOrder: 1,
       sortByMaster: 1,
+      addByCustomer: 1,
     },
   },
   {
@@ -101,6 +102,7 @@ export const songFromPlaylist = [
       downVote: 1,
       sortOrder: 1,
       sortByMaster: 1,
+      addByCustomer: 1,
     },
   },
   {

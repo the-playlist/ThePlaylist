@@ -117,7 +117,10 @@ const Typeahead = () => {
   };
   const addSongsHandler = async (id) => {
     try {
-      let response = await addSongToPlaylistByUserApi({ songId: id });
+      let response = await addSongToPlaylistByUserApi({
+        songId: id,
+        addByCustomer: true,
+      });
       if (response && !response.error) {
         toast.success(response?.data?.description);
         socket.emit("addSongToPlaylistApi", id);
