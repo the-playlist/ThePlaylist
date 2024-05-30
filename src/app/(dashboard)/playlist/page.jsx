@@ -96,7 +96,6 @@ const page = () => {
   }, []);
 
   useEffect(() => {
-    debugger;
     if (playlistSongList.length > 0) {
       const storedSeconds = parseInt(currentSongSecond);
       const initialSongDuration = convertTimeToSeconds(
@@ -143,14 +142,10 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(null);
-      console.log("response", response);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
         dispatch(setPlaylistLength(songList?.length));
-        if (songList?.length > 25) {
-          songList = songList.slice(0, 25);
-        }
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }

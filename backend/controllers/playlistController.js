@@ -53,6 +53,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     downVote: item.downVoteCount,
     sortOrder: item.sortOrder,
     sortByMaster: item?.sortByMaster,
+    addByCustomer: item.addByCustomer,
   }));
 
   if (isFavortiteListType) {
@@ -62,13 +63,13 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   // Separate first two songs
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
-  // Filter sortByMaster songs and remaining songs
-  // const sortByMasterSongs = flattenedPlaylist.filter(
-  //   (song) => song.sortByMaster
-  // );
+  // Filter addByCustomer songs and remaining songs
+  const songsByCustomer = flattenedPlaylist.filter(
+    (song) => song.addByCustomer
+  );
 
   const remainingSongs = flattenedPlaylist
-    .slice(2) // Exclude first two songs
+    .slice(2)
     .filter((song) => !song.sortByMaster);
 
   // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
@@ -116,11 +117,14 @@ function applySongSequenceAlgorithm(songs) {
   const modifiedSongs = [];
   const remainingSongs = [];
   const comedySongs = [];
+  const customerAddedSongs = [];
 
-  // Separate comedy songs from others
+  // Separate comedy songs, customer-added songs, and others
   for (const song of songs) {
     if (song.category === "Comedy") {
       comedySongs.push(song);
+    } else if (song.addByCustomer) {
+      customerAddedSongs.push(song);
     } else {
       remainingSongs.push(song);
     }
@@ -152,7 +156,7 @@ function applySongSequenceAlgorithm(songs) {
 
     if (!songAdded) {
       // If no song was added in this iteration, it means we cannot find a suitable song
-      // and need to force add a song to avoid infinite loop
+      // and need to force add a song to avoid an infinite loop
       const song = remainingSongs.shift(); // Get the first remaining song
       modifiedSongs.push(song);
       lastPlayerName = song.playerName;
@@ -160,8 +164,8 @@ function applySongSequenceAlgorithm(songs) {
     }
   }
 
-  // Concatenate comedy songs to the end of the result
-  return [...modifiedSongs, ...comedySongs];
+  // Concatenate comedy songs and customer-added songs to the end of the result
+  return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }
 
 export const getSongsReportList = async (req, res, next) => {
@@ -197,6 +201,7 @@ export const getSongsForTableView = async (req, res, next) => {
     downVote: item.downVote,
     sortOrder: item.sortOrder,
     sortByMaster: item.sortByMaster,
+    addByCustomer: item.addByCustomer,
   }));
 
   const votList = await Vote.find({ customerId: deviceId }).lean();
@@ -219,9 +224,10 @@ export const getSongsForTableView = async (req, res, next) => {
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
   // Filter sortByMaster songs and remaining songs
-  const sortByMasterSongs = flattenedPlaylist.filter(
-    (song) => song.sortByMaster
+  const songsByCustomer = flattenedPlaylist.filter(
+    (song) => song.addByCustomer
   );
+
   const remainingSongs = flattenedPlaylist
     .slice(2)
     .filter((song) => !song.sortByMaster);
@@ -239,9 +245,12 @@ export const getSongsForTableView = async (req, res, next) => {
 
   // Create a map to store sortByMaster songs with their original sortOrder
   const sortByMasterMap = new Map();
-  for (const song of sortByMasterSongs) {
-    sortByMasterMap.set(song.sortOrder, song);
-  }
+
+  flattenedPlaylist.forEach((song, index) => {
+    if (index > 1 && song.sortByMaster) {
+      sortByMasterMap.set(index, song);
+    }
+  });
 
   // Insert sortByMaster songs into a new final playlist based on their sortOrder
   const finalPlaylist = [];
@@ -255,6 +264,7 @@ export const getSongsForTableView = async (req, res, next) => {
       );
     }
   }
+
   const response = new ResponseModel(true, "Songs fetched successfully.", {
     list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
@@ -321,7 +331,7 @@ function calculateExpirationTime() {
 }
 
 export const addSongToPlaylistByCustomer = async (req, res) => {
-  const { songId } = req.body;
+  const { songId, addByCustomer } = req.body;
 
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
@@ -393,11 +403,16 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
     }
 
     if (playerToAssign) {
+      const playlistCount = await Playlist.countDocuments({
+        isDeleted: false,
+      });
       // Assign the song to this player
       const newPlaylistEntry = new Playlist({
         assignedPlayer: playerToAssign._id,
         songData: new mongoose.Types.ObjectId(songId),
+        addByCustomer: addByCustomer,
         expiresAt: calculateExpirationTime(),
+        sortOrder: playlistCount,
       });
       await newPlaylistEntry.save();
       const response = new ResponseModel(
