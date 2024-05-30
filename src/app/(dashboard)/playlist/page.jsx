@@ -23,11 +23,7 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import {
-  Listener_URL,
-  PLAYING_STAE,
-  TIMER,
-} from "../../_utils/common/constants";
+import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
 import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
@@ -42,6 +38,7 @@ import {
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
+import CountDown from "./coutdown";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -66,6 +63,8 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [playlistCount, setPlaylistCount] = useState(0);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
+  const [showCountDown, setShowCountDown] = useState(false);
+
   const dispatch = useDispatch();
 
   const playingState = useSelector(
@@ -171,7 +170,6 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
-    debugger;
     removeItemById(id);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -406,6 +404,7 @@ const page = () => {
                           isFav,
                           sortOrder,
                           sortByMaster,
+                          songDuration,
                         } = item || {};
                         const trimmedTitle =
                           title?.length > 15
@@ -507,6 +506,11 @@ const page = () => {
                                         <div className="flex items-center justify-end ">
                                           {index === 0 && (
                                             <SongCountdownTimer
+                                              socket={socket}
+                                              orignalSongDuration={songDuration}
+                                              setShowCountDown={
+                                                setShowCountDown
+                                              }
                                               duration={currentSongSecond}
                                               advanceTheQueue={() =>
                                                 deleteSongFromPlaylistHandler(
@@ -598,7 +602,13 @@ const page = () => {
                   }}
                 />
               )}
-
+              {showCountDown && (
+                <CountDown
+                  setShowCountDown={setShowCountDown}
+                  openModal={showCountDown}
+                  timer={10}
+                />
+              )}
               {isConfirmationPopup && (
                 <ConfirmationPopup
                   isLoading={deleteAllSongsResponse?.isLoading}
