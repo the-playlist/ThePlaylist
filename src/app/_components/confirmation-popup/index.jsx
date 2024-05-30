@@ -2,6 +2,7 @@
 import React, { useEffect, useRef } from "react";
 import { FaQuestion } from "react-icons/fa";
 import { BsTrash } from "react-icons/bs";
+import { Loader } from "../loader";
 
 const ConfirmationPopup = ({
   openModal,
@@ -9,6 +10,7 @@ const ConfirmationPopup = ({
   title,
   onYesPress,
   isDelete,
+  isLoading,
 }) => {
   const reff = useRef();
   useEffect(() => {
@@ -57,9 +59,10 @@ const ConfirmationPopup = ({
 
             <button
               onClick={onYesPress}
+              disabled={isLoading}
               className="btn w-[49%] bg-primary text-black "
             >
-              Yes, confirm
+              {isLoading ? <Loader /> : "Yes, confirm"}
             </button>
           </form>
         </div>

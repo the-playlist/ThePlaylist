@@ -1,28 +1,38 @@
 "use client";
-import { useState, useEffect } from "react";
+import {
+  setCurrentSongSecond,
+  setPlayingState,
+  setSongsListUpdate,
+} from "@/app/_utils/redux/slice/playlist-list";
+import { useEffect } from "react";
 import { IoPlaySharp, IoPause } from "react-icons/io5";
+import { useDispatch } from "react-redux";
+import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
+import { useSelector } from "react-redux";
 
 const SongCountdownTimer = ({
-  duration,
   advanceTheQueue,
   playlistSongList,
   isStart,
-  setIsStart,
+  setShowCountDown,
+  orignalSongDuration,
+  socket,
 }) => {
   let timer;
+  const dispatch = useDispatch();
 
+  const duration = useSelector(
+    (state) => state?.playlistReducer?.currentSongSecond
+  );
   useEffect(() => {
     if (isStart) {
+      if (duration == 0) {
+        clearInterval(timer);
+        handleTimeZero();
+        return;
+      }
       timer = setInterval(() => {
-        setTimeInSeconds((prevTime) => {
-          if (prevTime === 0) {
-            clearInterval(timer);
-
-            handleTimeZero();
-            return convertTimeToSeconds(duration);
-          }
-          return prevTime - 1;
-        });
+        dispatch(setCurrentSongSecond(parseInt(duration) - 1));
       }, 1000);
     } else {
       clearInterval(timer);
@@ -32,39 +42,58 @@ const SongCountdownTimer = ({
   }, [isStart, duration, playlistSongList[0]?._id]);
 
   const handleTimeZero = () => {
+    if (playlistSongList.length > 1) {
+      const songDuration = convertTimeToSeconds(
+        playlistSongList[1]?.songDuration
+      );
+      dispatch(setCurrentSongSecond(songDuration));
+    } else {
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setPlayingState(false));
+    }
+    dispatch(setSongsListUpdate());
     advanceTheQueue(playlistSongList[0]?._id);
   };
 
+  useEffect(() => {
+    const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
+    if (orignalSeconds == duration) {
+      dispatch(setPlayingState(false));
+      setShowCountDown(true);
+      socket.emit("advanceTheQueueApi", {
+        time: 10,
+      });
+      setTimeout(() => {
+        dispatch(setPlayingState(true));
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
+      }, 10000);
+    } else {
+    }
+  }, [orignalSongDuration]);
+
   const startTimer = () => {
-    setIsStart(true);
-    setIsStart(true);
+    const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
+    if (orignalSeconds == duration) {
+      setShowCountDown(true);
+      socket.emit("advanceTheQueueApi", {
+        time: 10,
+      });
+      setTimeout(() => {
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
+
+        dispatch(setPlayingState(true));
+      }, 10000);
+    } else {
+      dispatch(setPlayingState(true));
+    }
   };
 
   const pauseTimer = () => {
-    setIsStart(false);
-  };
-
-  const resetTimer = () => {
-    setTimeInSeconds(convertTimeToSeconds(duration));
-    setIsStart(false);
-  };
-
-  const convertTimeToSeconds = (timeString) => {
-    if (timeString?.length < 3) {
-      return timeString;
-    } else {
-      const [minutes, seconds] = timeString?.split(":").map(Number);
-      return minutes * 60 + seconds;
-    }
-  };
-  const [timeInSeconds, setTimeInSeconds] = useState(
-    convertTimeToSeconds(duration)
-  );
-
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
+    dispatch(setPlayingState(false));
   };
 
   return (
@@ -78,7 +107,7 @@ const SongCountdownTimer = ({
         >
           {isStart ? <IoPause /> : <IoPlaySharp />}
         </button>
-        {formatTime(timeInSeconds)}
+        {formatTime(duration)}
       </div>
     </div>
   );

@@ -38,8 +38,6 @@ const StreamResponse = () => {
         toast("Stream has been stopped by user");
       }
 
-      // arrayRef?.current.push(streamPayload);
-      // setRefresh((prev) => !prev);
       getStreamRequestHandler();
     });
 
