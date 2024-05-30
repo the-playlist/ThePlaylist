@@ -3,10 +3,15 @@ import { Listener_URL } from "@/app/_utils/common/constants";
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-export const IntroCounter = ({ introTimer, index }) => {
-  debugger;
+export const IntroCounter = ({ introTimer, index, performerList }) => {
   const [introCountdown, setIntroCountdown] = useState(introTimer);
   const [isTimerOn, setIsTimerOn] = useState(false);
+
+  useEffect(() => {
+    console.log("performerList", performerList);
+    debugger;
+    setIntroCountdown(introTimer);
+  }, [performerList]);
 
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });

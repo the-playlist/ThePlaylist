@@ -24,6 +24,10 @@ const SongCountdownTimer = ({
   const duration = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
   );
+  const playingState = useSelector(
+    (state) => state?.playlistReducer?.playingState
+  );
+
   useEffect(() => {
     if (isStart) {
       if (duration == 0) {
@@ -57,7 +61,7 @@ const SongCountdownTimer = ({
 
   useEffect(() => {
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
-    if (orignalSeconds == duration) {
+    if (orignalSeconds == duration && playingState) {
       dispatch(setPlayingState(false));
       setShowCountDown(true);
       socket.emit("advanceTheQueueApi", {

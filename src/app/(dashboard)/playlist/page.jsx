@@ -189,9 +189,9 @@ const page = () => {
     });
 
     socket.emit("addSongToPlaylistApi", id);
-    socket.emit("advanceTheQueueApi", {
-      time: 10,
-    });
+    // socket.emit("advanceTheQueueApi", {
+    //   time: 10,
+    // });
 
     if (response && !response.error) {
       toast(response?.data?.description);

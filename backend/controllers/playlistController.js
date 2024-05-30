@@ -11,6 +11,7 @@ import {
 import { forEach, forIn } from "lodash";
 import Players from "../models/players";
 import mongoose from "mongoose";
+import { convertTimeToSeconds, formatTime } from "../utils/helper";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
@@ -55,7 +56,10 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     title: item.songData.title,
     artist: item.songData.artist,
     introSec: item.songData.introSec,
-    songDuration: item.songData.songDuration,
+    songDuration: formatTime(
+      parseInt(convertTimeToSeconds(item.songData.songDuration)) +
+        parseInt(item.songData.introSec)
+    ),
     isFav: item.songData.isFav,
     dutyStatus: item?.assignedPlayer?.duty?.status,
     category: item.songData.category,
