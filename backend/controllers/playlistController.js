@@ -11,8 +11,10 @@ import {
 import { forEach, forIn } from "lodash";
 import Players from "../models/players";
 import mongoose from "mongoose";
+import { convertTimeToSeconds, formatTime } from "../utils/helper";
 
 export const addSongsToPlaylist = async (req, res, next) => {
+  const result = await Playlist.find({ isDeleted: false });
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const songsWithExpiration = req.body.map((song) => ({
     ...song,
@@ -23,12 +25,21 @@ export const addSongsToPlaylist = async (req, res, next) => {
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
-    playlist
+    {
+      playlist: playlist,
+      isFirstTimeFetched: result?.length > 0 ? false : true,
+    }
   );
   res.status(201).json(response);
 };
 
+function parseBoolean(value) {
+  return value === "true";
+}
+
 export const getSongsFromPlaylist = async (req, res, next) => {
+  const { isFirstTimeFetched } = req?.query;
+
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
 
@@ -45,7 +56,10 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     title: item.songData.title,
     artist: item.songData.artist,
     introSec: item.songData.introSec,
-    songDuration: item.songData.songDuration,
+    songDuration: formatTime(
+      parseInt(convertTimeToSeconds(item.songData.songDuration)) +
+        parseInt(item.songData.introSec)
+    ),
     isFav: item.songData.isFav,
     dutyStatus: item?.assignedPlayer?.duty?.status,
     category: item.songData.category,
@@ -63,11 +77,6 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   // Separate first two songs
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
-  // Filter addByCustomer songs and remaining songs
-  const songsByCustomer = flattenedPlaylist.filter(
-    (song) => song.addByCustomer
-  );
-
   const remainingSongs = flattenedPlaylist
     .slice(2)
     .filter((song) => !song.sortByMaster);
@@ -76,7 +85,9 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
-  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
+  const modifiedRemainingSongs = applySongSequenceAlgorithm(
+    parseBoolean(isFirstTimeFetched) ? flattenedPlaylist : remainingSongs
+  );
 
   // Sort remaining songs based on upVote - downVote (descending)
   modifiedRemainingSongs.sort(
@@ -99,9 +110,13 @@ export const getSongsFromPlaylist = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      finalPlaylist.push(
-        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
-      );
+      if (parseBoolean(isFirstTimeFetched)) {
+        modifiedRemainingSongs.shift();
+      } else {
+        finalPlaylist.push(
+          firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+        );
+      }
     }
   }
 
@@ -168,9 +183,37 @@ function applySongSequenceAlgorithm(songs) {
   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }
 
+const today = new Date();
+const startOfWeek = getMonday(today);
+const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); // First day of this month
+
+function getMonday(date) {
+  const day = date.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
 export const getSongsReportList = async (req, res, next) => {
-  const songsList = await Song.aggregate(songReports);
-  // After populating, flatten the objects and rename properties
+  const { reportType } = req?.query;
+  let filterByDate = {};
+  if (reportType == 0) {
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    filterByDate = {
+      createdAt: {
+        $gte: startOfDay,
+      },
+    };
+  } else if (reportType == 1) {
+    filterByDate = { createdAt: { $gte: startOfWeek } }; // Filter for songs created this week
+  } else if (reportType == 2) {
+    filterByDate = { createdAt: { $gte: startOfMonth } }; // Filter for songs created this month
+  }
+
+  const songsList = await Song.aggregate(songReports(filterByDate));
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
@@ -178,6 +221,7 @@ export const getSongsReportList = async (req, res, next) => {
   );
   res.status(200).json(response);
 };
+
 export const getSongsForTableView = async (req, res, next) => {
   const deviceId = req?.query?.id;
   const playlist = await Playlist.aggregate(songsForTableView);
@@ -332,7 +376,7 @@ function calculateExpirationTime() {
 
 export const addSongToPlaylistByCustomer = async (req, res) => {
   const { songId, addByCustomer } = req.body;
-
+  const result = await Playlist.find({ isDeleted: false });
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
   }
@@ -421,6 +465,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
         {
           message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
           player: playerToAssign,
+          isFirstTimeFetched: result?.length > 0 ? false : true,
         }
       );
       res.status(200).json(response);

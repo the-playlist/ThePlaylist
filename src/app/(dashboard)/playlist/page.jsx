@@ -47,6 +47,10 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
+  const isFirstTimeFetched = useSelector(
+    (state) => state?.playlistReducer?.isFirstTimeFetched
+  );
+
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
@@ -140,7 +144,7 @@ const page = () => {
   const fetchPlaylistSongList = async () => {
     try {
       // setIsLoading(true);
-      let response = await getPlaylistSongListApi(null);
+      let response = await getPlaylistSongListApi(isFirstTimeFetched);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
@@ -185,9 +189,9 @@ const page = () => {
     });
 
     socket.emit("addSongToPlaylistApi", id);
-    socket.emit("advanceTheQueueApi", {
-      time: 10,
-    });
+    // socket.emit("advanceTheQueueApi", {
+    //   time: 10,
+    // });
 
     if (response && !response.error) {
       toast(response?.data?.description);

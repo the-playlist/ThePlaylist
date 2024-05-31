@@ -153,6 +153,7 @@ const PerformerView = () => {
                     <td className="text-black rounded-r-lg text-end w-1/12">
                       <IntroCounter
                         index={index}
+                        performerList={performer}
                         introTimer={parseInt(item.introSec)}
                       />
                     </td>

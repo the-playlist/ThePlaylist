@@ -3,22 +3,24 @@ import React, { useState, Suspense } from "react";
 import {
   ReportIcon,
   ChangePassIcon,
-  ClearSongIcon,
   FavSongIcon,
   AppearenceIcon,
 } from "@/app/svgs";
-import { ChangePassword, Reports, AppearanceTabs } from "@/app/_components";
+import {
+  ChangePassword,
+  Reports,
+  LimitAndAppearence,
+  FavSongList,
+} from "@/app/_components";
 import { SessionProvider } from "next-auth/react";
 
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(2);
-
+    const [selectedItemId, setSelectedItemId] = useState(1);
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
     };
-
     const selectedItem = items?.find((item) => item.id === selectedItemId);
 
     return (
@@ -96,14 +98,14 @@ const page = () => {
       icon: (color) => <FavSongIcon color={color} />,
       title: "Favourite Songs",
       desc: "Such as add all the songs marked favourite to the playlist.",
-      detail: "",
+      detail: <FavSongList />,
     },
     {
       id: 2,
       icon: (color) => <AppearenceIcon color={color} />,
       title: "Customer Limits & Appearance",
       desc: "Such as change the customer limits and theme light to dark mode.",
-      detail: <AppearanceTabs />,
+      detail: <LimitAndAppearence />,
     },
 
     {
