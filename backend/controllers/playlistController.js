@@ -168,9 +168,37 @@ function applySongSequenceAlgorithm(songs) {
   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }
 
+const today = new Date();
+const startOfWeek = getMonday(today);
+const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); // First day of this month
+
+function getMonday(date) {
+  const day = date.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
 export const getSongsReportList = async (req, res, next) => {
-  const songsList = await Song.aggregate(songReports);
-  // After populating, flatten the objects and rename properties
+  const { reportType } = req?.query;
+  let filterByDate = {};
+  if (reportType == 0) {
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    filterByDate = {
+      createdAt: {
+        $gte: startOfDay,
+      },
+    };
+  } else if (reportType == 1) {
+    filterByDate = { createdAt: { $gte: startOfWeek } }; // Filter for songs created this week
+  } else if (reportType == 2) {
+    filterByDate = { createdAt: { $gte: startOfMonth } }; // Filter for songs created this month
+  }
+
+  const songsList = await Song.aggregate(songReports(filterByDate));
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
@@ -178,6 +206,7 @@ export const getSongsReportList = async (req, res, next) => {
   );
   res.status(200).json(response);
 };
+
 export const getSongsForTableView = async (req, res, next) => {
   const deviceId = req?.query?.id;
   const playlist = await Playlist.aggregate(songsForTableView);
