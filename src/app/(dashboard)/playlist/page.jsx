@@ -7,7 +7,6 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { TbMusicX } from "react-icons/tb";
 import {
   CustomLoader,
-  Loader,
   SelectSongModal,
   SongCountdownTimer,
 } from "../../_components";

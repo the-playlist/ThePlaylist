@@ -143,7 +143,7 @@ const SelectSongModal = ({
             </div>
           )}
           {playersList?.length > 0 && (
-            <div className="sticky bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
+            <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
               <div className="flex justify-between items-center">
                 <div>{`${title} (${activeSongsCount}) `}</div>
                 <button onClick={closeModal}>
@@ -205,6 +205,11 @@ const SelectSongModal = ({
                   .toLowerCase()
                   .includes(searchTerm.toLowerCase()) &&
                   item.assignedPlayers.length > 0);
+              const trimmedTitle =
+                item?.title?.length > 15
+                  ? `${item?.title?.slice(0, 12)}...`
+                  : item?.title;
+
               if (matchesSearch) {
                 return (
                   <div className="text-base bg-white  font-medium text-black  items-center flex  mb-2  p-5 rounded-lg ">
@@ -228,8 +233,18 @@ const SelectSongModal = ({
                           checked={item.isChecked}
                           className="checkbox mr-3 checkbox-success"
                         />
-
-                        {item?.title}
+                        <div className=" text-start">
+                          {item?.title?.length > 12 ? (
+                            <div class="group relative flex justify-center">
+                              {trimmedTitle}
+                              <span class="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                                {item?.title}
+                              </span>
+                            </div>
+                          ) : (
+                            item?.title
+                          )}
+                        </div>
                       </div>
                     </div>
                     <div className="w-3/12 text-center">
