@@ -17,6 +17,7 @@ const initialState = {
     duration: 0,
   },
   currentSongSecond: 0,
+  isFirstTimeFetched: false,
 };
 
 const playlistSlice = createSlice({
@@ -47,6 +48,9 @@ const playlistSlice = createSlice({
     setCurrentSongSecond: (state, { payload }) => {
       state.currentSongSecond = payload;
     },
+    setIsFirstTimeFetched: (state, { payload }) => {
+      state.isFirstTimeFetched = payload;
+    },
   },
 });
 
@@ -72,6 +76,7 @@ export const {
   setIsAdvanceTheQuee,
   setPlaylistLength,
   setCurrentSong,
+  setIsFirstTimeFetched,
 } = playlistSlice.actions;
 
 export const persistedReducer = persistReducer(

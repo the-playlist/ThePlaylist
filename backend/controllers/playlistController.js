@@ -13,6 +13,8 @@ import Players from "../models/players";
 import mongoose from "mongoose";
 
 export const addSongsToPlaylist = async (req, res, next) => {
+  const result = await Playlist.find({ isDeleted: false });
+
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const songsWithExpiration = req.body.map((song) => ({
     ...song,
@@ -23,12 +25,21 @@ export const addSongsToPlaylist = async (req, res, next) => {
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
-    playlist
+    {
+      playlist: playlist,
+      isFirstTimeFetched: result?.length > 0 ? false : true,
+    }
   );
   res.status(201).json(response);
 };
 
+function parseBoolean(value) {
+  return value === "true";
+}
+
 export const getSongsFromPlaylist = async (req, res, next) => {
+  const { isFirstTimeFetched } = req?.query;
+
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
 
@@ -63,11 +74,6 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   // Separate first two songs
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
-  // Filter addByCustomer songs and remaining songs
-  const songsByCustomer = flattenedPlaylist.filter(
-    (song) => song.addByCustomer
-  );
-
   const remainingSongs = flattenedPlaylist
     .slice(2)
     .filter((song) => !song.sortByMaster);
@@ -76,7 +82,9 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
-  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
+  const modifiedRemainingSongs = applySongSequenceAlgorithm(
+    parseBoolean(isFirstTimeFetched) ? flattenedPlaylist : remainingSongs
+  );
 
   // Sort remaining songs based on upVote - downVote (descending)
   modifiedRemainingSongs.sort(
@@ -99,9 +107,13 @@ export const getSongsFromPlaylist = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      finalPlaylist.push(
-        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
-      );
+      if (parseBoolean(isFirstTimeFetched)) {
+        modifiedRemainingSongs.shift();
+      } else {
+        finalPlaylist.push(
+          firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+        );
+      }
     }
   }
 

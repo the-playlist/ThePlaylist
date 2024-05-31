@@ -14,7 +14,8 @@ const endPoints = {
   UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus",
   GET_ONDUTY_PLAYER_SONGS: "api/songs/getOnDutyPlayerSongs",
   GET_ASSIGN_SONGS_WITH_PLAYERS: "api/songs/getAssignSongs",
-  GET_SONGS_FROM_PLAYLIST: "api/playlist/getSongsFromPlaylist",
+  GET_SONGS_FROM_PLAYLIST:
+    "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
@@ -62,7 +63,7 @@ export const emptySplitApi = createApi({
   // just for testing
   endpoints: (builder) => ({
     getSongsFromPlaylist: builder.query({
-      query: () => endPoints.GET_SONGS_FROM_PLAYLIST,
+      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
     }),
     getSongsReportList: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
