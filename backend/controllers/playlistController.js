@@ -14,7 +14,6 @@ import mongoose from "mongoose";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
-
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const songsWithExpiration = req.body.map((song) => ({
     ...song,
@@ -373,7 +372,7 @@ function calculateExpirationTime() {
 
 export const addSongToPlaylistByCustomer = async (req, res) => {
   const { songId, addByCustomer } = req.body;
-
+  const result = await Playlist.find({ isDeleted: false });
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
   }
@@ -462,6 +461,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
         {
           message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
           player: playerToAssign,
+          isFirstTimeFetched: result?.length > 0 ? false : true,
         }
       );
       res.status(200).json(response);
