@@ -205,23 +205,25 @@ const page = () => {
     setPlaylistSongList(currentArray);
   };
 
-  const handleDragEnd = (result) => {
+  const handleDragEnd = (result, index) => {
     if (!result.destination) return;
+    dispatch(setIsFirstTimeFetched(false));
     const sourceIndex = result.source.index;
     const destinationIndex = result.destination.index;
-    const updatedPlaylist = [...playlistSongList];
-    const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
-    const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
+    if (sourceIndex != destinationIndex) {
+      const updatedPlaylist = [...playlistSongList];
+      const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
+      const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
+      updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
+      setPlaylistSongList([...updatedPlaylist]);
 
-    updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
-    setPlaylistSongList([...updatedPlaylist]);
-
-    const updatedArr = updatedPlaylist.map((item, index) => ({
-      id: item._id,
-      newSortOrder: index,
-      sortByMaster: item?.sortByMaster,
-    }));
-    updateSongsOrderHandler(updatedArr);
+      const updatedArr = updatedPlaylist.map((item, index) => ({
+        id: item._id,
+        newSortOrder: index,
+        sortByMaster: item?.sortByMaster,
+      }));
+      updateSongsOrderHandler(updatedArr);
+    }
   };
 
   const updateSongsOrderHandler = async (payload) => {
@@ -260,7 +262,6 @@ const page = () => {
 
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
-      dispatch(setIsFirstTimeFetched(true));
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
       fetchPlaylistSongList();
@@ -289,7 +290,7 @@ const page = () => {
       case ACTION_TYPE.CLEAR_LIST: // handle the logic for clear list
         const listItems = lastAction.data.map((item) => item._id);
         await undoDeletedSongsAPI({ data: listItems });
-        dispatch(setIsFirstTimeFetched(false));
+
         socket.emit("addSongToPlaylistApi", lastAction?.data);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
@@ -388,7 +389,7 @@ const page = () => {
                 )}
 
               <DragDropContext
-                onDragEnd={(result) => {
+                onDragEnd={(result, index) => {
                   if (result?.destination?.index > 1) {
                     handleDragEnd(result);
                   }

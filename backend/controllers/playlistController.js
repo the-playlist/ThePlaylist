@@ -353,8 +353,8 @@ export const getSongsForTableView = async (req, res, next) => {
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    isFirstTimeFetched ? flattenedPlaylist : remainingSongs,
-    isFirstTimeFetched ? null : firstTwoSongs
+    parseBoolean(isFirstTimeFetched) ? flattenedPlaylist : remainingSongs,
+    parseBoolean(isFirstTimeFetched) ? null : firstTwoSongs
   );
 
   // Sort remaining songs based on upVote - downVote (descending)
@@ -378,7 +378,7 @@ export const getSongsForTableView = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (isFirstTimeFetched) {
+      if (parseBoolean(isFirstTimeFetched)) {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(
