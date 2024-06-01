@@ -11,8 +11,12 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { useSelector } from "react-redux";
 
 const WallView = () => {
+  const isFirstTimeFetched = useSelector(
+    (state) => state?.playlistReducer?.isFirstTimeFetched
+  );
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
 
@@ -48,7 +52,7 @@ const WallView = () => {
 
   const fetchPlaylistSongList = async () => {
     try {
-      let response = await getPlaylistSongListApi(null);
+      let response = await getPlaylistSongListApi(isFirstTimeFetched);
       if (response && !response.isError) {
         setSongList(response?.data?.content?.list);
       }
