@@ -267,6 +267,7 @@ function getMonday(date) {
 
 export const getSongsReportList = async (req, res, next) => {
   const { reportType } = req?.query;
+
   let filterByDate = {};
   if (reportType == 0) {
     const startOfDay = new Date(today);
@@ -292,7 +293,9 @@ export const getSongsReportList = async (req, res, next) => {
 };
 
 export const getSongsForTableView = async (req, res, next) => {
-  const deviceId = req?.query?.id;
+  const deviceId = req?.body?.id;
+  const { isFirstTimeFetched } = req?.body;
+
   const playlist = await Playlist.aggregate(songsForTableView);
   const { isFavortiteListType } = await PlaylistType.findOne({
     _id: "662b7a6e80f2c908c92a0b3d",
@@ -349,7 +352,10 @@ export const getSongsForTableView = async (req, res, next) => {
   remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
-  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
+  const modifiedRemainingSongs = applySongSequenceAlgorithm(
+    isFirstTimeFetched ? flattenedPlaylist : remainingSongs,
+    isFirstTimeFetched ? null : firstTwoSongs
+  );
 
   // Sort remaining songs based on upVote - downVote (descending)
   modifiedRemainingSongs.sort(
@@ -372,9 +378,13 @@ export const getSongsForTableView = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      finalPlaylist.push(
-        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
-      );
+      if (isFirstTimeFetched) {
+        finalPlaylist.push(modifiedRemainingSongs.shift());
+      } else {
+        finalPlaylist.push(
+          firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+        );
+      }
     }
   }
 

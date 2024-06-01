@@ -4,5 +4,5 @@ import { getSongsForTableView } from "../../../../../backend/controllers/playlis
 import onError from "../../../../../backend/middlewares/errors";
 const router = createRouter();
 connectMongoDb();
-router.get(getSongsForTableView);
+router.post(getSongsForTableView);
 export default router.handler({ onError });
