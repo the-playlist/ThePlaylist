@@ -188,8 +188,9 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                     placeholder="00"
                     className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal w-full "
                     {...register("introSec", {
+                      required: "Intro Sec is required",
                       min: {
-                        value: 0,
+                        value: 1,
                         message: "Intro seconds cannot be negative",
                       },
                       max: {
