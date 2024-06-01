@@ -63,6 +63,7 @@ const persistConfig = {
     "playlistSongList",
     "currentSongSecond",
     "playingState",
+    "isFirstTimeFetched",
   ], // Only persist the 'playingState' slice
   blacklist: ["isStart", "songsListUpdate", "isAdvanceTheQuee"], // Alternatively, blacklist slices you don't want persisted
 };

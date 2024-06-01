@@ -33,6 +33,7 @@ import {
   setSongsListUpdate,
   setPlaylistSongList as setPlayListSongListLocalStoage,
   setCurrentSongSecond,
+  setIsFirstTimeFetched,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds } from "../../_utils/helper";
@@ -49,7 +50,6 @@ const page = () => {
   const isFirstTimeFetched = useSelector(
     (state) => state?.playlistReducer?.isFirstTimeFetched
   );
-
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
@@ -260,6 +260,7 @@ const page = () => {
 
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
+      dispatch(setIsFirstTimeFetched(true));
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
       fetchPlaylistSongList();
@@ -288,6 +289,7 @@ const page = () => {
       case ACTION_TYPE.CLEAR_LIST: // handle the logic for clear list
         const listItems = lastAction.data.map((item) => item._id);
         await undoDeletedSongsAPI({ data: listItems });
+        dispatch(setIsFirstTimeFetched(false));
         socket.emit("addSongToPlaylistApi", lastAction?.data);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
@@ -313,7 +315,6 @@ const page = () => {
               <button
                 onClick={async () => {
                   deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
-
                   if (playlistSongList.length > 0) {
                     const songDuration = convertTimeToSeconds(
                       playlistSongList[1].songDuration

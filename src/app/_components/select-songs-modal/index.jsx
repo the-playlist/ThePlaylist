@@ -101,7 +101,6 @@ const SelectSongModal = ({
   const addSongsHandler = async (data) => {
     try {
       let response = await addSongToPlaylistApi(data);
-
       if (response && !response.error) {
         const { isFirstTimeFetched } = response?.data?.content;
         dispatch(setIsFirstTimeFetched(isFirstTimeFetched));
