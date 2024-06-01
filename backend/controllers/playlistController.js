@@ -49,27 +49,30 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   }).lean();
 
   // After populating, flatten the objects and rename properties
-  let flattenedPlaylist = playlist.map((item) => ({
-    _id: item._id,
-    playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-    assignedPlayerId: item.assignedPlayer?._id,
-    songId: item.songData._id,
-    title: item.songData.title,
-    artist: item.songData.artist,
-    introSec: item.songData.introSec,
-    songDuration: formatTime(
-      parseInt(convertTimeToSeconds(item.songData.songDuration)) +
-        parseInt(item.songData.introSec)
-    ),
-    isFav: item.songData.isFav,
-    dutyStatus: item?.assignedPlayer?.duty?.status,
-    category: item.songData.category,
-    upVote: item.upVoteCount,
-    downVote: item.downVoteCount,
-    sortOrder: item.sortOrder,
-    sortByMaster: item?.sortByMaster,
-    addByCustomer: item.addByCustomer,
-  }));
+  let flattenedPlaylist = playlist.map((item) => {
+    const duration = convertTimeToSeconds(item?.songData?.songDuration);
+    const introSec =
+      item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
+    const totalDuration = formatTime(duration + introSec);
+    return {
+      _id: item._id,
+      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+      assignedPlayerId: item.assignedPlayer?._id,
+      songId: item.songData._id,
+      title: item.songData.title,
+      artist: item.songData.artist,
+      introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+      songDuration: totalDuration,
+      isFav: item.songData.isFav,
+      dutyStatus: item?.assignedPlayer?.duty?.status,
+      category: item.songData.category,
+      upVote: item.upVoteCount,
+      downVote: item.downVoteCount,
+      sortOrder: item.sortOrder,
+      sortByMaster: item?.sortByMaster,
+      addByCustomer: item.addByCustomer,
+    };
+  });
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
