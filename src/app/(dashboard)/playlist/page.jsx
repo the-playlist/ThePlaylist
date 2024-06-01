@@ -23,12 +23,9 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import {
-  Listener_URL,
-  PLAYING_STAE,
-  TIMER,
-} from "../../_utils/common/constants";
+import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
+import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
 import {
   setCurrentSong,
@@ -39,8 +36,9 @@ import {
   setCurrentSongSecond,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
-import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
+import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
+import CountDown from "./coutdown";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -49,6 +47,10 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
+  const isFirstTimeFetched = useSelector(
+    (state) => state?.playlistReducer?.isFirstTimeFetched
+  );
+
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
@@ -65,6 +67,8 @@ const page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [playlistCount, setPlaylistCount] = useState(0);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
+  const [showCountDown, setShowCountDown] = useState(false);
+
   const dispatch = useDispatch();
 
   const playingState = useSelector(
@@ -95,7 +99,6 @@ const page = () => {
   }, []);
 
   useEffect(() => {
-    debugger;
     if (playlistSongList.length > 0) {
       const storedSeconds = parseInt(currentSongSecond);
       const initialSongDuration = convertTimeToSeconds(
@@ -141,15 +144,11 @@ const page = () => {
   const fetchPlaylistSongList = async () => {
     try {
       // setIsLoading(true);
-      let response = await getPlaylistSongListApi(null);
-      console.log("response", response);
+      let response = await getPlaylistSongListApi(isFirstTimeFetched);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
         dispatch(setPlaylistLength(songList?.length));
-        if (songList?.length > 25) {
-          songList = songList.slice(0, 25);
-        }
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
       }
@@ -175,7 +174,6 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
-    debugger;
     removeItemById(id);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -189,10 +187,11 @@ const page = () => {
       id: id,
       isDeleted: true,
     });
+
     socket.emit("addSongToPlaylistApi", id);
-    socket.emit("advanceTheQueueApi", {
-      time: 10,
-    });
+    // socket.emit("advanceTheQueueApi", {
+    //   time: 10,
+    // });
 
     if (response && !response.error) {
       toast(response?.data?.description);
@@ -409,8 +408,12 @@ const page = () => {
                           isFav,
                           sortOrder,
                           sortByMaster,
+                          songDuration,
                         } = item || {};
-
+                        const trimmedTitle =
+                          title?.length > 15
+                            ? `${title?.slice(0, 12)}...`
+                            : title;
                         const isLockedSongs = index == 0 || index == 1;
                         return (
                           <Draggable
@@ -432,21 +435,34 @@ const page = () => {
                                       className={` text-center ${
                                         isLockedSongs
                                           ? "bg-top-queue-bg"
-                                          : sortByMaster
-                                          ? "bg-green-400"
                                           : "bg-white"
                                       }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
                                     >
                                       <div className="w-1/12 text-start font-extrabold text-lg">
                                         {!isLockedSongs ? (
                                           <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
-                                            <HiOutlineArrowsUpDown />
+                                            {sortByMaster ? (
+                                              <SortByMasterIcon />
+                                            ) : (
+                                              <HiOutlineArrowsUpDown />
+                                            )}
                                           </div>
                                         ) : (
                                           index + 1
                                         )}
                                       </div>
-                                      <div className="w-2/12">{title}</div>
+                                      <div className="w-2/12">
+                                        {title?.length > 12 ? (
+                                          <div class="group relative m-12 flex justify-center">
+                                            <span class="absolute top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                                              {title}
+                                            </span>
+                                            {trimmedTitle}
+                                          </div>
+                                        ) : (
+                                          title
+                                        )}
+                                      </div>
                                       <div className="w-1/12">
                                         {!isLockedSongs && (
                                           <div className="flex items-center justify-center">
@@ -494,6 +510,11 @@ const page = () => {
                                         <div className="flex items-center justify-end ">
                                           {index === 0 && (
                                             <SongCountdownTimer
+                                              socket={socket}
+                                              orignalSongDuration={songDuration}
+                                              setShowCountDown={
+                                                setShowCountDown
+                                              }
                                               duration={currentSongSecond}
                                               advanceTheQueue={() =>
                                                 deleteSongFromPlaylistHandler(
@@ -585,7 +606,13 @@ const page = () => {
                   }}
                 />
               )}
-
+              {showCountDown && (
+                <CountDown
+                  setShowCountDown={setShowCountDown}
+                  openModal={showCountDown}
+                  timer={10}
+                />
+              )}
               {isConfirmationPopup && (
                 <ConfirmationPopup
                   isLoading={deleteAllSongsResponse?.isLoading}

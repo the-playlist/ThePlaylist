@@ -10,13 +10,24 @@ import { useDispatch } from "react-redux";
 import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
 import { useSelector } from "react-redux";
 
-const SongCountdownTimer = ({ advanceTheQueue, playlistSongList, isStart }) => {
+const SongCountdownTimer = ({
+  advanceTheQueue,
+  playlistSongList,
+  isStart,
+  setShowCountDown,
+  orignalSongDuration,
+  socket,
+}) => {
   let timer;
   const dispatch = useDispatch();
 
   const duration = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
   );
+  const playingState = useSelector(
+    (state) => state?.playlistReducer?.playingState
+  );
+
   useEffect(() => {
     if (isStart) {
       if (duration == 0) {
@@ -35,7 +46,6 @@ const SongCountdownTimer = ({ advanceTheQueue, playlistSongList, isStart }) => {
   }, [isStart, duration, playlistSongList[0]?._id]);
 
   const handleTimeZero = () => {
-    debugger;
     if (playlistSongList.length > 1) {
       const songDuration = convertTimeToSeconds(
         playlistSongList[1]?.songDuration
@@ -49,8 +59,41 @@ const SongCountdownTimer = ({ advanceTheQueue, playlistSongList, isStart }) => {
     advanceTheQueue(playlistSongList[0]?._id);
   };
 
+  useEffect(() => {
+    const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
+    if (orignalSeconds == duration && playingState) {
+      dispatch(setPlayingState(false));
+      setShowCountDown(true);
+      socket.emit("advanceTheQueueApi", {
+        time: 10,
+      });
+      setTimeout(() => {
+        dispatch(setPlayingState(true));
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
+      }, 10000);
+    } else {
+    }
+  }, [orignalSongDuration]);
+
   const startTimer = () => {
-    dispatch(setPlayingState(true));
+    const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
+    if (orignalSeconds == duration) {
+      setShowCountDown(true);
+      socket.emit("advanceTheQueueApi", {
+        time: 10,
+      });
+      setTimeout(() => {
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
+
+        dispatch(setPlayingState(true));
+      }, 10000);
+    } else {
+      dispatch(setPlayingState(true));
+    }
   };
 
   const pauseTimer = () => {

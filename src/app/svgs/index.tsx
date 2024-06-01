@@ -13,6 +13,7 @@ import SongIcon from "./song";
 import SettingIcon from "./setting";
 import LiveRequestIcon from "./liveRequest";
 import AppearenceIcon from "./appearence";
+import SortByMasterIcon from "./sortByMasterIcon";
 
 export {
   Logo,
@@ -30,4 +31,5 @@ export {
   SettingIcon,
   LiveRequestIcon,
   AppearenceIcon,
+  SortByMasterIcon,
 };

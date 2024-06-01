@@ -14,7 +14,8 @@ const endPoints = {
   UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus",
   GET_ONDUTY_PLAYER_SONGS: "api/songs/getOnDutyPlayerSongs",
   GET_ASSIGN_SONGS_WITH_PLAYERS: "api/songs/getAssignSongs",
-  GET_SONGS_FROM_PLAYLIST: "api/playlist/getSongsFromPlaylist",
+  GET_SONGS_FROM_PLAYLIST:
+    "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
@@ -22,7 +23,7 @@ const endPoints = {
   DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
-  GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList",
+  GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList?reportType=",
   CHANGE_PASSWORD: "api/auth/changePassword",
   CREATE_STREAM_USER: "api/stream/createStreamUser",
   SEND_STREAM_REQUEST: "api/stream/sendStreamRequestToMaster",
@@ -36,6 +37,7 @@ const endPoints = {
   GET_LIMIT_LIST: "api/limit/getLimitList",
   ADD_UPDATE_LIMIT: "api/limit/addUpdateLimit",
   GET_LIMIT_BY_TITLE: "api/limit/getLimitByTitle?heading=",
+  GET_ALL_FAV_SONGS: `api/songs/getAllFavSongs`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -61,16 +63,19 @@ export const emptySplitApi = createApi({
   // just for testing
   endpoints: (builder) => ({
     getSongsFromPlaylist: builder.query({
-      query: () => endPoints.GET_SONGS_FROM_PLAYLIST,
+      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
     }),
     getSongsReportList: builder.query({
-      query: () => endPoints.GET_SONGS_REPORT_LIST,
+      query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
     }),
     getAssignSongsWithPlayers: builder.query({
       query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS,
     }),
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
+    }),
+    getFavSongList: builder.query({
+      query: () => endPoints.GET_ALL_FAV_SONGS,
     }),
     getAllPlayers: builder.query({
       query: () => endPoints.GET_ALL_PLAYERS,
@@ -283,4 +288,5 @@ export const {
   useLazyGetLimitListQuery,
   useAddUpdateLimitMutation,
   useLazyGetLimitByTitleQuery,
+  useLazyGetFavSongListQuery,
 } = emptySplitApi;

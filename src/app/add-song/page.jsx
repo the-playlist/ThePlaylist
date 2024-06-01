@@ -11,8 +11,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { Listener_URL } from "../_utils/common/constants";
 import { io } from "socket.io-client";
+import { useDispatch } from "react-redux";
+import { setIsFirstTimeFetched } from "../_utils/redux/slice/playlist-list";
 
 const Typeahead = () => {
+  const dispatch = useDispatch();
   let limitTitle = "Song Limit";
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [getAssignSongsApi, getAssignSongsResponse] =
@@ -117,8 +120,13 @@ const Typeahead = () => {
   };
   const addSongsHandler = async (id) => {
     try {
-      let response = await addSongToPlaylistByUserApi({ songId: id });
+      let response = await addSongToPlaylistByUserApi({
+        songId: id,
+        addByCustomer: true,
+      });
       if (response && !response.error) {
+        const { isFirstTimeFetched } = response?.data?.content;
+        dispatch(setIsFirstTimeFetched(isFirstTimeFetched));
         toast.success(response?.data?.description);
         socket.emit("addSongToPlaylistApi", id);
         setInputValue("");

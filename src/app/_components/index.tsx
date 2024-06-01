@@ -22,9 +22,10 @@ import LiveVideo from "./live-video";
 import StreamRequest from "./stream-requests";
 import CurrentLiveVideo from "./currently-live";
 import PlaylistComponent from "./playlist-component";
-import AppearanceTabs from "./appearance";
+import LimitAndAppearence from "./limit-and-appearance";
 import ViewMode from "./view-mode";
 import CountDown from "./count-down";
+import FavSongList from "./fav-songs-list";
 
 export {
   NavBar,
@@ -51,7 +52,8 @@ export {
   StreamRequest,
   CurrentLiveVideo,
   PlaylistComponent,
-  AppearanceTabs,
+  LimitAndAppearence,
   ViewMode,
   CountDown,
+  FavSongList,
 };

@@ -10,6 +10,7 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { IntroCounter } from "./intro-counter";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
@@ -20,6 +21,7 @@ const PerformerView = () => {
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [seconds, setSeconds] = useState(0);
+
   const [timerRunning, setTimerRunning] = useState(false);
 
   let screenName = "Player View";
@@ -68,7 +70,8 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
-        setPerformers(response?.data?.content?.list);
+        const list = response?.data?.content?.list;
+        setPerformers(list);
       }
       setLoading(false);
     } catch (error) {
@@ -148,9 +151,11 @@ const PerformerView = () => {
                       {item?.playerName}
                     </td>
                     <td className="text-black rounded-r-lg text-end w-1/12">
-                      <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
-                        {item?.introSec}
-                      </div>
+                      <IntroCounter
+                        index={index}
+                        performerList={performer}
+                        introTimer={parseInt(item.introSec)}
+                      />
                     </td>
                   </tr>
                 </tbody>

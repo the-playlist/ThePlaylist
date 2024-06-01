@@ -98,7 +98,6 @@ const SideBar = () => {
   let intervalId = 0;
   useEffect(() => {
     // RetrieveTIMERvalue from localStorage on component mount
-    debugger;
     if (pathname != "/playlist") {
       if (parseInt(currentSongSecond) === 0) {
         deleteSongFromPlaylistHandler(currentSong.id);
