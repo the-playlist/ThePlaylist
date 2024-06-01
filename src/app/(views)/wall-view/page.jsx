@@ -132,7 +132,7 @@ const WallView = () => {
                   themeMode ? "text-black" : "text-white"
                 } w-full`}
               >
-                No Songs Found
+                The playlist is empty.
               </div>
             )}
           </>

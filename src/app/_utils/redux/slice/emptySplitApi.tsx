@@ -22,7 +22,7 @@ const endPoints = {
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
   DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
-  GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView?id=",
+  GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList?reportType=",
   CHANGE_PASSWORD: "api/auth/changePassword",
   CREATE_STREAM_USER: "api/stream/createStreamUser",
@@ -89,8 +89,13 @@ export const emptySplitApi = createApi({
     getStreamRequest: builder.query({
       query: () => endPoints.GET_STREAM_REQUEST,
     }),
-    getTableViewSongs: builder.query({
-      query: (body: any) => `${endPoints.GET_TABLE_VIEW_SONGS}${body}`,
+
+    getTableViewSongs: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.GET_TABLE_VIEW_SONGS,
+        method: "POST",
+        body: body,
+      }),
     }),
     getLiveStream: builder.query({
       query: () => endPoints.GET_LIVE_STREAM,
@@ -271,7 +276,7 @@ export const {
   useUpdateSortOrderOfSongsMutation,
   useUpdatePlaylistTypeMutation,
   useAddUpdateVoteMutation,
-  useLazyGetTableViewSongsQuery,
+  useGetTableViewSongsMutation,
   useLazyGetSongsReportListQuery,
   useChangeUserPasswordMutation,
   useDeleteAllSongsFromPlaylistMutation,

@@ -7,23 +7,27 @@ import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 
 import {
   useAddUpdateVoteMutation,
-  useLazyGetTableViewSongsQuery,
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
+  useGetTableViewSongsMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const TableView = () => {
   let screenName = "Table View";
   const router = useRouter();
+  const isFirstTimeFetched = useSelector(
+    (state) => state?.playlistReducer?.isFirstTimeFetched
+  );
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
-  const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
+  const [getPlaylistSongTableView] = useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -93,7 +97,12 @@ const TableView = () => {
   const fetchPlaylistSongList = async () => {
     try {
       const deviceId = generateDeviceId();
-      let response = await getPlaylistSongTableView(deviceId);
+      let payload = {
+        id: deviceId,
+        isFirstTimeFetched: isFirstTimeFetched,
+      };
+      console.log("payload", payload);
+      let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);
       }
@@ -276,7 +285,7 @@ const TableView = () => {
             <Logo />
           </div>
           <div className="mb-32">
-            {performer.length === 0 && (
+            {performer?.length === 0 && (
               <div
                 className={`flex items-center ${
                   themeMode ? "text-black" : "text-white"
