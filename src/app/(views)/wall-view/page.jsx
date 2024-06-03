@@ -33,6 +33,9 @@ const WallView = () => {
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
     });
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
