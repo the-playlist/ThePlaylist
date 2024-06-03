@@ -77,6 +77,9 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
+  const flattenedRemainingPlaylist = flattenedPlaylist.filter(
+    (song) => !song.sortByMaster
+  );
 
   // Separate first two songs
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
@@ -90,7 +93,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    isFirstTimeFetched == "true" ? flattenedPlaylist : remainingSongs,
+    isFirstTimeFetched == "true" ? flattenedRemainingPlaylist : remainingSongs,
     isFirstTimeFetched == "true" ? null : firstTwoSongs
   );
 

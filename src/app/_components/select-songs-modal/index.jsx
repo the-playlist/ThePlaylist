@@ -32,7 +32,7 @@ const SelectSongModal = ({
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
-
+  console.log("playlistCount", playlistCount);
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -118,7 +118,7 @@ const SelectSongModal = ({
       return {
         songData: record?._id,
         assignedPlayer: record?.selectedPlayers?._id,
-        sortOrder: index,
+        sortOrder: playlistCount + index,
       };
     });
 

@@ -143,6 +143,7 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(isFirst ?? true);
+
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
