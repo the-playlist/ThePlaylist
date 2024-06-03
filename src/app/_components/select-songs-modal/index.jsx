@@ -13,8 +13,6 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import GenericButton from "../generic-button";
 import { FaCircleInfo } from "react-icons/fa6";
-import { useDispatch } from "react-redux";
-import { setIsFirstTimeFetched } from "@/app/_utils/redux/slice/playlist-list";
 
 const SelectSongModal = ({
   playlistCount,
@@ -25,7 +23,6 @@ const SelectSongModal = ({
   items,
   fetchList,
 }) => {
-  const dispatch = useDispatch();
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [songLimit, setSongLimit] = useState(0);
   const [socket, setSocket] = useState();
