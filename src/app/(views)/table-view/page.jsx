@@ -73,6 +73,9 @@ const TableView = () => {
       fetchPlaylistSongList();
       getLimitApiHandler();
     });
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -241,7 +244,6 @@ const TableView = () => {
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
-      fetchPlaylistSongList();
     };
 
     return (
