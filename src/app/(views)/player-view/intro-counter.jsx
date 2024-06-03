@@ -16,7 +16,9 @@ export const IntroCounter = ({ introTimer, index, performerList }) => {
     socket.connect();
 
     socket.on("advanceTheQueueRes", (item) => {
-      setIntroCountdown(introTimer);
+      if (index === 0) {
+        setIntroCountdown(introTimer);
+      }
     });
 
     socket.on("startIntroSecondsResponse", (item) => {

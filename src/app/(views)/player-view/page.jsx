@@ -11,12 +11,8 @@ import {
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { IntroCounter } from "./intro-counter";
-import { useSelector } from "react-redux";
 
 const PerformerView = () => {
-  const isFirstTimeFetched = useSelector(
-    (state) => state?.playlistReducer?.isFirstTimeFetched
-  );
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);

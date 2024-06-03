@@ -191,7 +191,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                       required: "Intro Sec is required",
                       min: {
                         value: 1,
-                        message: "Intro seconds cannot be negative",
+                        message: "Intro seconds must be greater than 0",
                       },
                       max: {
                         value: 59,
