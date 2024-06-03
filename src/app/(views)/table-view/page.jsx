@@ -241,6 +241,7 @@ const TableView = () => {
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
+      fetchPlaylistSongList();
     };
 
     return (

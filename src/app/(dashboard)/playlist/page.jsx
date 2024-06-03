@@ -340,7 +340,7 @@ const page = () => {
               </button>
             )}
             <div className="flex flex-row  ">
-              {playlistSongList.length > 0 && (
+              {!isFavSongs && playlistSongList?.length > 0 && (
                 <button
                   className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
                   onClick={() => setIsConfirmationPopup(true)}
@@ -351,7 +351,7 @@ const page = () => {
                   </span>
                 </button>
               )}
-              {playlistSongList?.length > 0 && (
+              {(isFavSongs || playlistSongList?.length > 0) && (
                 <button
                   disabled={playlistSongList.length == 0}
                   onClick={toggleFavSongs}
