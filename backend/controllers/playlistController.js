@@ -317,6 +317,8 @@ export const getSongsForTableView = async (req, res, next) => {
     category: item.songData.category,
     upVote: item.upVote,
     downVote: item.downVote,
+    upVoteCount: item.upVoteCount,
+    downVoteCount: item.downVoteCount,
     sortOrder: item.sortOrder,
     sortByMaster: item.sortByMaster,
     addByCustomer: item.addByCustomer,
@@ -345,11 +347,6 @@ export const getSongsForTableView = async (req, res, next) => {
 
   const firstTwoSongs = flattenedPlaylist.slice(0, 2);
 
-  // Filter sortByMaster songs and remaining songs
-  const songsByCustomer = flattenedPlaylist.filter(
-    (song) => song.addByCustomer
-  );
-
   const remainingSongs = flattenedPlaylist
     .slice(2)
     .filter((song) => !song.sortByMaster);
@@ -367,7 +364,8 @@ export const getSongsForTableView = async (req, res, next) => {
 
   // Sort remaining songs based on upVote - downVote (descending)
   modifiedRemainingSongs.sort(
-    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+    (a, b) =>
+      b.upVoteCount - b.downVoteCount - (a.upVoteCount - a.downVoteCount)
   );
 
   // Create a map to store sortByMaster songs with their original sortOrder

@@ -52,6 +52,46 @@ export const songsForTableView = [
   {
     $sort: { sortOrder: 1 }, // Sort the results
   },
+  {
+    $lookup: {
+      from: "votes",
+      localField: "songData._id",
+      foreignField: "songId",
+      as: "VoteCountData",
+    },
+  },
+  {
+    $addFields: {
+      upVoteCount: {
+        $size: {
+          $filter: {
+            input: "$VoteCountData",
+            as: "vote",
+            cond: {
+              $and: [
+                { $eq: ["$$vote.isUpVote", true] },
+                { $eq: ["$$vote.playlistItemId", "$_id"] },
+              ],
+            },
+          },
+        },
+      },
+      downVoteCount: {
+        $size: {
+          $filter: {
+            input: "$VoteCountData",
+            as: "vote",
+            cond: {
+              $and: [
+                { $eq: ["$$vote.isUpVote", false] },
+                { $eq: ["$$vote.playlistItemId", "$_id"] },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
 ];
 
 export const songFromPlaylist = [
