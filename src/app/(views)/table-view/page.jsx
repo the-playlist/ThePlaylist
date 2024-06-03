@@ -192,6 +192,7 @@ const TableView = () => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
 
     const handleVote = (isTrue) => {
+      localStorage.setItem("isFirstTimeFetched", false);
       const currentTime = new Date().getTime();
       const prevVoteTime = parseInt(localStorage.getItem("prevVoteTime"), 10);
       const voteCount = parseInt(localStorage.getItem("voteCount"), 10) || 0;

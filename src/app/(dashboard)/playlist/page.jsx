@@ -138,9 +138,8 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchPlaylistSongList = async (isFetched) => {
+  const fetchPlaylistSongList = async () => {
     const isFirst = localStorage.getItem("isFirstTimeFetched");
-
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(isFirst ?? true);
@@ -174,6 +173,7 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
+    localStorage.setItem("isFirstTimeFetched", false);
     removeItemById(id);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -243,6 +243,10 @@ const page = () => {
       const updatedPlaylist = [...playlistSongList];
       const favSongsList = updatedPlaylist.filter((item) => item.isFav);
       setPlaylistSongList(favSongsList);
+      const initialSongDuration = convertTimeToSeconds(
+        favSongsList[0].songDuration
+      );
+      dispatch(setCurrentSongSecond(initialSongDuration));
     } else {
       fetchPlaylistSongList();
     }
@@ -250,6 +254,7 @@ const page = () => {
     await updatePlaylistTypeAPI({
       isFavortiteListType: !isFavSongs,
     });
+    socket.emit("addSongToPlaylistApi", null);
   };
 
   const setUndoItemsInStorage = (data) => {
@@ -346,22 +351,24 @@ const page = () => {
                   </span>
                 </button>
               )}
-              <button
-                disabled={playlistSongList.length == 0}
-                onClick={toggleFavSongs}
-                className={`flex items-center hover:cursor-pointer border ${
-                  !isFavSongs ? "border-black" : "border-top-queue-bg"
-                }  ${
-                  !isFavSongs
-                    ? "hover:bg-black hover:text-white text-black"
-                    : "text-top-queue-bg"
-                }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
-              >
-                {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
-                <span className="ml-2">
-                  {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
-                </span>
-              </button>
+              {playlistSongList?.length > 0 && (
+                <button
+                  disabled={playlistSongList.length == 0}
+                  onClick={toggleFavSongs}
+                  className={`flex items-center hover:cursor-pointer border ${
+                    !isFavSongs ? "border-black" : "border-top-queue-bg"
+                  }  ${
+                    !isFavSongs
+                      ? "hover:bg-black hover:text-white text-black"
+                      : "text-top-queue-bg"
+                  }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                >
+                  {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+                  <span className="ml-2">
+                    {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
           {playlistSongList.length > 0 && (
