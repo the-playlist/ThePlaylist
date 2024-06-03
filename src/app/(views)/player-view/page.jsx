@@ -32,6 +32,9 @@ const PerformerView = () => {
     socket.on("addSongToPlaylistApiResponse", (item) => {
       fetchPlaylistSongList();
     });
+    socket.on("votingResponse", (item) => {
+      fetchPlaylistSongList();
+    });
     socket.on("advanceTheQueueRes", (item) => {
       const { time } = item;
       setSeconds(time);
