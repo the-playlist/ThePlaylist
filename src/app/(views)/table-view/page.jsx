@@ -101,7 +101,6 @@ const TableView = () => {
         id: deviceId,
         isFirstTimeFetched: isFirstTimeFetched,
       };
-      console.log("payload", payload);
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);

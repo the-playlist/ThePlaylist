@@ -47,9 +47,6 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
-  const isFirstTimeFetched = useSelector(
-    (state) => state?.playlistReducer?.isFirstTimeFetched
-  );
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
@@ -140,10 +137,12 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchPlaylistSongList = async () => {
+  const fetchPlaylistSongList = async (isFetched) => {
+    const isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
       // setIsLoading(true);
-      let response = await getPlaylistSongListApi(isFirstTimeFetched);
+      let response = await getPlaylistSongListApi(isFirst ?? true);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
@@ -257,6 +256,7 @@ const page = () => {
   };
 
   const deleteAllSongsHandler = async () => {
+    setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
 

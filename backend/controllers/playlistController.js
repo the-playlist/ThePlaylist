@@ -90,8 +90,8 @@ export const getSongsFromPlaylist = async (req, res, next) => {
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    parseBoolean(isFirstTimeFetched) ? flattenedPlaylist : remainingSongs,
-    parseBoolean(isFirstTimeFetched) ? null : firstTwoSongs
+    isFirstTimeFetched == "true" ? flattenedPlaylist : remainingSongs,
+    isFirstTimeFetched == "true" ? null : firstTwoSongs
   );
 
   // Sort remaining songs based on upVote - downVote (descending)
@@ -115,7 +115,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (parseBoolean(isFirstTimeFetched)) {
+      if (isFirstTimeFetched == "true") {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(

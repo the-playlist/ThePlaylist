@@ -8,8 +8,6 @@ export const IntroCounter = ({ introTimer, index, performerList }) => {
   const [isTimerOn, setIsTimerOn] = useState(false);
 
   useEffect(() => {
-    console.log("performerList", performerList);
-    debugger;
     setIntroCountdown(introTimer);
   }, [performerList]);
 
@@ -32,7 +30,6 @@ export const IntroCounter = ({ introTimer, index, performerList }) => {
   }, []);
 
   const resetAndStartTimer = () => {
-    debugger;
     setIntroCountdown(introTimer); // Reset countdown
     setIsTimerOn(true);
   };
