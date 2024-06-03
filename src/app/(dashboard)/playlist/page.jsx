@@ -39,6 +39,7 @@ import { useSelector } from "react-redux";
 import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
+import Ticker from "react-ticker";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -143,6 +144,7 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(isFirst ?? true);
+
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
@@ -412,8 +414,8 @@ const page = () => {
                           songDuration,
                         } = item || {};
                         const trimmedTitle =
-                          title?.length > 15
-                            ? `${title?.slice(0, 12)}...`
+                          title?.length > 16
+                            ? `${title?.slice(0, 16)}...`
                             : title;
                         const isLockedSongs = index == 0 || index == 1;
                         return (
@@ -452,14 +454,17 @@ const page = () => {
                                           index + 1
                                         )}
                                       </div>
-                                      <div className="w-2/12">
+                                      <div className="w-2/12 pr-10">
                                         {title?.length > 12 ? (
-                                          <div class="group relative m-12 flex justify-center">
-                                            <span class="absolute top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
-                                              {title}
-                                            </span>
-                                            {trimmedTitle}
-                                          </div>
+                                          <Ticker>
+                                            {({ index }) => (
+                                              <>
+                                                <h1 className=" px-1 ">
+                                                  {title}
+                                                </h1>
+                                              </>
+                                            )}
+                                          </Ticker>
                                         ) : (
                                           title
                                         )}

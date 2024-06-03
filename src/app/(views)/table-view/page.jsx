@@ -95,11 +95,13 @@ const TableView = () => {
   }, []);
 
   const fetchPlaylistSongList = async () => {
+    const isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
       const deviceId = generateDeviceId();
       let payload = {
         id: deviceId,
-        isFirstTimeFetched: isFirstTimeFetched,
+        isFirstTimeFetched: isFirst ?? true,
       };
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
