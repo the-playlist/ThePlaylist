@@ -71,8 +71,10 @@ const PerformerView = () => {
   }, []);
 
   const fetchPlaylistSongList = async () => {
+    const isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
-      let response = await getPlaylistSongListApi(isFirstTimeFetched);
+      let response = await getPlaylistSongListApi(isFirst ?? true);
       if (response && !response.isError) {
         const list = response?.data?.content?.list;
         setPerformers(list);

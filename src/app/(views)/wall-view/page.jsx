@@ -51,8 +51,10 @@ const WallView = () => {
   }, []);
 
   const fetchPlaylistSongList = async () => {
+    const isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
-      let response = await getPlaylistSongListApi(isFirstTimeFetched);
+      let response = await getPlaylistSongListApi(isFirst ?? true);
       if (response && !response.isError) {
         setSongList(response?.data?.content?.list);
       }
