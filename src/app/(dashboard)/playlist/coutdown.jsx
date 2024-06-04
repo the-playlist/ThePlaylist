@@ -1,7 +1,10 @@
 "use client";
+import { setPlayingState } from "@/app/_utils/redux/slice/playlist-list";
 import React, { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
 
 const CountDown = ({ openModal, timer, setShowCountDown }) => {
+  const dispatch = useDispatch();
   const reff = useRef();
   const [seconds, setSeconds] = useState(timer);
 
@@ -24,6 +27,7 @@ const CountDown = ({ openModal, timer, setShowCountDown }) => {
       clearTimeout(timer);
       reff.current?.close();
       setShowCountDown(false);
+      dispatch(setPlayingState(true));
     }
 
     return () => clearTimeout(timer);

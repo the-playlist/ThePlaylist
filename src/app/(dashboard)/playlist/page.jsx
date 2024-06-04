@@ -205,6 +205,10 @@ const page = () => {
     });
 
     socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
+    if (playingState == true) {
+      dispatch(setPlayingState(false));
+      setShowCountDown(true);
+    }
     // socket.emit("advanceTheQueueApi", {
     //   time: 10,
     // });
