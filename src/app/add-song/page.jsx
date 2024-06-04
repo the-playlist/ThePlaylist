@@ -185,7 +185,7 @@ const Typeahead = () => {
         <div className="mt-24 flex items-center justify-center">
           <span className="loading loading-spinner loading-md bg-white"></span>
         </div>
-      ) : (
+      ) : filteredOptions?.length > 0 ? (
         <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">
           {filteredOptions?.map((option) => (
             <div className="border-b-1 border-[#323335]">
@@ -234,6 +234,10 @@ const Typeahead = () => {
             </div>
           ))}
         </ul>
+      ) : (
+        <div className="text-white h-[100vh] flex items-center justify-center text-lg  ">
+          No Songs Found
+        </div>
       )}
       <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
         <button

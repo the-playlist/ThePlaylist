@@ -301,7 +301,7 @@ const SelectSongModal = ({
               text={playersList?.length == 0 ? "Duty Screen" : btnText}
               onClick={() => {
                 if (playersList?.length == 0) {
-                  router.push("/duty");
+                  closeModal();
                 } else {
                   const selectedPlayers = playersList.filter(
                     (item) => item.isChecked == true
