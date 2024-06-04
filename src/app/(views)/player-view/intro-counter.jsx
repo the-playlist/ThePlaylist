@@ -50,7 +50,7 @@ export const IntroCounter = ({ introTimer, index, performerList }) => {
 
   return (
     <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
-      {introCountdown}
+      {introTimer}
     </div>
   );
 };

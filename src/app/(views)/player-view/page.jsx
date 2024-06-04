@@ -7,6 +7,7 @@ import { CustomLoader, ToggleFullScreen, CountDown } from "@/app/_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
@@ -14,6 +15,7 @@ import { IntroCounter } from "./intro-counter";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
@@ -28,12 +30,13 @@ const PerformerView = () => {
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-
     socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("votingResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("advanceTheQueueRes", (item) => {
       const { time } = item;
@@ -65,17 +68,26 @@ const PerformerView = () => {
   }, [seconds, timerRunning]);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
   }, []);
 
-  const fetchPlaylistSongList = async () => {
-    const isFirst = localStorage.getItem("isFirstTimeFetched");
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
 
+  const fetchPlaylistSongList = async (firstFetch) => {
     try {
-      let response = await getPlaylistSongListApi(isFirst ?? true);
+      let response = await getPlaylistSongListApi(firstFetch);
       if (response && !response.isError) {
         const list = response?.data?.content?.list;
+        if (list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
         setPerformers(list);
       }
       setLoading(false);
@@ -123,7 +135,11 @@ const PerformerView = () => {
               <Logo />
             </div>
             {performer.length === 0 && (
-              <div className="flex items-center justify-center flex-1 min-h-52 font-semibold text-lg text-white">
+              <div
+                className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
+                  themeMode ? "text-black" : "text-white"
+                }`}
+              >
                 The playlist is empty.
               </div>
             )}

@@ -10,23 +10,21 @@ import {
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
   useGetTableViewSongsMutation,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
 
 const TableView = () => {
   let screenName = "Table View";
   const router = useRouter();
-  const isFirstTimeFetched = useSelector(
-    (state) => state?.playlistReducer?.isFirstTimeFetched
-  );
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getPlaylistSongTableView] = useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
@@ -70,11 +68,13 @@ const TableView = () => {
     socket.connect();
     setSocket(socket);
     socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
       getLimitApiHandler();
     });
     socket.on("votingResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -92,22 +92,36 @@ const TableView = () => {
   }, []);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
 
-  const fetchPlaylistSongList = async () => {
-    const isFirst = localStorage.getItem("isFirstTimeFetched");
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+
+  const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+    isFirst = Boolean(isFirst);
+
     try {
       const deviceId = generateDeviceId();
       let payload = {
         id: deviceId,
-        isFirstTimeFetched: isFirst ?? true,
+        isFirstTimeFetched: firstFetch ?? isFirst,
       };
+      console.log("payload", payload);
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         setPerformers(response?.data?.content?.list);
+        if (response?.data?.content?.list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -250,6 +264,7 @@ const TableView = () => {
         playlistItemId: item?._id,
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
+        isFirst: false,
       });
     };
 

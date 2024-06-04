@@ -29,7 +29,7 @@ const SelectSongModal = ({
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
-  console.log("playlistCount", playlistCount);
+
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -104,7 +104,9 @@ const SelectSongModal = ({
         closeModal();
         toast.success(response?.data?.description);
         await fetchList();
-        socket.emit("addSongToPlaylistApi", data);
+        socket.emit("addSongToPlaylistApi", {
+          isFirst: isFirstTimeFetched,
+        });
       }
     } catch (error) {
       toast.success(error?.message || "Something went wrong.");
