@@ -18,6 +18,7 @@ import {
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
   useUndoDeletedSongsFromPlaylistMutation,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -50,6 +51,7 @@ const ACTION_TYPE = {
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
     useDeleteAllSongsFromPlaylistMutation();
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
@@ -65,7 +67,7 @@ const page = () => {
   const [playlistCount, setPlaylistCount] = useState(0);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
   const [showCountDown, setShowCountDown] = useState(false);
-
+  const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
 
   const playingState = useSelector(
@@ -79,10 +81,12 @@ const page = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     socket.on("votingResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     setSocket(socket);
     return () => {
@@ -92,7 +96,7 @@ const page = () => {
 
   useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
   }, []);
 
   useEffect(() => {
@@ -138,15 +142,27 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchPlaylistSongList = async () => {
-    const isFirst = localStorage.getItem("isFirstTimeFetched");
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+  const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+    isFirst = Boolean(isFirst);
     try {
       // setIsLoading(true);
-      let response = await getPlaylistSongListApi(isFirst ?? true);
+      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
 
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.list;
+        if (songList?.length > 0) {
+          setIsFavExist(songList?.filter((item) => item?.isFav));
+        }
+
         dispatch(setPlaylistLength(songList?.length));
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
@@ -188,7 +204,7 @@ const page = () => {
       isDeleted: true,
     });
 
-    socket.emit("addSongToPlaylistApi", id);
+    socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
     // socket.emit("advanceTheQueueApi", {
     //   time: 10,
     // });
@@ -228,11 +244,12 @@ const page = () => {
   };
 
   const updateSongsOrderHandler = async (payload) => {
+    localStorage.setItem("isFirstTimeFetched", false);
     try {
       await updateSortOrderApi({
         songsList: payload,
       });
-      socket.emit("addSongToPlaylistApi", payload);
+      socket.emit("addSongToPlaylistApi", { payload: payload, isFirst: false });
     } catch (error) {
       console.log(error);
     }
@@ -254,7 +271,9 @@ const page = () => {
     await updatePlaylistTypeAPI({
       isFavortiteListType: !isFavSongs,
     });
-    socket.emit("addSongToPlaylistApi", null);
+    socket.emit("addSongToPlaylistApi", {
+      isFirst: true,
+    });
   };
 
   const setUndoItemsInStorage = (data) => {
@@ -263,6 +282,7 @@ const page = () => {
   };
 
   const deleteAllSongsHandler = async () => {
+    localStorage.setItem("isFirstTimeFetched", true);
     setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
@@ -276,7 +296,9 @@ const page = () => {
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
-      socket.emit("addSongToPlaylistApi", null);
+      socket.emit("addSongToPlaylistApi", {
+        isFirst: false,
+      });
     }
   };
 
@@ -288,7 +310,10 @@ const page = () => {
           id: lastAction?.data,
           isDeleted: false,
         });
-        socket.emit("addSongToPlaylistApi", lastAction?.data);
+        socket.emit("addSongToPlaylistApi", {
+          lastAction: lastAction?.data,
+          isFirst: false,
+        });
         await setPlaylistSongList([]);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
@@ -298,7 +323,10 @@ const page = () => {
         const listItems = lastAction.data.map((item) => item._id);
         await undoDeletedSongsAPI({ data: listItems });
 
-        socket.emit("addSongToPlaylistApi", lastAction?.data);
+        socket.emit("addSongToPlaylistApi", {
+          lastAction: lastAction?.data,
+          isFirst: false,
+        });
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
         setIsUndoDisable(true);
@@ -322,7 +350,7 @@ const page = () => {
             {playlistSongList?.length > 0 && (
               <button
                 onClick={async () => {
-                  deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+                  await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
                   if (playlistSongList.length > 0) {
                     const songDuration = convertTimeToSeconds(
                       playlistSongList[1].songDuration
@@ -351,24 +379,25 @@ const page = () => {
                   </span>
                 </button>
               )}
-              {(isFavSongs || playlistSongList?.length > 0) && (
-                <button
-                  disabled={playlistSongList.length == 0}
-                  onClick={toggleFavSongs}
-                  className={`flex items-center hover:cursor-pointer border ${
-                    !isFavSongs ? "border-black" : "border-top-queue-bg"
-                  }  ${
-                    !isFavSongs
-                      ? "hover:bg-black hover:text-white text-black"
-                      : "text-top-queue-bg"
-                  }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
-                >
-                  {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
-                  <span className="ml-2">
-                    {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
-                  </span>
-                </button>
-              )}
+              {isFavExist?.length > 0 &&
+                (isFavSongs || playlistSongList?.length > 0) && (
+                  <button
+                    disabled={playlistSongList.length == 0}
+                    onClick={toggleFavSongs}
+                    className={`flex items-center hover:cursor-pointer border ${
+                      !isFavSongs ? "border-black" : "border-top-queue-bg"
+                    }  ${
+                      !isFavSongs
+                        ? "hover:bg-black hover:text-white text-black"
+                        : "text-top-queue-bg"
+                    }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                  >
+                    {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+                    <span className="ml-2">
+                      {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+                    </span>
+                  </button>
+                )}
             </div>
           </div>
           {playlistSongList.length > 0 && (

@@ -33,10 +33,6 @@ export const addSongsToPlaylist = async (req, res, next) => {
   res.status(201).json(response);
 };
 
-function parseBoolean(value) {
-  return value === "true";
-}
-
 export const getSongsFromPlaylist = async (req, res, next) => {
   const { isFirstTimeFetched } = req?.query;
 
@@ -131,6 +127,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
     playlistCount, // Add playlistCount to the response object
+    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
   });
   res.status(200).json(response);
 };
@@ -194,65 +191,6 @@ function applySongSequenceAlgorithm(songs, firstTwoSongs) {
   // Concatenate comedy songs and customer-added songs to the end of the result
   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }
-// function applySongSequenceAlgorithm(songs, firstTwoSongs) {
-//   const modifiedSongs = [];
-//   const remainingSongs = songs.slice(); // Copy the original array
-
-//   const comedySongs = [];
-//   const customerAddedSongs = [];
-
-//   // Separate comedy songs, customer-added songs, and others
-//   for (const song of remainingSongs) {
-//     if (song.category === "Comedy") {
-//       comedySongs.push(song);
-//     } else if (song.addByCustomer) {
-//       customerAddedSongs.push(song);
-//     } else {
-//       remainingSongs.push(song); // This line can be removed as remainingSongs is already populated
-//     }
-//   }
-
-//   const firstSongPlayerName = firstTwoSongs[0].playerName || null;
-//   const firstSongCategory = firstTwoSongs[0].category || null;
-//   const lastSongCategory = firstTwoSongs[1]?.category || null; // Optional chaining for last song
-
-//   let lastPlayerName = firstSongPlayerName;
-//   let lastCategory = firstSongCategory;
-
-//   while (remainingSongs.length > 0) {
-//     let songAdded = false;
-
-//     for (let i = 0; i < remainingSongs.length; i++) {
-//       const song = remainingSongs[i];
-
-//       if (
-//         (lastPlayerName === null || song.playerName !== lastPlayerName) &&
-//         (lastCategory === null ||
-//           (lastCategory !== "Ballad" && song.category !== "Ballad") ||
-//           (lastCategory === song.category &&
-//             song.category !== firstSongCategory)) // Check for different categories except Ballad
-//       ) {
-//         modifiedSongs.push(song);
-//         lastPlayerName = song.playerName;
-//         lastCategory = song.category;
-//         remainingSongs.splice(i, 1); // Remove the song from the remaining list
-//         songAdded = true;
-//         break;
-//       }
-//     }
-
-//     if (!songAdded) {
-//       // If no suitable song was added in this iteration, force add the first remaining song
-//       const song = remainingSongs.shift();
-//       modifiedSongs.push(song);
-//       lastPlayerName = song.playerName;
-//       lastCategory = song.category;
-//     }
-//   }
-
-//   // Concatenate comedy songs and customer-added songs to the end of the result
-//   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
-// }
 
 const today = new Date();
 const startOfWeek = getMonday(today);
@@ -356,10 +294,8 @@ export const getSongsForTableView = async (req, res, next) => {
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    parseBoolean(isFirstTimeFetched)
-      ? flattenedRemainingPlaylist
-      : remainingSongs,
-    parseBoolean(isFirstTimeFetched) ? null : firstTwoSongs
+    isFirstTimeFetched == true ? flattenedRemainingPlaylist : remainingSongs,
+    isFirstTimeFetched == true ? null : firstTwoSongs
   );
 
   // Sort remaining songs based on upVote - downVote (descending)
@@ -384,7 +320,7 @@ export const getSongsForTableView = async (req, res, next) => {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (parseBoolean(isFirstTimeFetched)) {
+      if (isFirstTimeFetched == true) {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(
@@ -397,6 +333,7 @@ export const getSongsForTableView = async (req, res, next) => {
   const response = new ResponseModel(true, "Songs fetched successfully.", {
     list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
+    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
   });
   res.status(200).json(response);
 };
@@ -563,4 +500,12 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
+};
+
+export const isPlaylistEmpty = async (req, res, next) => {
+  const result = await Playlist.find({ isDeleted: false });
+  const response = new ResponseModel(true, "Data Fetched successfully.", {
+    isFirstTimeFetched: result?.length == 0 ? true : false,
+  });
+  res.status(201).json(response);
 };

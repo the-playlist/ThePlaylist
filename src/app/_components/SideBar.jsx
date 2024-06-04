@@ -64,7 +64,10 @@ const SideBar = () => {
         id: id,
         isDeleted: true,
       });
-      socket.emit("addSongToPlaylistApi", id);
+      socket.emit("addSongToPlaylistApi", {
+        id: id,
+        isFirst: false,
+      });
       if (response && !response.error) {
         const index = playlistSongList.findIndex(
           (i) => i._id == currentSong.id

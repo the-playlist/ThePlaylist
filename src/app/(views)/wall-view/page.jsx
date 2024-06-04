@@ -6,6 +6,7 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 import { ToggleFullScreen } from "@/app/_components";
 import { CustomLoader } from "@/app/_components";
 import {
+  useLazyGetIsPlaylistEmptyQuery,
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
@@ -14,9 +15,7 @@ import { Listener_URL } from "../../_utils/common/constants";
 import { useSelector } from "react-redux";
 
 const WallView = () => {
-  const isFirstTimeFetched = useSelector(
-    (state) => state?.playlistReducer?.isFirstTimeFetched
-  );
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
 
@@ -29,12 +28,13 @@ const WallView = () => {
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-
     socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("votingResponse", (item) => {
-      fetchPlaylistSongList();
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -49,17 +49,27 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
   }, []);
 
-  const fetchPlaylistSongList = async () => {
-    const isFirst = localStorage.getItem("isFirstTimeFetched");
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
 
+  const fetchPlaylistSongList = async (firstFetch) => {
     try {
-      let response = await getPlaylistSongListApi(isFirst ?? true);
+      let response = await getPlaylistSongListApi(firstFetch);
+
       if (response && !response.isError) {
         setSongList(response?.data?.content?.list);
+        if (response?.data?.content?.list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setIsLoading(false);
     } catch (error) {
@@ -124,11 +134,13 @@ const WallView = () => {
                 >
                   <tr>
                     <td
-                      className={`lg:text-3xl text-lg text-start rounded-l-lg `}
+                      className={`lg:text-3xl text-lg text-start capitalize rounded-l-lg `}
                     >
                       {item?.title}
                     </td>
-                    <td className={`lg:text-3xl text-lg text-end rounded-r-lg`}>
+                    <td
+                      className={`lg:text-3xl text-lg text-end capitalize rounded-r-lg`}
+                    >
                       {item?.artist}
                     </td>
                   </tr>
