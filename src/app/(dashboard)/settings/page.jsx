@@ -17,7 +17,7 @@ import { SessionProvider } from "next-auth/react";
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(1);
+    const [selectedItemId, setSelectedItemId] = useState(0);
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
     };

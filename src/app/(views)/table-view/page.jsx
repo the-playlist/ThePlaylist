@@ -99,7 +99,6 @@ const TableView = () => {
 
   const fetchPlaylistSongList = async () => {
     const isFirst = localStorage.getItem("isFirstTimeFetched");
-
     try {
       const deviceId = generateDeviceId();
       let payload = {
