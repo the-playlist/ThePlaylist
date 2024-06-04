@@ -126,8 +126,16 @@ const TableView = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
-      const queueLimit = response?.data?.content[2]?.value;
-      const voteLimit = response?.data?.content[1];
+      const voteLimit = response?.data?.content.find(
+        (item) => item.heading == "Vote Limit"
+      );
+      const queueLimit = response?.data?.content.find(
+        (item) => item.heading == "Queue Limit"
+      );
+
+      // const queueLimit = response?.data?.content[2]?.value;
+      // const voteLimit = response?.data?.content[1];
+
       setQueueLimit(queueLimit || 0);
       setVotingLimit(voteLimit);
     }
