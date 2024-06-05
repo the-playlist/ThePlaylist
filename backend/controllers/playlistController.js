@@ -150,9 +150,9 @@ function applySongSequenceAlgorithm(songs, firstTwoSongs) {
   }
 
   const lastPlayerFromFirstTwo =
-    firstTwoSongs != null ? firstTwoSongs[0]?.playerName : null;
+    firstTwoSongs != null ? firstTwoSongs[1]?.playerName : null;
   const lastCategoryFromFirstTwo =
-    firstTwoSongs != null ? firstTwoSongs[0]?.category : null;
+    firstTwoSongs != null ? firstTwoSongs[1]?.category : null;
 
   let lastPlayerName = lastPlayerFromFirstTwo;
   let lastCategory = lastCategoryFromFirstTwo;
@@ -463,7 +463,12 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
         ) {
           playerToAssign = players[1];
         } else {
-          playerToAssign = players[0];
+          // playerToAssign = players[0];
+          return res
+            .status(400)
+            .json(
+              new ResponseModel(false, "Song Already exist in the playlist")
+            );
         }
       }
     }

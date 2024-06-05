@@ -39,6 +39,7 @@ const endPoints = {
   GET_LIMIT_BY_TITLE: "api/limit/getLimitByTitle?heading=",
   GET_ALL_FAV_SONGS: `api/songs/getAllFavSongs`,
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
+  GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -86,6 +87,9 @@ export const emptySplitApi = createApi({
     }),
     getOnDutyPlayerSongList: builder.query({
       query: () => endPoints.GET_ONDUTY_PLAYER_SONGS,
+    }),
+    getAddSongListForCustomer: builder.query({
+      query: () => endPoints.GET_ADD_SONG_LIST_FOR_CUSTOMER,
     }),
     getIsPlaylistEmpty: builder.query({
       query: () => endPoints.IS_PLAYLIST_EMPTY,
@@ -299,4 +303,5 @@ export const {
   useLazyGetLimitByTitleQuery,
   useLazyGetFavSongListQuery,
   useLazyGetIsPlaylistEmptyQuery,
+  useLazyGetAddSongListForCustomerQuery,
 } = emptySplitApi;
