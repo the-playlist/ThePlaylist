@@ -151,7 +151,6 @@ const page = () => {
   };
   const fetchPlaylistSongList = async (firstFetch) => {
     let isFirst = localStorage.getItem("isFirstTimeFetched");
-    isFirst = Boolean(isFirst);
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);

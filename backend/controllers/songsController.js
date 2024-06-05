@@ -335,3 +335,112 @@ export const getSongByOnDutyPlayer = async (req, res, next) => {
     response,
   });
 };
+
+export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
+  try {
+    const { keyword, id } = req.query;
+    let data;
+
+    if (keyword) {
+      data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
+    } else {
+      let pipeline = [
+        // Lookup players and unwind
+        {
+          $lookup: {
+            from: "players",
+            localField: "_id",
+            foreignField: "assignSongs",
+            as: "player_info",
+          },
+        },
+        {
+          $unwind: "$player_info",
+        },
+        // Add fields for player duty status
+        {
+          $addFields: {
+            duty: "$player_info.duty",
+          },
+        },
+        // Filter only on-duty players
+        {
+          $match: {
+            "duty.status": true,
+          },
+        },
+        // Group by song and count the total players
+        {
+          $group: {
+            _id: "$_id",
+            songName: { $first: "$songName" },
+            artist: { $first: "$artist" },
+            title: { $first: "$title" },
+            totalPlayers: { $sum: 1 },
+          },
+        },
+        // Lookup playlist information
+        {
+          $lookup: {
+            from: "playlists",
+            localField: "_id",
+            foreignField: "songData",
+            as: "playlist_info",
+          },
+        },
+        // Add a field to count playlist entries where isDeleted is false
+        {
+          $addFields: {
+            playlistPlayers: {
+              $size: {
+                $filter: {
+                  input: "$playlist_info",
+                  as: "playlistItem",
+                  cond: { $eq: ["$$playlistItem.isDeleted", false] },
+                },
+              },
+            },
+          },
+        },
+        // If playlist is not empty, filter out songs where playlistPlayers is greater than 0
+        {
+          $match: {
+            $or: [
+              { playlistPlayers: { $gt: 0 } }, // Songs in the playlist
+              { playlistPlayers: { $eq: 0 }, totalPlayers: { $gt: 0 } }, // Songs not in the playlist but have other players who can sing
+            ],
+          },
+        },
+        // Project the final fields
+        {
+          $project: {
+            _id: 1,
+            songName: 1,
+            artist: 1,
+            title: 1,
+            totalPlayers: 1,
+            playlistPlayers: 1,
+            difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
+          },
+        },
+        // If difference is not 0, show the song
+        {
+          $match: {
+            difference: { $ne: 0 },
+          },
+        },
+      ];
+
+      data = await Songs.aggregate(pipeline);
+    }
+
+    const response = new ResponseModel(
+      true,
+      "Songs fetched successfully.",
+      data
+    );
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
