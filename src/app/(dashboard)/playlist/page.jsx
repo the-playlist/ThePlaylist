@@ -80,13 +80,10 @@ const page = () => {
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-    socket.on("votingResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      dispatch(setPlaylistLength(playlist?.length));
+      setPlaylistSongList([...playlist]);
     });
     setSocket(socket);
     return () => {
@@ -154,17 +151,16 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
-
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
-        let songList = response?.data?.content?.list;
-        if (songList?.length > 0) {
-          setIsFavExist(songList?.filter((item) => item?.isFav));
-        }
+        let songList = response?.data?.content?.playlist;
 
         dispatch(setPlaylistLength(songList?.length));
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
+        if (songList?.length > 0) {
+          setIsFavExist(songList?.filter((item) => item?.isFav));
+        }
       }
       setIsLoading(false);
     } catch (error) {
@@ -203,7 +199,7 @@ const page = () => {
       isDeleted: true,
     });
 
-    socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
+    // socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
     if (playingState == true) {
       dispatch(setPlayingState(false));
       setShowCountDown(true);
@@ -223,6 +219,10 @@ const page = () => {
     await setPlaylistSongList([]);
     currentArray = currentArray.filter((item) => item._id != id);
     setPlaylistSongList(currentArray);
+    socket.emit("RemoveSongFromPlaylistRequest", {
+      isFirst: false,
+      playlist: currentArray,
+    });
   };
 
   const handleDragEnd = (result, index) => {
@@ -235,8 +235,11 @@ const page = () => {
       const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
       const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
       updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
+      socket.emit("insertSongIntoPlaylistRequest", {
+        isFirst: false,
+        playlist: updatedPlaylist,
+      });
       setPlaylistSongList([...updatedPlaylist]);
-
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
         newSortOrder: index,
@@ -299,8 +302,12 @@ const page = () => {
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
-      socket.emit("addSongToPlaylistApi", {
+      // socket.emit("addSongToPlaylistApi", {
+      //   isFirst: false,
+      // });
+      socket.emit("emptyPlaylistRequest", {
         isFirst: false,
+        playlist: [],
       });
     }
   };
