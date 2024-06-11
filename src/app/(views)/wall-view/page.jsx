@@ -28,14 +28,21 @@ const WallView = () => {
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
     });
-    socket.on("votingResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
     });
+
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -66,8 +73,8 @@ const WallView = () => {
       let response = await getPlaylistSongListApi(firstFetch);
 
       if (response && !response.isError) {
-        setSongList(response?.data?.content?.list);
-        if (response?.data?.content?.list?.length == 0) {
+        setSongList(response?.data?.content?.playlist);
+        if (response?.data?.content?.playlist?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
         }
       }

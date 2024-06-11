@@ -30,18 +30,24 @@ const PerformerView = () => {
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("votingResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
     socket.on("advanceTheQueueRes", (item) => {
       const { time } = item;
       setSeconds(time);
       setTimerRunning(true);
+    });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
 
     socket.on("themeChangeByMasterRes", (item) => {
@@ -84,7 +90,7 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi(firstFetch);
       if (response && !response.isError) {
-        const list = response?.data?.content?.list;
+        const list = response?.data?.content?.playlist;
         if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
         }
