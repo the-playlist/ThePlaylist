@@ -67,15 +67,15 @@ const TableView = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     setSocket(socket);
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-      getLimitApiHandler();
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
-    socket.on("votingResponse", (item) => {
-      const { isFirst } = item;
+    socket.on("voteCastingResponse", (item) => {
+      const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
+
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -84,6 +84,15 @@ const TableView = () => {
     });
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
+    });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -118,8 +127,9 @@ const TableView = () => {
 
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
-        setPerformers(response?.data?.content?.list);
-        if (response?.data?.content?.list?.length == 0) {
+        const { list, isFirstTimeFetched } = response?.data?.content;
+        setPerformers(list || []);
+        if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
         }
       }
@@ -248,9 +258,10 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-      updatedItem.upVote = isTrue;
+      updatedItem.tableUpVote = isTrue;
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
+
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
@@ -258,14 +269,19 @@ const TableView = () => {
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
-      socket.emit("votingRequest", {
-        customerId: deviceId,
-        songId: item?.songId,
-        playlistItemId: item?._id,
-        playerId: item?.assignedPlayerId,
-        isUpVote: isTrue,
+
+      socket.emit("voteCastingRequest", {
         isFirst: false,
+        playlist: updatedPerformer,
       });
+      // socket.emit("votingRequest", {
+      //   customerId: deviceId,
+      //   songId: item?.songId,
+      //   playlistItemId: item?._id,
+      //   playerId: item?.assignedPlayerId,
+      //   isUpVote: isTrue,
+      //   isFirst: false,
+      // });
     };
 
     return (
@@ -273,7 +289,7 @@ const TableView = () => {
         <button
           onClick={() => handleVote(true)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote == true
+            item?.tableUpVote == true
               ? "bg-green-500"
               : themeMode
               ? "bg-white"
@@ -285,7 +301,7 @@ const TableView = () => {
         <button
           onClick={() => handleVote(false)}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote === false
+            item?.tableUpVote === false
               ? "bg-red-500"
               : themeMode
               ? "bg-white"

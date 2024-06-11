@@ -99,14 +99,19 @@ const SelectSongModal = ({
     try {
       let response = await addSongToPlaylistApi(data);
       if (response && !response.error) {
-        const { isFirstTimeFetched } = response?.data?.content;
+        const { isFirstTimeFetched, playlist } = response?.data?.content;
+
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         closeModal();
         toast.success(response?.data?.description);
         await fetchList();
-        socket.emit("addSongToPlaylistApi", {
+        socket.emit("insertSongIntoPlaylistRequest", {
           isFirst: isFirstTimeFetched,
+          playlist: playlist,
         });
+        // socket.emit("addSongToPlaylistApi", {
+        //   isFirst: isFirstTimeFetched,
+        // });
       }
     } catch (error) {
       toast.success(error?.message || "Something went wrong.");
