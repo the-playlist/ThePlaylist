@@ -17,6 +17,7 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const TableView = () => {
   let screenName = "Table View";
@@ -77,7 +78,7 @@ const TableView = () => {
     });
     socket.on("voteCastingResponse", (item) => {
       const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -131,7 +132,6 @@ const TableView = () => {
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         const { list, isFirstTimeFetched } = response?.data?.content;
-        console.log("list==>", list);
         setPerformers(list || []);
         if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
@@ -286,12 +286,7 @@ const TableView = () => {
 
       updatedPerformer[index] = updatedItem;
 
-      const firstTwoSongs = updatedPerformer.slice(0, 2);
-      const remainingSongs = updatedPerformer.slice(2);
-      remainingSongs.sort(
-        (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
-      );
-      const finalPlaylist = [...firstTwoSongs, ...remainingSongs];
+      const finalPlaylist = playlistAlgorithm(false, updatedPerformer);
 
       setPerformers(finalPlaylist);
 
