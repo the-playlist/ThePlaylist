@@ -33,6 +33,10 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
+  const [disableVoteBtn, setDisableVoteBtn] = useState({
+    id: null,
+    isTrue: null,
+  });
 
   function generateDeviceId() {
     const combinedId =
@@ -73,9 +77,8 @@ const TableView = () => {
     });
     socket.on("voteCastingResponse", (item) => {
       const { playlist, isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+      setPerformers([...playlist]);
     });
-
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -128,6 +131,7 @@ const TableView = () => {
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         const { list, isFirstTimeFetched } = response?.data?.content;
+        console.log("list==>", list);
         setPerformers(list || []);
         if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
@@ -237,6 +241,10 @@ const TableView = () => {
         localStorage.setItem("prevVoteTime", currentTime);
         localStorage.setItem("voteCount", 1);
         toggleButton(isTrue);
+        setDisableVoteBtn({
+          id: item?._id,
+          isTrue: isTrue,
+        });
         return;
       }
       const timeDifference = currentTime - prevVoteTime;
@@ -244,10 +252,18 @@ const TableView = () => {
         localStorage.setItem("prevVoteTime", currentTime);
         localStorage.setItem("voteCount", 1);
         toggleButton(isTrue);
+        setDisableVoteBtn({
+          id: item?._id,
+          isTrue: isTrue,
+        });
       } else {
         if (voteCount < voteCountLimit) {
           localStorage.setItem("voteCount", voteCount + 1);
           toggleButton(isTrue);
+          setDisableVoteBtn({
+            id: item?._id,
+            isTrue: isTrue,
+          });
         } else {
           toast.error("Vote limit reached. Please try again later.");
         }
@@ -258,9 +274,29 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
+      if (isTrue) {
+        updatedItem.upVote++;
+        if (updatedItem.downVote > 0) {
+          updatedItem.upVote--;
+        }
+      } else {
+        updatedItem.downVote++;
+        if (updatedItem.upVote > 0) {
+          updatedItem.upVote--;
+        }
+      }
       updatedItem.tableUpVote = isTrue;
+
       updatedPerformer[index] = updatedItem;
-      setPerformers(updatedPerformer);
+
+      const firstTwoSongs = updatedPerformer.slice(0, 2);
+      const remainingSongs = updatedPerformer.slice(2);
+      remainingSongs.sort(
+        (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+      );
+      const finalPlaylist = [...firstTwoSongs, ...remainingSongs];
+
+      setPerformers(finalPlaylist);
 
       await addUpdateVoteAPI({
         customerId: deviceId,
@@ -270,9 +306,21 @@ const TableView = () => {
         isUpVote: isTrue,
       });
 
+      // const sortedSongs = updatedPerformer.sort((song1, song2) => {
+      //   // Sort by upvote (descending)
+      //   const upvoteDiff = song2.upVote - song1.upVote;
+      //   if (upvoteDiff !== 0) {
+      //     return upvoteDiff;
+      //   }
+
+      //   // If upVotes are equal, sort by downvote (descending)
+      //   return song2.downVote - song1.downVote;
+      // });
+      // console.log('sortedSongs',sortedSongs)
+
       socket.emit("voteCastingRequest", {
         isFirst: false,
-        playlist: updatedPerformer,
+        playlist: finalPlaylist,
       });
       // socket.emit("votingRequest", {
       //   customerId: deviceId,
@@ -287,7 +335,12 @@ const TableView = () => {
     return (
       <div className="flex mr-5">
         <button
-          onClick={() => handleVote(true)}
+          disabled={
+            disableVoteBtn.id == item?._id && disableVoteBtn.isTrue == true
+          }
+          onClick={() => {
+            handleVote(true);
+          }}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.tableUpVote == true
               ? "bg-green-500"
@@ -299,7 +352,12 @@ const TableView = () => {
           <IoIosArrowUp size={18} color={themeMode ? "black" : "white"} />
         </button>
         <button
-          onClick={() => handleVote(false)}
+          disabled={
+            disableVoteBtn.id == item?._id && disableVoteBtn.isTrue == false
+          }
+          onClick={() => {
+            handleVote(false);
+          }}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
             item?.tableUpVote === false
               ? "bg-red-500"
