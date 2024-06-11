@@ -298,7 +298,7 @@ const page = () => {
 
   const deleteAllSongsHandler = async () => {
     localStorage.setItem("isFirstTimeFetched", true);
-    setIsLoading(true);
+    // setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
 
