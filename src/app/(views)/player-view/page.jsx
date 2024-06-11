@@ -44,7 +44,10 @@ const PerformerView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
-
+    socket.on("voteCastingResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
