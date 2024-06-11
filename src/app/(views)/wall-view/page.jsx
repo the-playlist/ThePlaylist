@@ -25,6 +25,7 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   let screenName = "Wall View";
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
