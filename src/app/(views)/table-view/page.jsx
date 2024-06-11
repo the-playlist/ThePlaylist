@@ -161,9 +161,6 @@ const TableView = () => {
         (item) => item.heading == "Queue Limit"
       );
 
-      // const queueLimit = response?.data?.content[2]?.value;
-      // const voteLimit = response?.data?.content[1];
-
       setQueueLimit(queueLimit || 0);
       setVotingLimit(voteLimit);
     }
@@ -276,12 +273,12 @@ const TableView = () => {
       let updatedItem = { ...updatedPerformer[index] };
       if (isTrue) {
         updatedItem.upVote++;
-        if (updatedItem.downVote > 0) {
+        if (updatedItem.downVote > 0 && updatedItem.tableUpVote != 0) {
           updatedItem.upVote--;
         }
       } else {
         updatedItem.downVote++;
-        if (updatedItem.upVote > 0) {
+        if (updatedItem.upVote > 0 && updatedItem.tableUpVote != 0) {
           updatedItem.upVote--;
         }
       }
