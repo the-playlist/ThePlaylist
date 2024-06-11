@@ -43,7 +43,10 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-
+    socket.on("voteCastingResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {

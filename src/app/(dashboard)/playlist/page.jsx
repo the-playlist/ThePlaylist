@@ -85,6 +85,14 @@ const page = () => {
       dispatch(setPlaylistLength(playlist?.length));
       setPlaylistSongList([...playlist]);
     });
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPlaylistSongList([...playlist]);
+    });
+    socket.on("voteCastingResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPlaylistSongList([...playlist]);
+    });
     setSocket(socket);
     return () => {
       console.log("Disconnecting socket...");
@@ -154,6 +162,7 @@ const page = () => {
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
+        console.log("songList==>", songList);
 
         dispatch(setPlaylistLength(songList?.length));
         setPlaylistSongList(songList);
@@ -297,7 +306,7 @@ const page = () => {
     if (response && !response.error) {
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
-      fetchPlaylistSongList();
+      // fetchPlaylistSongList();
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
@@ -306,7 +315,7 @@ const page = () => {
       //   isFirst: false,
       // });
       socket.emit("emptyPlaylistRequest", {
-        isFirst: false,
+        isFirst: true,
         playlist: [],
       });
     }
