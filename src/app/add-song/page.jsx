@@ -127,7 +127,7 @@ const Typeahead = () => {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         toast.success(response?.data?.description);
-        socket.emit("insertSongIntoPlaylistRequest", {
+        socket.emit("songAddByCustomerReq", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });

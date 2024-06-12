@@ -57,7 +57,10 @@ const WallView = () => {
         getThemeByTitleHandler(title);
       }
     });
-
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();

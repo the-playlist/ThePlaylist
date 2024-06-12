@@ -93,6 +93,10 @@ const page = () => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
     });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPlaylistSongList([...playlist]);
+    });
     setSocket(socket);
     return () => {
       console.log("Disconnecting socket...");

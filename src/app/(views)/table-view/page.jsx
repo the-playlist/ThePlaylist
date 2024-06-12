@@ -101,6 +101,10 @@ const TableView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
 
     return () => {
       console.log("Disconnecting socket...");
