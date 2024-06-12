@@ -53,12 +53,18 @@ const PerformerView = () => {
       setPerformers([...playlist]);
     });
 
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);
       }
     });
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();

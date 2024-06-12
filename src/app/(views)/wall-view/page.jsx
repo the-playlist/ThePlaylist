@@ -47,12 +47,17 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);
       }
     });
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();

@@ -58,7 +58,7 @@ export const addSongsToPlaylist = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    result?.length == 0 ? true : false,
     flattenedPlaylist
   );
   const response = new ResponseModel(
