@@ -109,9 +109,6 @@ const SelectSongModal = ({
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });
-        // socket.emit("addSongToPlaylistApi", {
-        //   isFirst: isFirstTimeFetched,
-        // });
       }
     } catch (error) {
       toast.success(error?.message || "Something went wrong.");
