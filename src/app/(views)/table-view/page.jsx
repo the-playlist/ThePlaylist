@@ -93,11 +93,15 @@ const TableView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
-
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();

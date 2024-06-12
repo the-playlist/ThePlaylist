@@ -162,8 +162,6 @@ const page = () => {
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
-        console.log("songList==>", songList);
-
         dispatch(setPlaylistLength(songList?.length));
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
@@ -322,6 +320,7 @@ const page = () => {
   };
 
   const onUndoPressHandler = async () => {
+    setIsLoading(true);
     const lastAction = JSON.parse(localStorage.getItem(LAST_ACTION));
     switch (lastAction.action) {
       case ACTION_TYPE.SINGLE_DEL: // handle the logic for single Delete
@@ -329,7 +328,7 @@ const page = () => {
           id: lastAction?.data,
           isDeleted: false,
         });
-        socket.emit("addSongToPlaylistApi", {
+        socket.emit("undoActionRequest", {
           lastAction: lastAction?.data,
           isFirst: false,
         });
@@ -342,7 +341,7 @@ const page = () => {
         const listItems = lastAction.data.map((item) => item._id);
         await undoDeletedSongsAPI({ data: listItems });
 
-        socket.emit("addSongToPlaylistApi", {
+        socket.emit("undoActionRequest", {
           lastAction: lastAction?.data,
           isFirst: false,
         });

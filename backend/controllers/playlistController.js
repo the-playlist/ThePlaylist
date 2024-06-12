@@ -58,7 +58,7 @@ export const addSongsToPlaylist = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    result?.length == 0 ? true : false,
     flattenedPlaylist
   );
   const response = new ResponseModel(
@@ -376,6 +376,47 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
         sortOrder: playlistCount,
       });
       await newPlaylistEntry.save();
+      const list = await Playlist.aggregate(songFromPlaylist);
+      const { isFavortiteListType } = await PlaylistType.findOne({
+        _id: "662b7a6e80f2c908c92a0b3d",
+      }).lean();
+
+      let flattenedPlaylist = list.map((item) => {
+        const duration = convertTimeToSeconds(item?.songData?.songDuration);
+        const introSec =
+          item?.songData?.introSec == ""
+            ? 0
+            : parseInt(item?.songData?.introSec);
+        const totalDuration = formatTime(duration + introSec);
+        return {
+          _id: item._id,
+          playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+          assignedPlayerId: item.assignedPlayer?._id,
+          songId: item.songData._id,
+          title: item.songData.title,
+          artist: item.songData.artist,
+          introSec:
+            item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+          songDuration: totalDuration,
+          isFav: item.songData.isFav,
+          dutyStatus: item?.assignedPlayer?.duty?.status,
+          category: item.songData.category,
+          tableUpVote: item.upVote,
+          tableDownVote: item.downVote,
+          upVote: item.upVoteCount,
+          downVote: item.downVoteCount,
+          sortOrder: item.sortOrder,
+          sortByMaster: item?.sortByMaster,
+          addByCustomer: item.addByCustomer,
+        };
+      });
+      if (isFavortiteListType) {
+        flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+      }
+      const finalPlaylist = playlistAlgorithm(
+        result?.length == 0 ? true : false,
+        flattenedPlaylist
+      );
       const response = new ResponseModel(
         true,
         "Song added to playlist successfully",
@@ -383,6 +424,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
           message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
           player: playerToAssign,
           isFirstTimeFetched: result?.length > 0 ? false : true,
+          playlist: finalPlaylist,
         }
       );
       res.status(200).json(response);
