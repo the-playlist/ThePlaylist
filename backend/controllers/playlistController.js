@@ -143,7 +143,6 @@ function getMonday(date) {
 
 export const getSongsReportList = async (req, res, next) => {
   const { reportType } = req?.query;
-
   let filterByDate = {};
   if (reportType == 0) {
     const startOfDay = new Date(today);
