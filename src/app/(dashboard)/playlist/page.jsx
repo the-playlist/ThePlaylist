@@ -98,9 +98,6 @@ const page = () => {
       setPlaylistSongList([...playlist]);
     });
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-    };
   }, []);
 
   useEffect(() => {
@@ -162,6 +159,7 @@ const page = () => {
     let isFirst = localStorage.getItem("isFirstTimeFetched");
     try {
       // setIsLoading(true);
+
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
@@ -210,14 +208,13 @@ const page = () => {
       isDeleted: true,
     });
 
-    // socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
     if (playingState == true) {
       dispatch(setPlayingState(false));
       setShowCountDown(true);
+      socket.emit("bufferTimeReq", {
+        time: 10,
+      });
     }
-    // socket.emit("advanceTheQueueApi", {
-    //   time: 10,
-    // });
 
     if (response && !response.error) {
       toast(response?.data?.description);
@@ -233,6 +230,7 @@ const page = () => {
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
       playlist: currentArray,
+      time: 10,
     });
   };
 
@@ -281,15 +279,20 @@ const page = () => {
         favSongsList[0].songDuration
       );
       dispatch(setCurrentSongSecond(initialSongDuration));
+      socket.emit("insertSongIntoPlaylistRequest", {
+        isFirst: true,
+        playlist: favSongsList,
+      });
     } else {
+      socket.emit("undoFavReq", {
+        isFirst: true,
+      });
+      setIsLoading(true);
       fetchPlaylistSongList();
     }
     setIsFavSongs(!isFavSongs);
     await updatePlaylistTypeAPI({
       isFavortiteListType: !isFavSongs,
-    });
-    socket.emit("addSongToPlaylistApi", {
-      isFirst: true,
     });
   };
 
@@ -299,6 +302,7 @@ const page = () => {
   };
 
   const deleteAllSongsHandler = async () => {
+    dispatch(setPlayingState(false));
     localStorage.setItem("isFirstTimeFetched", true);
     // setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
@@ -675,6 +679,7 @@ const page = () => {
                   setShowCountDown={setShowCountDown}
                   openModal={showCountDown}
                   timer={10}
+                  socket={socket}
                 />
               )}
               {isConfirmationPopup && (

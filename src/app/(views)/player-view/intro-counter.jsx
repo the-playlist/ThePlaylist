@@ -3,23 +3,29 @@ import { Listener_URL } from "@/app/_utils/common/constants";
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-export const IntroCounter = ({ introTimer, index, performerList }) => {
-  const [introCountdown, setIntroCountdown] = useState(introTimer);
+export const IntroCounter = ({
+  introSec,
+  introTimer,
+  index,
+  performerList,
+}) => {
+  const [introCountdown, setIntroCountdown] = useState(introSec);
   const [isTimerOn, setIsTimerOn] = useState(false);
 
   useEffect(() => {
-    setIntroCountdown(introTimer);
+    setIntroCountdown(introSec);
   }, [performerList]);
 
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
 
-    socket.on("advanceTheQueueRes", (item) => {
-      if (index === 0) {
-        setIntroCountdown(introTimer);
-      }
-    });
+    // socket.on("bufferTimeReq", (item) => {
+    //   if (index === 0) {
+    //     setIsTimerOn(false);
+    //     setIntroCountdown(introSec);
+    //   }
+    // });
 
     socket.on("startIntroSecondsResponse", (item) => {
       if (index === 0) {
@@ -32,7 +38,7 @@ export const IntroCounter = ({ introTimer, index, performerList }) => {
   }, []);
 
   const resetAndStartTimer = () => {
-    setIntroCountdown(introTimer); // Reset countdown
+    setIntroCountdown(introSec); // Reset countdown
     setIsTimerOn(true);
   };
   useEffect(() => {

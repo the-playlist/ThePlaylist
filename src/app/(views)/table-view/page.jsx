@@ -86,6 +86,10 @@ const TableView = () => {
         getThemeByTitleHandler(title);
       }
     });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
     });
@@ -306,30 +310,10 @@ const TableView = () => {
         isUpVote: isTrue,
       });
 
-      // const sortedSongs = updatedPerformer.sort((song1, song2) => {
-      //   // Sort by upvote (descending)
-      //   const upvoteDiff = song2.upVote - song1.upVote;
-      //   if (upvoteDiff !== 0) {
-      //     return upvoteDiff;
-      //   }
-
-      //   // If upVotes are equal, sort by downvote (descending)
-      //   return song2.downVote - song1.downVote;
-      // });
-      // console.log('sortedSongs',sortedSongs)
-
       socket.emit("voteCastingRequest", {
         isFirst: false,
         playlist: finalPlaylist,
       });
-      // socket.emit("votingRequest", {
-      //   customerId: deviceId,
-      //   songId: item?.songId,
-      //   playlistItemId: item?._id,
-      //   playerId: item?.assignedPlayerId,
-      //   isUpVote: isTrue,
-      //   isFirst: false,
-      // });
     };
 
     return (
@@ -374,7 +358,7 @@ const TableView = () => {
 
   return (
     <div
-      className={`overflow-x-auto ${
+      className={` ${
         themeMode ? "bg-white" : "bg-[#1F1F1F]"
       } h-screen overflow-y-scroll mx-auto   px-5 pt-5`}
     >
