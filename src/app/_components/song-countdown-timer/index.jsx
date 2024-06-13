@@ -64,7 +64,7 @@ const SongCountdownTimer = ({
     if (orignalSeconds == duration && playingState) {
       dispatch(setPlayingState(false));
       setShowCountDown(true);
-      socket.emit("advanceTheQueueApi", {
+      socket.emit("bufferTimeReq", {
         time: 10,
       });
       setTimeout(() => {
@@ -81,7 +81,7 @@ const SongCountdownTimer = ({
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration) {
       setShowCountDown(true);
-      socket.emit("advanceTheQueueApi", {
+      socket.emit("bufferTimeReq", {
         time: 10,
       });
       setTimeout(() => {
