@@ -38,11 +38,6 @@ const Typeahead = () => {
     });
     socket.connect();
     setSocket(socket);
-
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   const handleInputChange = (e) => {
@@ -65,7 +60,7 @@ const Typeahead = () => {
   };
   useEffect(() => {
     fetchSongsList();
-    // fetchAssignSongsList();
+
     getLimitByTitleHandler(limitTitle);
   }, []);
 
@@ -75,18 +70,6 @@ const Typeahead = () => {
       const songList = response.data?.content;
       setFilteredOptions(songList);
       setSongList(songList);
-    }
-  };
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        let data = response?.data?.content?.list;
-        setFilteredOptions(data);
-        setSongList(data);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
     }
   };
 
@@ -127,12 +110,12 @@ const Typeahead = () => {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         toast.success(response?.data?.description);
+        setInputValue("");
+        setSelectedSong(null);
         socket.emit("songAddByCustomerReq", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });
-        setInputValue("");
-        setSelectedSong(null);
         router.back();
       } else {
         toast.error(response?.error?.data?.description);
