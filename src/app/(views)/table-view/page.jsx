@@ -101,6 +101,10 @@ const TableView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);

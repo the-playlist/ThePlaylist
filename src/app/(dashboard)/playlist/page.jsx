@@ -81,22 +81,32 @@ const page = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+      const { playlist, isFirst, isFavSongs, currentSongSecond } = item;
+      if (isFavSongs != null) {
+        setIsFavSongs(isFavSongs);
+      }
+      if (currentSongSecond != null) {
+        dispatch(setCurrentSongSecond(currentSongSecond));
+      }
       dispatch(setPlaylistLength(playlist?.length));
       setPlaylistSongList([...playlist]);
     });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
+      dispatch(setPlaylistLength(0));
     });
     socket.on("voteCastingResponse", (item) => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
     });
     socket.on("songAddByCustomerRes", (item) => {
-      console.log("called");
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     setSocket(socket);
   }, []);
@@ -115,7 +125,12 @@ const page = () => {
       const { playerName, title, _id } = playlistSongList[0];
       dispatch(setPlayListSongListLocalStoage(playlistSongList));
       dispatch(
-        setCurrentSong({ title: title, playerName: playerName, id: _id })
+        setCurrentSong({
+          title: title,
+          playerName: playerName,
+          id: _id,
+          duration: convertTimeToSeconds(playlistSongList[0].songDuration),
+        })
       );
 
       if (storedSeconds == 0 && storedSeconds === initialSongDuration) {
@@ -236,7 +251,6 @@ const page = () => {
       time: 10,
     });
   };
-
   const handleDragEnd = (result, index) => {
     if (!result.destination) return;
     dispatch(setIsFirstTimeFetched(false));
@@ -260,7 +274,6 @@ const page = () => {
       updateSongsOrderHandler(updatedArr);
     }
   };
-
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
     try {
@@ -272,7 +285,6 @@ const page = () => {
       console.log(error);
     }
   };
-
   const toggleFavSongs = async () => {
     if (!isFavSongs) {
       const updatedPlaylist = [...playlistSongList];
@@ -285,6 +297,8 @@ const page = () => {
       socket.emit("insertSongIntoPlaylistRequest", {
         isFirst: true,
         playlist: favSongsList,
+        isFavSongs: !isFavSongs,
+        currentSongSecond: initialSongDuration,
       });
     } else {
       socket.emit("undoFavReq", {
@@ -298,17 +312,16 @@ const page = () => {
       isFavortiteListType: !isFavSongs,
     });
   };
-
   const setUndoItemsInStorage = (data) => {
     localStorage.setItem(LAST_ACTION, JSON.stringify(data));
     setIsUndoDisable(false);
   };
-
   const deleteAllSongsHandler = async () => {
     dispatch(setPlayingState(false));
     localStorage.setItem("isFirstTimeFetched", true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
+    dispatch(setPlaylistLength(0));
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
       setIsConfirmationPopup(false);
@@ -323,7 +336,6 @@ const page = () => {
       });
     }
   };
-
   const onUndoPressHandler = async () => {
     setIsLoading(true);
     const lastAction = JSON.parse(localStorage.getItem(LAST_ACTION));
