@@ -94,6 +94,7 @@ const page = () => {
       setPlaylistSongList([...playlist]);
     });
     socket.on("songAddByCustomerRes", (item) => {
+      console.log("called");
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
     });
@@ -209,11 +210,13 @@ const page = () => {
     });
 
     if (playingState == true) {
-      dispatch(setPlayingState(false));
-      setShowCountDown(true);
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
+      if (playlistSongList.length > 1) {
+        dispatch(setPlayingState(false));
+        setShowCountDown(true);
+        socket.emit("bufferTimeReq", {
+          time: 10,
+        });
+      }
     }
 
     if (response && !response.error) {
@@ -304,22 +307,16 @@ const page = () => {
   const deleteAllSongsHandler = async () => {
     dispatch(setPlayingState(false));
     localStorage.setItem("isFirstTimeFetched", true);
-    // setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
-
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
-      // fetchPlaylistSongList();
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
-      // socket.emit("addSongToPlaylistApi", {
-      //   isFirst: false,
-      // });
       socket.emit("emptyPlaylistRequest", {
         isFirst: true,
         playlist: [],
