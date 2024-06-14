@@ -35,11 +35,12 @@ const PerformerView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
-    socket.on("advanceTheQueueRes", (item) => {
+    socket.on("bufferTimeRes", (item) => {
       const { time } = item;
       setSeconds(time);
       setTimerRunning(true);
     });
+
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
@@ -55,6 +56,10 @@ const PerformerView = () => {
 
     socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
     socket.on("songAddByCustomerRes", (item) => {
@@ -192,6 +197,7 @@ const PerformerView = () => {
                     </td>
                     <td className="text-black rounded-r-lg text-end w-1/12">
                       <IntroCounter
+                        introSec={performer[0]?.introSec}
                         index={index}
                         performerList={performer}
                         introTimer={parseInt(item.introSec)}

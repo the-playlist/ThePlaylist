@@ -61,6 +61,10 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
