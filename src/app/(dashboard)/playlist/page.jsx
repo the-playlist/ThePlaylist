@@ -95,6 +95,8 @@ const page = () => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
       dispatch(setPlaylistLength(0));
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
       const { playlist, isFirst } = item;
@@ -108,6 +110,13 @@ const page = () => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      console.log("item", item);
+      const { playlist, isFirst } = item;
+      dispatch(setCurrentSongSecond(0));
+      setPlaylistSongList([...playlist]);
+    });
+
     setSocket(socket);
   }, []);
 
