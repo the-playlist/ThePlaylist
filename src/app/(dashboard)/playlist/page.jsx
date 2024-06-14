@@ -111,6 +111,7 @@ const page = () => {
       fetchPlaylistSongList(isFirst);
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      console.log("item", item);
       const { playlist, isFirst } = item;
       dispatch(setCurrentSongSecond(0));
       setPlaylistSongList([...playlist]);
