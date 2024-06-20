@@ -130,9 +130,15 @@ const page = () => {
         if (foundIndex !== -1) {
           let updatedSong = { ...playlistSongList[foundIndex] };
           if (votingList?.isIncrement == true) {
-            updatedSong.upVote += 1; // Increment upvote for the found item
+            updatedSong.upVote += 1;
+            if (updatedSong.downVote > 0) {
+              updatedSong.downVote -= 1;
+            }
           } else {
             updatedSong.downVote += 1;
+            if (updatedSong.upVote > 0) {
+              updatedSong.upVote -= 1;
+            }
           }
           playlistSongListCopy[foundIndex] = updatedSong;
           return playlistSongListCopy;
@@ -143,6 +149,10 @@ const page = () => {
         votingList?.isFirst,
         findAndIncrementUpVote()
       );
+      socket.emit("wallPlayerViewReq", {
+        isFirst: votingList?.isFirst,
+        playlist: finalPlaylist,
+      });
       setPlaylistSongList([...finalPlaylist]);
     }
   }, [votingList]);

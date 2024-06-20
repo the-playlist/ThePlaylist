@@ -17,7 +17,6 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const TableView = () => {
   let screenName = "Table View";
@@ -284,22 +283,10 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-      // if (isTrue) {
-      //   updatedItem.upVote++;
-      //   if (updatedItem.downVote > 0 && updatedItem.tableUpVote != 0) {
-      //     updatedItem.upVote--;
-      //   }
-      // } else {
-      //   updatedItem.downVote++;
-      //   if (updatedItem.upVote > 0 && updatedItem.tableUpVote != 0) {
-      //     updatedItem.upVote--;
-      //   }
-      // }
+
       updatedItem.tableUpVote = isTrue;
 
       updatedPerformer[index] = updatedItem;
-
-      // const finalPlaylist = playlistAlgorithm(false, updatedPerformer);
 
       setPerformers(updatedPerformer);
 
@@ -311,18 +298,6 @@ const TableView = () => {
         isUpVote: isTrue,
       });
 
-      // const sortedSongs = updatedPerformer.sort((song1, song2) => {
-      //   // Sort by upvote (descending)
-      //   const upvoteDiff = song2.upVote - song1.upVote;
-      //   if (upvoteDiff !== 0) {
-      //     return upvoteDiff;
-      //   }
-
-      //   // If upVotes are equal, sort by downvote (descending)
-      //   return song2.downVote - song1.downVote;
-      // });
-      // console.log('sortedSongs',sortedSongs)
-
       castVote({
         isFirst: false,
         userId: deviceId,
@@ -330,19 +305,6 @@ const TableView = () => {
         id: item?._id,
         isIncrement: isTrue,
       });
-
-      // socket.emit("voteCastingRequest", {
-      //   isFirst: false,
-      //   playlist: finalPlaylist,
-      // });
-      // socket.emit("votingRequest", {
-      //   customerId: deviceId,
-      //   songId: item?.songId,
-      //   playlistItemId: item?._id,
-      //   playerId: item?.assignedPlayerId,
-      //   isUpVote: isTrue,
-      //   isFirst: false,
-      // });
     };
 
     return (
