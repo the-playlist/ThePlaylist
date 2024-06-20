@@ -41,6 +41,7 @@ import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
 import Ticker from "react-ticker";
+import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -69,6 +70,7 @@ const page = () => {
   const [showCountDown, setShowCountDown] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
+  const [votingList, setVotingList] = useState(null);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -99,8 +101,7 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
-      const { playlist, isFirst } = item;
-      setPlaylistSongList([...playlist]);
+      setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
@@ -111,7 +112,6 @@ const page = () => {
       fetchPlaylistSongList(isFirst);
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      console.log("item", item);
       const { playlist, isFirst } = item;
       dispatch(setCurrentSongSecond(0));
       setPlaylistSongList([...playlist]);
@@ -119,6 +119,33 @@ const page = () => {
 
     setSocket(socket);
   }, []);
+
+  useEffect(() => {
+    if (votingList != null) {
+      const playlistSongListCopy = [...playlistSongList];
+      function findAndIncrementUpVote() {
+        const foundIndex = playlistSongList?.findIndex(
+          (song) => song._id == votingList?.id
+        );
+        if (foundIndex !== -1) {
+          let updatedSong = { ...playlistSongList[foundIndex] };
+          if (votingList?.isIncrement == true) {
+            updatedSong.upVote += 1; // Increment upvote for the found item
+          } else {
+            updatedSong.downVote += 1;
+          }
+          playlistSongListCopy[foundIndex] = updatedSong;
+          return playlistSongListCopy;
+        }
+      }
+
+      const finalPlaylist = playlistAlgorithm(
+        votingList?.isFirst,
+        findAndIncrementUpVote()
+      );
+      setPlaylistSongList([...finalPlaylist]);
+    }
+  }, [votingList]);
 
   useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);

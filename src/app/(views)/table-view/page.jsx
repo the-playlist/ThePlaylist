@@ -35,6 +35,8 @@ const TableView = () => {
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
   const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
+  const [votingList, setVotingList] = useState(null);
+
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
     isTrue: null,
@@ -78,8 +80,8 @@ const TableView = () => {
       setPerformers([...playlist]);
     });
     socket.on("voteCastingResponse", (item) => {
-      const { playlist, isFirst } = item;
-      setUpdatedPlaylist([...playlist]);
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -117,14 +119,6 @@ const TableView = () => {
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
-
-  useEffect(() => {
-    const mergedList = updatedPlaylist.map((item, index) => {
-      const { tableUpVote, tableDownVote } = performer[index];
-      return { ...item, tableUpVote, tableDownVote };
-    });
-    setPerformers([...mergedList]);
-  }, [updatedPlaylist]);
 
   const fetchIsPlaylistEmpty = async () => {
     let response = await getIsPlaylistEmptyApi();
@@ -290,24 +284,24 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-      if (isTrue) {
-        updatedItem.upVote++;
-        if (updatedItem.downVote > 0 && updatedItem.tableUpVote != 0) {
-          updatedItem.upVote--;
-        }
-      } else {
-        updatedItem.downVote++;
-        if (updatedItem.upVote > 0 && updatedItem.tableUpVote != 0) {
-          updatedItem.upVote--;
-        }
-      }
+      // if (isTrue) {
+      //   updatedItem.upVote++;
+      //   if (updatedItem.downVote > 0 && updatedItem.tableUpVote != 0) {
+      //     updatedItem.upVote--;
+      //   }
+      // } else {
+      //   updatedItem.downVote++;
+      //   if (updatedItem.upVote > 0 && updatedItem.tableUpVote != 0) {
+      //     updatedItem.upVote--;
+      //   }
+      // }
       updatedItem.tableUpVote = isTrue;
 
       updatedPerformer[index] = updatedItem;
 
-      const finalPlaylist = playlistAlgorithm(false, updatedPerformer);
+      // const finalPlaylist = playlistAlgorithm(false, updatedPerformer);
 
-      setPerformers(finalPlaylist);
+      setPerformers(updatedPerformer);
 
       await addUpdateVoteAPI({
         customerId: deviceId,
@@ -329,7 +323,13 @@ const TableView = () => {
       // });
       // console.log('sortedSongs',sortedSongs)
 
-      castVote({ isFirst: false, userId: deviceId, playlist: finalPlaylist });
+      castVote({
+        isFirst: false,
+        userId: deviceId,
+        playlist: updatedPerformer,
+        id: item?._id,
+        isIncrement: isTrue,
+      });
 
       // socket.emit("voteCastingRequest", {
       //   isFirst: false,
