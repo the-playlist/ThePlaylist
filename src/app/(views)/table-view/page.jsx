@@ -34,6 +34,7 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
+  const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
     isTrue: null,
@@ -78,7 +79,7 @@ const TableView = () => {
     });
     socket.on("voteCastingResponse", (item) => {
       const { playlist, isFirst } = item;
-      fetchPlaylistSongList(isFirst);
+      setUpdatedPlaylist([...playlist]);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -116,6 +117,14 @@ const TableView = () => {
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
+
+  useEffect(() => {
+    const mergedList = updatedPlaylist.map((item, index) => {
+      const { tableUpVote, tableDownVote } = performer[index];
+      return { ...item, tableUpVote, tableDownVote };
+    });
+    setPerformers([...mergedList]);
+  }, [updatedPlaylist]);
 
   const fetchIsPlaylistEmpty = async () => {
     let response = await getIsPlaylistEmptyApi();
