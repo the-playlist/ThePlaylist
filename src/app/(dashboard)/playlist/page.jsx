@@ -101,6 +101,8 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
+      // debugger
+
       setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes", (item) => {
@@ -132,12 +134,16 @@ const page = () => {
           if (votingList?.isIncrement == true) {
             updatedSong.upVote += 1;
             if (updatedSong.downVote > 0) {
-              updatedSong.downVote -= 1;
+              if (votingList?.isVoted) {
+                updatedSong.downVote -= 1;
+              }
             }
           } else {
             updatedSong.downVote += 1;
             if (updatedSong.upVote > 0) {
-              updatedSong.upVote -= 1;
+              if (votingList?.isVoted) {
+                updatedSong.upVote -= 1;
+              }
             }
           }
           playlistSongListCopy[foundIndex] = updatedSong;

@@ -304,6 +304,7 @@ const TableView = () => {
         playlist: updatedPerformer,
         id: item?._id,
         isIncrement: isTrue,
+        isVoted: item?.tableUpVote === 0 ? false : true,
       });
     };
 
