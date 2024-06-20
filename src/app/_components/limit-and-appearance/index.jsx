@@ -97,7 +97,8 @@ const LimitAndAppearence = () => {
     let response = await addUpdateLimitApi(payload);
     if (response && !response.isError) {
       toast.success(response?.data?.description);
-      socket.emit("limitChangeByMasterApi", { title: payload?.title });
+      debugger;
+      socket.emit("limitChangeByMasterApi", { title: payload?.heading });
       getThemeApiHandler();
     }
     setBtnLoader(null);
@@ -113,6 +114,7 @@ const LimitAndAppearence = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
+      debugger;
       setLimitList(response?.data?.content);
     }
   };
