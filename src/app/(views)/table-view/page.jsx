@@ -219,6 +219,9 @@ const TableView = () => {
     return randomId;
   }
 
+  function castVote(voteData) {
+    socket.emit("voteCastingRequest", voteData);
+  }
   const creatStreamUserHandler = async () => {
     let payload = {
       user_id: generateRandomStreamId(8),
@@ -317,10 +320,12 @@ const TableView = () => {
       // });
       // console.log('sortedSongs',sortedSongs)
 
-      socket.emit("voteCastingRequest", {
-        isFirst: false,
-        playlist: finalPlaylist,
-      });
+      castVote({ isFirst: false, userId: deviceId, playlist: finalPlaylist });
+
+      // socket.emit("voteCastingRequest", {
+      //   isFirst: false,
+      //   playlist: finalPlaylist,
+      // });
       // socket.emit("votingRequest", {
       //   customerId: deviceId,
       //   songId: item?.songId,
