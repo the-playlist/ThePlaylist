@@ -43,7 +43,7 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-    socket.on("voteCastingResponse", (item) => {
+    socket.on("wallPlayerViewRes", (item) => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
