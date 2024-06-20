@@ -7,9 +7,10 @@ import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 
 import {
   useAddUpdateVoteMutation,
-  useLazyGetTableViewSongsQuery,
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
+  useGetTableViewSongsMutation,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
@@ -23,7 +24,8 @@ const TableView = () => {
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
-  const [getPlaylistSongTableView] = useLazyGetTableViewSongsQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
+  const [getPlaylistSongTableView] = useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -31,6 +33,13 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
+  const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
+  const [votingList, setVotingList] = useState(null);
+
+  const [disableVoteBtn, setDisableVoteBtn] = useState({
+    id: null,
+    isTrue: null,
+  });
 
   function generateDeviceId() {
     const combinedId =
@@ -65,9 +74,13 @@ const TableView = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     setSocket(socket);
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
-      getLimitApiHandler();
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("voteCastingResponse", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -78,26 +91,60 @@ const TableView = () => {
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
     });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
   }, []);
 
   useEffect(() => {
-    fetchPlaylistSongList();
-
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
-
     getLimitApiHandler();
   }, []);
 
-  const fetchPlaylistSongList = async () => {
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+
+  const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+    isFirst = Boolean(isFirst);
+
     try {
       const deviceId = generateDeviceId();
-      let response = await getPlaylistSongTableView(deviceId);
+      let payload = {
+        id: deviceId,
+        isFirstTimeFetched: firstFetch ?? isFirst,
+      };
+
+      let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
-        setPerformers(response?.data?.content?.list);
+        const { list, isFirstTimeFetched } = response?.data?.content;
+        setPerformers(list || []);
+        if (list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -116,14 +163,19 @@ const TableView = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
-      const queueLimit = response?.data?.content[2]?.value;
-      const voteLimit = response?.data?.content[1];
+      const voteLimit = response?.data?.content.find(
+        (item) => item.heading == "Vote Limit"
+      );
+      const queueLimit = response?.data?.content.find(
+        (item) => item.heading == "Queue Limit"
+      );
+
       setQueueLimit(queueLimit || 0);
       setVotingLimit(voteLimit);
     }
   };
 
-  const ButtonsAtEnd = ({ onCamPress }) => {
+  const ButtonsAtEnd = ({}) => {
     return (
       <div
         className={`fixed bottom-0 left-0 w-full ${
@@ -131,18 +183,13 @@ const TableView = () => {
         } flex justify-end p-4`}
       >
         <button
-          disabled={performer?.length <= queueLimit}
           onClick={() => {
             router.push("/add-song");
           }}
           className=" text-base w-full items-center bg-top-queue-bg hover:cursor-pointer disabled:bg-gray-300 disabled:text-gray-200 hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
         >
           <div className="flex items-center justify-center">
-            <div
-              className={`rounded-full ${
-                performer?.length <= queueLimit ? "bg-gray-200" : "bg-[#1F1F1F]"
-              } mr-2 p-1`}
-            >
+            <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
               <IoAdd size={16} color="white" />
             </div>
             Add a Song
@@ -174,6 +221,9 @@ const TableView = () => {
     return randomId;
   }
 
+  function castVote(voteData) {
+    socket.emit("voteCastingRequest", voteData);
+  }
   const creatStreamUserHandler = async () => {
     let payload = {
       user_id: generateRandomStreamId(8),
@@ -189,6 +239,7 @@ const TableView = () => {
     const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
 
     const handleVote = (isTrue) => {
+      localStorage.setItem("isFirstTimeFetched", false);
       const currentTime = new Date().getTime();
       const prevVoteTime = parseInt(localStorage.getItem("prevVoteTime"), 10);
       const voteCount = parseInt(localStorage.getItem("voteCount"), 10) || 0;
@@ -199,6 +250,10 @@ const TableView = () => {
         localStorage.setItem("prevVoteTime", currentTime);
         localStorage.setItem("voteCount", 1);
         toggleButton(isTrue);
+        setDisableVoteBtn({
+          id: item?._id,
+          isTrue: isTrue,
+        });
         return;
       }
       const timeDifference = currentTime - prevVoteTime;
@@ -206,10 +261,18 @@ const TableView = () => {
         localStorage.setItem("prevVoteTime", currentTime);
         localStorage.setItem("voteCount", 1);
         toggleButton(isTrue);
+        setDisableVoteBtn({
+          id: item?._id,
+          isTrue: isTrue,
+        });
       } else {
         if (voteCount < voteCountLimit) {
           localStorage.setItem("voteCount", voteCount + 1);
           toggleButton(isTrue);
+          setDisableVoteBtn({
+            id: item?._id,
+            isTrue: isTrue,
+          });
         } else {
           toast.error("Vote limit reached. Please try again later.");
         }
@@ -220,9 +283,13 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-      updatedItem.upVote = isTrue;
+
+      updatedItem.tableUpVote = isTrue;
+
       updatedPerformer[index] = updatedItem;
+
       setPerformers(updatedPerformer);
+
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
@@ -230,20 +297,28 @@ const TableView = () => {
         playerId: item?.assignedPlayerId,
         isUpVote: isTrue,
       });
-      socket.emit("votingRequest", {
-        customerId: deviceId,
-        songId: item?.songId,
-        playlistItemId: item?._id,
-        playerId: item?.assignedPlayerId,
-        isUpVote: isTrue,
+
+      castVote({
+        isFirst: false,
+        userId: deviceId,
+        playlist: updatedPerformer,
+        id: item?._id,
+        isIncrement: isTrue,
+        isVoted: item?.tableUpVote === 0 ? false : true,
       });
     };
+
     return (
       <div className="flex mr-5">
         <button
-          onClick={() => handleVote(true)}
+          disabled={
+            disableVoteBtn.id == item?._id && disableVoteBtn.isTrue == true
+          }
+          onClick={() => {
+            handleVote(true);
+          }}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote == true
+            item?.tableUpVote == true
               ? "bg-green-500"
               : themeMode
               ? "bg-white"
@@ -253,9 +328,14 @@ const TableView = () => {
           <IoIosArrowUp size={18} color={themeMode ? "black" : "white"} />
         </button>
         <button
-          onClick={() => handleVote(false)}
+          disabled={
+            disableVoteBtn.id == item?._id && disableVoteBtn.isTrue == false
+          }
+          onClick={() => {
+            handleVote(false);
+          }}
           className={`flex items-center justify-center rounded-full shadow-xl w-7 h-7  ${
-            item?.upVote === false
+            item?.tableUpVote === false
               ? "bg-red-500"
               : themeMode
               ? "bg-white"
@@ -282,7 +362,7 @@ const TableView = () => {
             <Logo />
           </div>
           <div className="mb-32">
-            {performer.length === 0 && (
+            {performer?.length === 0 && (
               <div
                 className={`flex items-center ${
                   themeMode ? "text-black" : "text-white"

@@ -28,7 +28,7 @@ const DutyScreen = () => {
   const [playlistCount, setPlaylistCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectSongModal, setSelectSongModal] = useState(false);
-  const [updateStatusAPI] = useUpdateDutyStatusMutation();
+  const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
 
   const router = useRouter();
 
@@ -60,7 +60,6 @@ const DutyScreen = () => {
       let response = await getStaffListApi(null);
       if (response && !response.isError) {
         let data = response?.data?.content;
-
         setStaffList(data);
       }
     } catch (error) {
@@ -85,6 +84,7 @@ const DutyScreen = () => {
     if (response && !response.error) {
       toast(response?.data?.description);
       await fetchAssignSongsList();
+      setShowModal(false);
       staffList.some((player) => {
         if (player.duty.status === true) {
           setSelectSongModal(true);
@@ -154,11 +154,14 @@ const DutyScreen = () => {
                       });
 
                       onUpdateStatusHandler(payload);
-                      setShowModal(false);
                     }}
                     className="btn w-[49%] bg-primary text-black "
                   >
-                    Yes, confirm
+                    {updateStatusResponse?.isLoading ? (
+                      <span className="loading loading-spinner loading-md"></span>
+                    ) : (
+                      "Yes, confirm"
+                    )}
                   </button>
                 </div>
               </div>

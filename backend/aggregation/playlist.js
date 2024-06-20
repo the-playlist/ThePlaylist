@@ -46,10 +46,51 @@ export const songsForTableView = [
       downVote: 1,
       sortOrder: 1,
       sortByMaster: 1,
+      addByCustomer: 1,
     },
   },
   {
     $sort: { sortOrder: 1 }, // Sort the results
+  },
+  {
+    $lookup: {
+      from: "votes",
+      localField: "songData._id",
+      foreignField: "songId",
+      as: "VoteCountData",
+    },
+  },
+  {
+    $addFields: {
+      upVoteCount: {
+        $size: {
+          $filter: {
+            input: "$VoteCountData",
+            as: "vote",
+            cond: {
+              $and: [
+                { $eq: ["$$vote.isUpVote", true] },
+                { $eq: ["$$vote.playlistItemId", "$_id"] },
+              ],
+            },
+          },
+        },
+      },
+      downVoteCount: {
+        $size: {
+          $filter: {
+            input: "$VoteCountData",
+            as: "vote",
+            cond: {
+              $and: [
+                { $eq: ["$$vote.isUpVote", false] },
+                { $eq: ["$$vote.playlistItemId", "$_id"] },
+              ],
+            },
+          },
+        },
+      },
+    },
   },
 ];
 
@@ -101,6 +142,7 @@ export const songFromPlaylist = [
       downVote: 1,
       sortOrder: 1,
       sortByMaster: 1,
+      addByCustomer: 1,
     },
   },
   {
@@ -148,50 +190,56 @@ export const songFromPlaylist = [
   },
 ];
 
-export const songReports = [
-  {
-    $lookup: {
-      from: "votes",
-      localField: "_id",
-      foreignField: "songId",
-      as: "votesDetails",
+export const songReports = (filterByDate) => {
+  const report = [
+    {
+      $lookup: {
+        from: "votes",
+        localField: "_id",
+        foreignField: "songId",
+        as: "votesDetails",
+      },
     },
-  },
-  {
-    $addFields: {
-      upVoteCount: {
-        $size: {
-          $filter: {
-            input: "$votesDetails",
-            as: "vote",
-            cond: {
-              $eq: ["$$vote.isUpVote", true],
+    {
+      $match: filterByDate,
+    },
+    {
+      $addFields: {
+        upVoteCount: {
+          $size: {
+            $filter: {
+              input: "$votesDetails",
+              as: "vote",
+              cond: {
+                $eq: ["$$vote.isUpVote", true],
+              },
+            },
+          },
+        },
+        downVoteCount: {
+          $size: {
+            $filter: {
+              input: "$votesDetails",
+              as: "vote",
+              cond: {
+                $eq: ["$$vote.isUpVote", false],
+              },
             },
           },
         },
       },
-      downVoteCount: {
-        $size: {
-          $filter: {
-            input: "$votesDetails",
-            as: "vote",
-            cond: {
-              $eq: ["$$vote.isUpVote", false],
-            },
-          },
-        },
+    },
+    {
+      $project: {
+        votesDetails: 0,
       },
     },
-  },
-  {
-    $project: {
-      votesDetails: 0,
+    {
+      $sort: {
+        upVoteCount: -1,
+        downVoteCount: -1,
+      },
     },
-  },
-  {
-    $sort: {
-      upVoteCount: -1,
-      downVoteCount: -1,
-    },
-  },
-];
+  ];
+  return report;
+};

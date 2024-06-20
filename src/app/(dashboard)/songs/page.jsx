@@ -3,7 +3,6 @@ import {
   AddEditSong,
   ConfirmationModal,
   CustomLoader,
-  Loader,
   OptionButton,
   ShowQualifiedList,
   SongIcon,

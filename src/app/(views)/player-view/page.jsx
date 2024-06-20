@@ -7,12 +7,15 @@ import { CustomLoader, ToggleFullScreen, CountDown } from "@/app/_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { IntroCounter } from "./intro-counter";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
@@ -20,6 +23,7 @@ const PerformerView = () => {
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [seconds, setSeconds] = useState(0);
+
   const [timerRunning, setTimerRunning] = useState(false);
 
   let screenName = "Player View";
@@ -27,13 +31,40 @@ const PerformerView = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
 
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
-    socket.on("advanceTheQueueRes", (item) => {
+    socket.on("bufferTimeRes", (item) => {
       const { time } = item;
       setSeconds(time);
       setTimerRunning(true);
+    });
+
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("wallPlayerViewRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
 
     socket.on("themeChangeByMasterRes", (item) => {
@@ -42,6 +73,7 @@ const PerformerView = () => {
         getThemeByTitleHandler(title);
       }
     });
+
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -60,15 +92,27 @@ const PerformerView = () => {
   }, [seconds, timerRunning]);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
   }, []);
 
-  const fetchPlaylistSongList = async () => {
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+
+  const fetchPlaylistSongList = async (firstFetch) => {
     try {
-      let response = await getPlaylistSongListApi(null);
+      let response = await getPlaylistSongListApi(firstFetch);
       if (response && !response.isError) {
-        setPerformers(response?.data?.content?.list);
+        const list = response?.data?.content?.playlist;
+        if (list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
+        setPerformers(list);
       }
       setLoading(false);
     } catch (error) {
@@ -115,7 +159,11 @@ const PerformerView = () => {
               <Logo />
             </div>
             {performer.length === 0 && (
-              <div className="flex items-center justify-center flex-1 min-h-52 font-semibold text-lg text-white">
+              <div
+                className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
+                  themeMode ? "text-black" : "text-white"
+                }`}
+              >
                 The playlist is empty.
               </div>
             )}
@@ -148,9 +196,12 @@ const PerformerView = () => {
                       {item?.playerName}
                     </td>
                     <td className="text-black rounded-r-lg text-end w-1/12">
-                      <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
-                        {item?.introSec}
-                      </div>
+                      <IntroCounter
+                        introSec={performer[0]?.introSec}
+                        index={index}
+                        performerList={performer}
+                        introTimer={parseInt(item.introSec)}
+                      />
                     </td>
                   </tr>
                 </tbody>

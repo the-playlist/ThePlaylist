@@ -7,7 +7,6 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { TbMusicX } from "react-icons/tb";
 import {
   CustomLoader,
-  Loader,
   SelectSongModal,
   SongCountdownTimer,
 } from "../../_components";
@@ -19,6 +18,7 @@ import {
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
   useUndoDeletedSongsFromPlaylistMutation,
+  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -26,6 +26,22 @@ import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
 import { SortByMasterIcon } from "@/app/svgs";
+import { useDispatch } from "react-redux";
+import {
+  setCurrentSong,
+  setPlayingState,
+  setPlaylistLength,
+  setSongsListUpdate,
+  setPlaylistSongList as setPlayListSongListLocalStoage,
+  setCurrentSongSecond,
+  setIsFirstTimeFetched,
+} from "@/app/_utils/redux/slice/playlist-list";
+import { useSelector } from "react-redux";
+import { convertTimeToSeconds } from "../../_utils/helper";
+import ConfirmationPopup from "@/app/_components/confirmation-popup";
+import CountDown from "./coutdown";
+import Ticker from "react-ticker";
+import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -36,6 +52,7 @@ const ACTION_TYPE = {
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
     useDeleteAllSongsFromPlaylistMutation();
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
@@ -45,30 +62,148 @@ const page = () => {
   const [undoDeletedSongsAPI] = useUndoDeletedSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [isUndoDisable, setIsUndoDisable] = useState(null);
-  const [isStart, setIsStart] = useState(false);
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [playlistCount, setPlaylistCount] = useState(0);
+  const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
+  const [showCountDown, setShowCountDown] = useState(false);
+  const [isFavExist, setIsFavExist] = useState([]);
+  const dispatch = useDispatch();
+  const [votingList, setVotingList] = useState(null);
+
+  const playingState = useSelector(
+    (state) => state?.playlistReducer?.playingState
+  );
+  const currentSongSecond = useSelector(
+    (state) => state?.playlistReducer?.currentSongSecond
+  );
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
-    socket.on("votingResponse", (item) => {
-      fetchPlaylistSongList();
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst, isFavSongs, currentSongSecond } = item;
+      if (isFavSongs != null) {
+        setIsFavSongs(isFavSongs);
+      }
+      if (currentSongSecond != null) {
+        dispatch(setCurrentSongSecond(currentSongSecond));
+      }
+      dispatch(setPlaylistLength(playlist?.length));
+      setPlaylistSongList([...playlist]);
     });
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPlaylistSongList([...playlist]);
+      dispatch(setPlaylistLength(0));
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setPlayingState(false));
     });
+    socket.on("voteCastingResponse", (item) => {
+      // debugger
+
+      setVotingList(item || {});
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPlaylistSongList([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      dispatch(setCurrentSongSecond(0));
+      setPlaylistSongList([...playlist]);
+    });
+
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-    };
   }, []);
 
   useEffect(() => {
+    if (votingList != null) {
+      const playlistSongListCopy = [...playlistSongList];
+      function findAndIncrementUpVote() {
+        const foundIndex = playlistSongList?.findIndex(
+          (song) => song._id == votingList?.id
+        );
+        if (foundIndex !== -1) {
+          let updatedSong = { ...playlistSongList[foundIndex] };
+          if (votingList?.isIncrement == true) {
+            updatedSong.upVote += 1;
+            if (updatedSong.downVote > 0) {
+              if (votingList?.isVoted) {
+                updatedSong.downVote -= 1;
+              }
+            }
+          } else {
+            updatedSong.downVote += 1;
+            if (updatedSong.upVote > 0) {
+              if (votingList?.isVoted) {
+                updatedSong.upVote -= 1;
+              }
+            }
+          }
+          playlistSongListCopy[foundIndex] = updatedSong;
+          return playlistSongListCopy;
+        }
+      }
+
+      const finalPlaylist = playlistAlgorithm(
+        votingList?.isFirst,
+        findAndIncrementUpVote()
+      );
+      socket.emit("wallPlayerViewReq", {
+        isFirst: votingList?.isFirst,
+        playlist: finalPlaylist,
+      });
+      setPlaylistSongList([...finalPlaylist]);
+    }
+  }, [votingList]);
+
+  useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
   }, []);
+
+  useEffect(() => {
+    if (playlistSongList.length > 0) {
+      const storedSeconds = parseInt(currentSongSecond);
+      const initialSongDuration = convertTimeToSeconds(
+        playlistSongList[0].songDuration
+      );
+      const { playerName, title, _id } = playlistSongList[0];
+      dispatch(setPlayListSongListLocalStoage(playlistSongList));
+      dispatch(
+        setCurrentSong({
+          title: title,
+          playerName: playerName,
+          id: _id,
+          duration: convertTimeToSeconds(playlistSongList[0].songDuration),
+        })
+      );
+
+      if (storedSeconds == 0 && storedSeconds === initialSongDuration) {
+        return;
+      }
+
+      if (!storedSeconds) {
+        dispatch(setCurrentSongSecond(initialSongDuration));
+        return;
+      }
+
+      if (initialSongDuration > storedSeconds) {
+        dispatch(setCurrentSongSecond(storedSeconds));
+        return;
+      }
+
+      dispatch(setCurrentSongSecond(initialSongDuration));
+    }
+
+    return () => {};
+  }, [playlistSongList]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -81,17 +216,28 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchPlaylistSongList = async () => {
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+  const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
     try {
       // setIsLoading(true);
-      let response = await getPlaylistSongListApi(null);
-      console.log("response", response);
+
+      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
-        let songList = response?.data?.content?.list;
-        console.log("songList", songList);
+        let songList = response?.data?.content?.playlist;
+        dispatch(setPlaylistLength(songList?.length));
         setPlaylistSongList(songList);
         setIsFavSongs(isFav);
+        if (songList?.length > 0) {
+          setIsFavExist(songList?.filter((item) => item?.isFav));
+        }
       }
       setIsLoading(false);
     } catch (error) {
@@ -115,21 +261,30 @@ const page = () => {
     }
   };
   const deleteSongFromPlaylistHandler = async (id) => {
+    localStorage.setItem("isFirstTimeFetched", false);
     removeItemById(id);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
-
+    if (playlistSongList.length === 1) {
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setSongsListUpdate());
+    }
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
     });
 
-    socket.emit("addSongToPlaylistApi", id);
-    socket.emit("advanceTheQueueApi", {
-      time: 10,
-    });
+    if (playingState == true) {
+      if (playlistSongList.length > 1) {
+        dispatch(setPlayingState(false));
+        setShowCountDown(true);
+        socket.emit("bufferTimeReq", {
+          time: 10,
+        });
+      }
+    }
 
     if (response && !response.error) {
       toast(response?.data?.description);
@@ -142,44 +297,66 @@ const page = () => {
     await setPlaylistSongList([]);
     currentArray = currentArray.filter((item) => item._id != id);
     setPlaylistSongList(currentArray);
+    socket.emit("RemoveSongFromPlaylistRequest", {
+      isFirst: false,
+      playlist: currentArray,
+      time: 10,
+    });
   };
-
-  const handleDragEnd = (result) => {
+  const handleDragEnd = (result, index) => {
     if (!result.destination) return;
+    dispatch(setIsFirstTimeFetched(false));
     const sourceIndex = result.source.index;
     const destinationIndex = result.destination.index;
-    const updatedPlaylist = [...playlistSongList];
-    const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
-    const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
-
-    updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
-    setPlaylistSongList([...updatedPlaylist]);
-
-    const updatedArr = updatedPlaylist.map((item, index) => ({
-      id: item._id,
-      newSortOrder: index,
-      sortByMaster: item?.sortByMaster,
-    }));
-    updateSongsOrderHandler(updatedArr);
+    if (sourceIndex != destinationIndex) {
+      const updatedPlaylist = [...playlistSongList];
+      const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
+      const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
+      updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
+      socket.emit("insertSongIntoPlaylistRequest", {
+        isFirst: false,
+        playlist: updatedPlaylist,
+      });
+      setPlaylistSongList([...updatedPlaylist]);
+      const updatedArr = updatedPlaylist.map((item, index) => ({
+        id: item._id,
+        newSortOrder: index,
+        sortByMaster: item?.sortByMaster,
+      }));
+      updateSongsOrderHandler(updatedArr);
+    }
   };
-
   const updateSongsOrderHandler = async (payload) => {
+    localStorage.setItem("isFirstTimeFetched", false);
     try {
       await updateSortOrderApi({
         songsList: payload,
       });
-      socket.emit("addSongToPlaylistApi", payload);
+      socket.emit("addSongToPlaylistApi", { payload: payload, isFirst: false });
     } catch (error) {
       console.log(error);
     }
   };
-
   const toggleFavSongs = async () => {
     if (!isFavSongs) {
       const updatedPlaylist = [...playlistSongList];
       const favSongsList = updatedPlaylist.filter((item) => item.isFav);
       setPlaylistSongList(favSongsList);
+      const initialSongDuration = convertTimeToSeconds(
+        favSongsList[0].songDuration
+      );
+      dispatch(setCurrentSongSecond(initialSongDuration));
+      socket.emit("insertSongIntoPlaylistRequest", {
+        isFirst: true,
+        playlist: favSongsList,
+        isFavSongs: !isFavSongs,
+        currentSongSecond: initialSongDuration,
+      });
     } else {
+      socket.emit("undoFavReq", {
+        isFirst: true,
+      });
+      setIsLoading(true);
       fetchPlaylistSongList();
     }
     setIsFavSongs(!isFavSongs);
@@ -187,26 +364,32 @@ const page = () => {
       isFavortiteListType: !isFavSongs,
     });
   };
-
   const setUndoItemsInStorage = (data) => {
     localStorage.setItem(LAST_ACTION, JSON.stringify(data));
     setIsUndoDisable(false);
   };
-
   const deleteAllSongsHandler = async () => {
-    setUndoItemsInStorage({
-      action: ACTION_TYPE.CLEAR_LIST,
-      data: playlistSongList,
-    });
+    dispatch(setPlayingState(false));
+    localStorage.setItem("isFirstTimeFetched", true);
+    dispatch(setCurrentSongSecond(0));
+    dispatch(setSongsListUpdate());
+    dispatch(setPlaylistLength(0));
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
+      setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
-      fetchPlaylistSongList();
-      socket.emit("addSongToPlaylistApi", null);
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setSongsListUpdate());
+      dispatch(setPlayingState(false));
+      dispatch(setSongsListUpdate());
+      socket.emit("emptyPlaylistRequest", {
+        isFirst: true,
+        playlist: [],
+      });
     }
   };
-
   const onUndoPressHandler = async () => {
+    setIsLoading(true);
     const lastAction = JSON.parse(localStorage.getItem(LAST_ACTION));
     switch (lastAction.action) {
       case ACTION_TYPE.SINGLE_DEL: // handle the logic for single Delete
@@ -214,7 +397,10 @@ const page = () => {
           id: lastAction?.data,
           isDeleted: false,
         });
-        socket.emit("addSongToPlaylistApi", lastAction?.data);
+        socket.emit("undoActionRequest", {
+          lastAction: lastAction?.data,
+          isFirst: false,
+        });
         await setPlaylistSongList([]);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
@@ -223,7 +409,11 @@ const page = () => {
       case ACTION_TYPE.CLEAR_LIST: // handle the logic for clear list
         const listItems = lastAction.data.map((item) => item._id);
         await undoDeletedSongsAPI({ data: listItems });
-        socket.emit("addSongToPlaylistApi", lastAction?.data);
+
+        socket.emit("undoActionRequest", {
+          lastAction: lastAction?.data,
+          isFirst: false,
+        });
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
         setIsUndoDisable(true);
@@ -246,8 +436,17 @@ const page = () => {
           >
             {playlistSongList?.length > 0 && (
               <button
-                onClick={() => {
-                  deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+                onClick={async () => {
+                  await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+                  if (playlistSongList.length > 0) {
+                    const songDuration = convertTimeToSeconds(
+                      playlistSongList[1].songDuration
+                    );
+                    dispatch(setCurrentSongSecond(songDuration));
+                  } else {
+                    dispatch(setCurrentSongSecond(0));
+                  }
+                  dispatch(setSongsListUpdate());
                 }}
                 className="flex items-center hover:cursor-pointer bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4  lg:text-lg justify-center rounded-lg"
               >
@@ -256,37 +455,36 @@ const page = () => {
               </button>
             )}
             <div className="flex flex-row  ">
-              {playlistSongList.length > 0 && (
+              {!isFavSongs && playlistSongList?.length > 0 && (
                 <button
                   className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
-                  onClick={deleteAllSongsHandler}
+                  onClick={() => setIsConfirmationPopup(true)}
                 >
-                  {deleteAllSongsResponse.isLoading ? (
-                    <Loader />
-                  ) : (
-                    <span className="flex flex-row items-center">
-                      <TbMusicX className="mr-2" />
-                      Clear Songs
-                    </span>
-                  )}
+                  <span className="flex flex-row items-center">
+                    <TbMusicX className="mr-2" />
+                    Clear Songs
+                  </span>
                 </button>
               )}
-              <button
-                disabled={playlistSongList.length == 0}
-                onClick={toggleFavSongs}
-                className={`flex items-center hover:cursor-pointer border ${
-                  !isFavSongs ? "border-black" : "border-top-queue-bg"
-                }  ${
-                  !isFavSongs
-                    ? "hover:bg-black hover:text-white text-black"
-                    : "text-top-queue-bg"
-                }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
-              >
-                {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
-                <span className="ml-2">
-                  {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
-                </span>
-              </button>
+              {isFavExist?.length > 0 &&
+                (isFavSongs || playlistSongList?.length > 0) && (
+                  <button
+                    disabled={playlistSongList.length == 0}
+                    onClick={toggleFavSongs}
+                    className={`flex items-center hover:cursor-pointer border ${
+                      !isFavSongs ? "border-black" : "border-top-queue-bg"
+                    }  ${
+                      !isFavSongs
+                        ? "hover:bg-black hover:text-white text-black"
+                        : "text-top-queue-bg"
+                    }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                  >
+                    {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+                    <span className="ml-2">
+                      {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+                    </span>
+                  </button>
+                )}
             </div>
           </div>
           {playlistSongList.length > 0 && (
@@ -316,7 +514,7 @@ const page = () => {
                 )}
 
               <DragDropContext
-                onDragEnd={(result) => {
+                onDragEnd={(result, index) => {
                   if (result?.destination?.index > 1) {
                     handleDragEnd(result);
                   }
@@ -333,14 +531,14 @@ const page = () => {
                           playerName,
                           introSec,
                           category,
-                          songDuration,
                           isFav,
                           sortOrder,
                           sortByMaster,
+                          songDuration,
                         } = item || {};
                         const trimmedTitle =
-                          title?.length > 15
-                            ? `${title?.slice(0, 12)}...`
+                          title?.length > 16
+                            ? `${title?.slice(0, 16)}...`
                             : title;
                         const isLockedSongs = index == 0 || index == 1;
                         return (
@@ -379,14 +577,17 @@ const page = () => {
                                           index + 1
                                         )}
                                       </div>
-                                      <div className="w-2/12">
+                                      <div className="w-2/12 pr-10">
                                         {title?.length > 12 ? (
-                                          <div class="group relative m-12 flex justify-center">
-                                            <span class="absolute top-10 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
-                                              {title}
-                                            </span>
-                                            {trimmedTitle}
-                                          </div>
+                                          <Ticker>
+                                            {({ index }) => (
+                                              <>
+                                                <h1 className=" px-1 ">
+                                                  {title}
+                                                </h1>
+                                              </>
+                                            )}
+                                          </Ticker>
                                         ) : (
                                           title
                                         )}
@@ -438,7 +639,12 @@ const page = () => {
                                         <div className="flex items-center justify-end ">
                                           {index === 0 && (
                                             <SongCountdownTimer
-                                              duration={songDuration}
+                                              socket={socket}
+                                              orignalSongDuration={songDuration}
+                                              setShowCountDown={
+                                                setShowCountDown
+                                              }
+                                              duration={currentSongSecond}
                                               advanceTheQueue={() =>
                                                 deleteSongFromPlaylistHandler(
                                                   playlistSongList[0]?._id
@@ -447,8 +653,7 @@ const page = () => {
                                               playlistSongList={
                                                 playlistSongList
                                               }
-                                              isStart={isStart}
-                                              setIsStart={setIsStart}
+                                              isStart={playingState}
                                             />
                                           )}
                                           {isFav && (
@@ -528,6 +733,23 @@ const page = () => {
                   closeModal={() => {
                     setSelectSongModal(false);
                   }}
+                />
+              )}
+              {showCountDown && (
+                <CountDown
+                  setShowCountDown={setShowCountDown}
+                  openModal={showCountDown}
+                  timer={10}
+                  socket={socket}
+                />
+              )}
+              {isConfirmationPopup && (
+                <ConfirmationPopup
+                  isLoading={deleteAllSongsResponse?.isLoading}
+                  title={"Are you sure to remove all songs from playlist?"}
+                  onYesPress={deleteAllSongsHandler}
+                  closeModal={() => setIsConfirmationPopup(false)}
+                  openModal={isConfirmationPopup}
                 />
               )}
             </div>

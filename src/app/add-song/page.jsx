@@ -6,6 +6,7 @@ import {
   useLazyGetAssignSongsWithPlayersQuery,
   useAddSongToPlaylistByCustomerMutation,
   useLazyGetLimitByTitleQuery,
+  useLazyGetAddSongListForCustomerQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -15,14 +16,14 @@ import { io } from "socket.io-client";
 const Typeahead = () => {
   let limitTitle = "Song Limit";
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
-  const [getAssignSongsApi, getAssignSongsResponse] =
-    useLazyGetAssignSongsWithPlayersQuery();
+
   const [addSongToPlaylistByUserApi] = useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState();
-  const [songsListApi] = useLazyGetOnDutyPlayerSongListQuery();
+  const [songsListApi, getSongsListResponse] =
+    useLazyGetAddSongListForCustomerQuery();
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
@@ -37,12 +38,8 @@ const Typeahead = () => {
     });
     socket.connect();
     setSocket(socket);
-
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
+
   const handleInputChange = (e) => {
     const value = e.target.value;
     setInputValue(value);
@@ -63,7 +60,7 @@ const Typeahead = () => {
   };
   useEffect(() => {
     fetchSongsList();
-    fetchAssignSongsList();
+
     getLimitByTitleHandler(limitTitle);
   }, []);
 
@@ -73,18 +70,6 @@ const Typeahead = () => {
       const songList = response.data?.content;
       setFilteredOptions(songList);
       setSongList(songList);
-    }
-  };
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        let data = response?.data?.content?.list;
-        setFilteredOptions(data);
-        setSongList(data);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
     }
   };
 
@@ -117,16 +102,30 @@ const Typeahead = () => {
   };
   const addSongsHandler = async (id) => {
     try {
-      let response = await addSongToPlaylistByUserApi({ songId: id });
+      let response = await addSongToPlaylistByUserApi({
+        songId: id,
+        addByCustomer: true,
+      });
       if (response && !response.error) {
+        const { isFirstTimeFetched, playlist } = response?.data?.content;
+        localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         toast.success(response?.data?.description);
-        socket.emit("addSongToPlaylistApi", id);
         setInputValue("");
         setSelectedSong(null);
+        socket.emit("songAddByCustomerReq", {
+          isFirst: isFirstTimeFetched,
+          playlist: playlist,
+        });
         router.back();
+      } else {
+        toast.error(response?.error?.data?.description);
+        localStorage.setItem("prevSongTime", null);
+        localStorage.setItem("songCount", 0);
       }
     } catch (error) {
       toast.success(error?.message || "Something went wrong.");
+      localStorage.setItem("prevSongTime", null);
+      localStorage.setItem("songCount", 0);
     }
   };
 
@@ -173,11 +172,11 @@ const Typeahead = () => {
           )}
         </div>
       </div>
-      {getAssignSongsResponse?.isFetching ? (
+      {getSongsListResponse?.isFetching ? (
         <div className="mt-24 flex items-center justify-center">
           <span className="loading loading-spinner loading-md bg-white"></span>
         </div>
-      ) : (
+      ) : filteredOptions?.length > 0 ? (
         <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">
           {filteredOptions?.map((option) => (
             <div className="border-b-1 border-[#323335]">
@@ -205,7 +204,7 @@ const Typeahead = () => {
                 ></div>
                 <li
                   key={option.id}
-                  className="pl-4 py-2 cursor-pointer flex w-full justify-between  items-center"
+                  className="pl-4 py-2 capitalize cursor-pointer flex w-full justify-between  items-center"
                 >
                   <span
                     className={`text-sm text-${
@@ -226,14 +225,26 @@ const Typeahead = () => {
             </div>
           ))}
         </ul>
+      ) : (
+        <div className="text-white h-[100vh] flex items-center justify-center text-lg  ">
+          No Songs Found
+        </div>
       )}
       <div className="fixed bottom-0 left-0 w-full bg-[#1F1F1F] flex justify-end p-4">
+        <button
+          onClick={() => {
+            router.back();
+          }}
+          className="w-full text-base flex items-center  bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400"
+        >
+          <div className="flex items-center justify-center">Go Back</div>
+        </button>
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
             handleSong(selectedSong?._id);
           }}
-          className={`flex w-full items-center ${
+          className={`flex w-full items-center ml-4 ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
           }  hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center `}
         >

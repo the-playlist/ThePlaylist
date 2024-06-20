@@ -14,7 +14,7 @@ import { Listener_URL } from "@/app/_utils/common/constants";
 import { IoMdAdd, IoIosRemove } from "react-icons/io";
 import CustomLoader from "../custom_loader";
 
-const AppearanceTabs = () => {
+const LimitAndAppearence = () => {
   const [getThemeListApi, getThemeListRes] = useLazyGetThemeListQuery();
   const [getLimitListApi, getLimitListRes] = useLazyGetLimitListQuery();
   const [addUpdateThemeApi] = useAddUpdateThemeMutation();
@@ -283,38 +283,4 @@ const AppearanceTabs = () => {
   );
 };
 
-export default AppearanceTabs;
-
-{
-  /* <div className="flex items-center justify-center">
-                    
-                    <label
-                      htmlFor="toggle"
-                      className="flex items-center cursor-pointer"
-                    >
-                        
-                      <div className="relative">
-                        <div className="absolute left-0 w-6 h-6 bg-white rounded-full shadow-md transform transition-transform duration-300 ease-in-out"></div>
-
-                        <div className="absolute right-0 w-6 h-6 bg-gray-800 rounded-full shadow-md transform transition-transform duration-300 ease-in-out"></div>
-
-                        <div
-                          className={`  bg-gray-300 rounded-full shadow-md cursor-pointer transform transition-transform duration-300 ${
-                            isDarkMode ? "translate-x-4" : ""
-                          }`}
-                        >
-                          <span className="ml-2 text-lg">
-                            {isDarkMode ? "Dark Mode" : "Light Mode"}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        id="toggle"
-                        className="sr-only"
-                        checked={isDarkMode}
-                        onChange={toggleTheme}
-                      />
-                    </label>
-                  </div> */
-}
+export default LimitAndAppearence;

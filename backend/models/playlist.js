@@ -25,6 +25,10 @@ const playlistSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    addByCustomer: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

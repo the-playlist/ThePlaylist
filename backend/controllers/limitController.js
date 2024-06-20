@@ -22,7 +22,7 @@ export const addUpdateLimit = async (req, res) => {
 };
 
 export const getLimitList = async (req, res) => {
-  const response = await Limit.find().lean();
+  const response = await Limit.find().sort({ sortOrder: 1 }).lean();
   return res
     .status(201)
     .json(new ResponseModel(true, "Limit added successfully", response));

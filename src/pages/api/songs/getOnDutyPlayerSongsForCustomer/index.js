@@ -1,8 +1,12 @@
 import { createRouter } from "next-connect";
 import connectMongoDb from "../../../../../backend/config/dbConnect";
-import { getSongsForTableView } from "../../../../../backend/controllers/playlistController";
+import { getOnDutyPlayerSongsForCustomer } from "../../../../../backend/controllers/songsController";
 import onError from "../../../../../backend/middlewares/errors";
+
 const router = createRouter();
 connectMongoDb();
-router.post(getSongsForTableView);
-export default router.handler({ onError });
+router.get(getOnDutyPlayerSongsForCustomer);
+
+export default router.handler({
+  onError,
+});

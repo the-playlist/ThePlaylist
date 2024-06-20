@@ -12,14 +12,14 @@ import {
 import { emptySplitApi } from "./slice/emptySplitApi";
 import { modalSlice } from "./slice/popup-modal";
 import mainSlice from "./reducer/mainSlice";
-import playlistSlice from "./slice/playlist-list";
+import { persistedReducer } from "./slice/playlist-list";
 
 export const store = configureStore({
   reducer: {
     // Add the generated reducer as a specific top-level slice,
     // auth: mainSlice,
     [emptySplitApi.reducerPath]: emptySplitApi.reducer,
-    playlistReducer: playlistSlice,
+    playlistReducer: persistedReducer,
     modal: modalSlice.reducer,
   },
   // Adding the api middleware enables caching, invalidation, polling,

@@ -8,11 +8,14 @@ import {
   songsForTableView,
   songReports,
 } from "../aggregation/playlist";
-import { forEach, forIn } from "lodash";
 import Players from "../models/players";
 import mongoose from "mongoose";
+import { convertTimeToSeconds, formatTime } from "../utils/helper";
+import { playlistAlgorithm } from "../algorithm/playlistAlgo";
 
 export const addSongsToPlaylist = async (req, res, next) => {
+  const result = await Playlist.find({ isDeleted: false });
+
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
   const songsWithExpiration = req.body.map((song) => ({
     ...song,
@@ -20,15 +23,59 @@ export const addSongsToPlaylist = async (req, res, next) => {
   }));
 
   const playlist = await Playlist.insertMany(songsWithExpiration);
+  const list = await Playlist.aggregate(songFromPlaylist);
+  const { isFavortiteListType } = await PlaylistType.findOne({
+    _id: "662b7a6e80f2c908c92a0b3d",
+  }).lean();
+
+  let flattenedPlaylist = list.map((item) => {
+    const duration = convertTimeToSeconds(item?.songData?.songDuration);
+    const introSec =
+      item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
+    const totalDuration = formatTime(duration + introSec);
+    return {
+      _id: item._id,
+      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+      assignedPlayerId: item.assignedPlayer?._id,
+      songId: item.songData._id,
+      title: item.songData.title,
+      artist: item.songData.artist,
+      introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+      songDuration: totalDuration,
+      isFav: item.songData.isFav,
+      dutyStatus: item?.assignedPlayer?.duty?.status,
+      category: item.songData.category,
+      tableUpVote: item.upVote,
+      tableDownVote: item.downVote,
+      upVote: item.upVoteCount,
+      downVote: item.downVoteCount,
+      sortOrder: item.sortOrder,
+      sortByMaster: item?.sortByMaster,
+      addByCustomer: item.addByCustomer,
+    };
+  });
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+  const finalPlaylist = playlistAlgorithm(
+    result?.length == 0 ? true : false,
+    flattenedPlaylist
+  );
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
-    playlist
+    {
+      isFavortiteListType: isFavortiteListType,
+      playlist: finalPlaylist,
+      isFirstTimeFetched: result?.length == 0 ? true : false,
+    }
   );
   res.status(201).json(response);
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
+  const { isFirstTimeFetched } = req?.query;
+
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
 
@@ -37,165 +84,81 @@ export const getSongsFromPlaylist = async (req, res, next) => {
   }).lean();
 
   // After populating, flatten the objects and rename properties
-  let flattenedPlaylist = playlist.map((item) => ({
-    _id: item._id,
-    playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-    assignedPlayerId: item.assignedPlayer?._id,
-    songId: item.songData._id,
-    title: item.songData.title,
-    artist: item.songData.artist,
-    introSec: item.songData.introSec,
-    songDuration: item.songData.songDuration,
-    isFav: item.songData.isFav,
-    dutyStatus: item?.assignedPlayer?.duty?.status,
-    category: item.songData.category,
-    upVote: item.upVoteCount,
-    downVote: item.downVoteCount,
-    sortOrder: item.sortOrder,
-    sortByMaster: item?.sortByMaster,
-  }));
+  let flattenedPlaylist = playlist.map((item) => {
+    const duration = convertTimeToSeconds(item?.songData?.songDuration);
+    const introSec =
+      item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
+    const totalDuration = formatTime(duration + introSec);
+    return {
+      _id: item._id,
+      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+      assignedPlayerId: item.assignedPlayer?._id,
+      songId: item.songData._id,
+      title: item.songData.title,
+      artist: item.songData.artist,
+      introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+      songDuration: totalDuration,
+      isFav: item.songData.isFav,
+      dutyStatus: item?.assignedPlayer?.duty?.status,
+      category: item.songData.category,
+      tableUpVote: item.upVote,
+      tableDownVote: item.downVote,
+      upVote: item.upVoteCount,
+      downVote: item.downVoteCount,
+      sortOrder: item.sortOrder,
+      sortByMaster: item?.sortByMaster,
+      addByCustomer: item.addByCustomer,
+    };
+  });
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
-
-  // Separate first two songs
-  const firstTwoSongs = flattenedPlaylist.slice(0, 2);
-
-  // Filter sortByMaster songs and remaining songs
-  // const sortByMasterSongs = flattenedPlaylist.filter(
-  //   (song) => song.sortByMaster
-  // );
-
-  const remainingSongs = flattenedPlaylist
-    .slice(2) // Exclude first two songs
-    .filter((song) => !song.sortByMaster);
-
-  // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
-  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
-
-  // Apply algorithm to remaining songs (excluding first two and sortByMaster)
-  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
-
-  // Sort remaining songs based on upVote - downVote (descending)
-  modifiedRemainingSongs.sort(
-    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+  const finalPlaylist = playlistAlgorithm(
+    isFirstTimeFetched,
+    flattenedPlaylist
   );
 
-  // Create a map to store sortByMaster songs with their original sortOrder
-  const sortByMasterMap = new Map();
-
-  flattenedPlaylist.forEach((song, index) => {
-    if (index > 1 && song.sortByMaster) {
-      sortByMasterMap.set(index, song);
-    }
-  });
-
-  // Insert sortByMaster songs into a new final playlist based on their sortOrder
-  const finalPlaylist = [];
-  for (let i = 0; i < flattenedPlaylist.length; i++) {
-    if (sortByMasterMap.has(i)) {
-      finalPlaylist.push(sortByMasterMap.get(i));
-      sortByMasterMap.delete(i); // Remove inserted song from the map
-    } else {
-      finalPlaylist.push(
-        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
-      );
-    }
-  }
-
   const response = new ResponseModel(true, "Songs fetched successfully.", {
-    list: finalPlaylist,
+    playlist: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
     playlistCount, // Add playlistCount to the response object
+    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
   });
   res.status(200).json(response);
 };
 
-// // New function to apply song sequence algorithm
-// function applySongSequenceAlgorithm(songs) {
-//   const modifiedSongs = [];
-//   const remainingSongs = [];
+const today = new Date();
+const startOfWeek = getMonday(today);
+const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1); // First day of this month
 
-//   let lastPlayerName = null;
-//   let lastCategory = null;
-//   let songCountSinceLastPlayer = 0; // Track songs since last player
-
-//   for (const song of songs) {
-//     if (
-//       songCountSinceLastPlayer >= 3 ||
-//       (song.playerName !== lastPlayerName &&
-//         (lastCategory !== "Ballad" || song.category !== "Ballad"))
-//     ) {
-//       modifiedSongs.push(song);
-//       lastPlayerName = song.playerName;
-//       lastCategory = song.category;
-//       songCountSinceLastPlayer = 0;
-//     } else {
-//       // Skip song if player performed last or needs 3-song gap
-//       remainingSongs.push(song);
-//       songCountSinceLastPlayer++;
-//     }
-//   }
-
-//   return [...modifiedSongs, ...remainingSongs];
-// }
-
-function applySongSequenceAlgorithm(songs) {
-  const modifiedSongs = [];
-  const remainingSongs = [];
-  const comedySongs = [];
-
-  // Separate comedy songs from others
-  for (const song of songs) {
-    if (song.category === "Comedy") {
-      comedySongs.push(song);
-    } else {
-      remainingSongs.push(song);
-    }
-  }
-
-  let lastPlayerName = null;
-  let lastCategory = null;
-
-  while (remainingSongs.length > 0) {
-    let songAdded = false;
-
-    for (let i = 0; i < remainingSongs.length; i++) {
-      const song = remainingSongs[i];
-
-      if (
-        (lastPlayerName === null || song.playerName !== lastPlayerName) &&
-        (lastCategory === null ||
-          lastCategory !== "Ballad" ||
-          song.category !== "Ballad")
-      ) {
-        modifiedSongs.push(song);
-        lastPlayerName = song.playerName;
-        lastCategory = song.category;
-        remainingSongs.splice(i, 1); // Remove the song from the remaining list
-        songAdded = true;
-        break;
-      }
-    }
-
-    if (!songAdded) {
-      // If no song was added in this iteration, it means we cannot find a suitable song
-      // and need to force add a song to avoid infinite loop
-      const song = remainingSongs.shift(); // Get the first remaining song
-      modifiedSongs.push(song);
-      lastPlayerName = song.playerName;
-      lastCategory = song.category;
-    }
-  }
-
-  // Concatenate comedy songs to the end of the result
-  return [...modifiedSongs, ...comedySongs];
+function getMonday(date) {
+  const day = date.getDay();
+  const diff = day === 0 ? 6 : day - 1;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
 }
 
 export const getSongsReportList = async (req, res, next) => {
-  const songsList = await Song.aggregate(songReports);
-  // After populating, flatten the objects and rename properties
+  const { reportType } = req?.query;
+  let filterByDate = {};
+  if (reportType == 0) {
+    const startOfDay = new Date(today);
+    startOfDay.setHours(0, 0, 0, 0);
+    filterByDate = {
+      createdAt: {
+        $gte: startOfDay,
+      },
+    };
+  } else if (reportType == 1) {
+    filterByDate = { createdAt: { $gte: startOfWeek } }; // Filter for songs created this week
+  } else if (reportType == 2) {
+    filterByDate = { createdAt: { $gte: startOfMonth } }; // Filter for songs created this month
+  }
+
+  const songsList = await Song.aggregate(songReports(filterByDate));
   const response = new ResponseModel(
     true,
     "Songs fetched successfully.",
@@ -203,8 +166,11 @@ export const getSongsReportList = async (req, res, next) => {
   );
   res.status(200).json(response);
 };
+
 export const getSongsForTableView = async (req, res, next) => {
-  const deviceId = req?.query?.id;
+  const deviceId = req?.body?.id;
+  const { isFirstTimeFetched } = req?.body;
+
   const playlist = await Playlist.aggregate(songsForTableView);
   const { isFavortiteListType } = await PlaylistType.findOne({
     _id: "662b7a6e80f2c908c92a0b3d",
@@ -222,10 +188,13 @@ export const getSongsForTableView = async (req, res, next) => {
     isFav: item.songData.isFav,
     dutyStatus: item?.assignedPlayer?.duty?.status,
     category: item.songData.category,
-    upVote: item.upVote,
-    downVote: item.downVote,
+    tableUpVote: item.upVote,
+    tableDownVote: item.downVote,
+    upVote: item.upVoteCount,
+    downVote: item.downVoteCount,
     sortOrder: item.sortOrder,
     sortByMaster: item.sortByMaster,
+    addByCustomer: item.addByCustomer,
   }));
 
   const votList = await Vote.find({ customerId: deviceId }).lean();
@@ -236,7 +205,7 @@ export const getSongsForTableView = async (req, res, next) => {
           voteItem.playlistItemId?.toString() === playlistItem._id?.toString()
       );
       if (matchingVote) {
-        playlistItem.upVote = matchingVote.isUpVote;
+        playlistItem.tableUpVote = matchingVote.isUpVote;
       }
     });
   }
@@ -245,48 +214,15 @@ export const getSongsForTableView = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
 
-  const firstTwoSongs = flattenedPlaylist.slice(0, 2);
-
-  // Filter sortByMaster songs and remaining songs
-  const sortByMasterSongs = flattenedPlaylist.filter(
-    (song) => song.sortByMaster
-  );
-  const remainingSongs = flattenedPlaylist
-    .slice(2)
-    .filter((song) => !song.sortByMaster);
-
-  // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
-  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
-
-  // Apply algorithm to remaining songs (excluding first two and sortByMaster)
-  const modifiedRemainingSongs = applySongSequenceAlgorithm(remainingSongs);
-
-  // Sort remaining songs based on upVote - downVote (descending)
-  modifiedRemainingSongs.sort(
-    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+  const finalPlaylist = playlistAlgorithm(
+    isFirstTimeFetched,
+    flattenedPlaylist
   );
 
-  // Create a map to store sortByMaster songs with their original sortOrder
-  const sortByMasterMap = new Map();
-  for (const song of sortByMasterSongs) {
-    sortByMasterMap.set(song.sortOrder, song);
-  }
-
-  // Insert sortByMaster songs into a new final playlist based on their sortOrder
-  const finalPlaylist = [];
-  for (let i = 0; i < flattenedPlaylist.length; i++) {
-    if (sortByMasterMap.has(i)) {
-      finalPlaylist.push(sortByMasterMap.get(i));
-      sortByMasterMap.delete(i); // Remove inserted song from the map
-    } else {
-      finalPlaylist.push(
-        firstTwoSongs.shift() || modifiedRemainingSongs.shift()
-      );
-    }
-  }
   const response = new ResponseModel(true, "Songs fetched successfully.", {
     list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
+    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
   });
   res.status(200).json(response);
 };
@@ -350,8 +286,8 @@ function calculateExpirationTime() {
 }
 
 export const addSongToPlaylistByCustomer = async (req, res) => {
-  const { songId } = req.body;
-
+  const { songId, addByCustomer } = req.body;
+  const result = await Playlist.find({ isDeleted: false });
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
   }
@@ -416,25 +352,78 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
         ) {
           playerToAssign = players[1];
         } else {
-          playerToAssign = players[0];
+          // playerToAssign = players[0];
+          return res
+            .status(400)
+            .json(
+              new ResponseModel(false, "Song Already exist in the playlist")
+            );
         }
       }
     }
 
     if (playerToAssign) {
+      const playlistCount = await Playlist.countDocuments({
+        isDeleted: false,
+      });
       // Assign the song to this player
       const newPlaylistEntry = new Playlist({
         assignedPlayer: playerToAssign._id,
         songData: new mongoose.Types.ObjectId(songId),
+        addByCustomer: addByCustomer,
         expiresAt: calculateExpirationTime(),
+        sortOrder: playlistCount,
       });
       await newPlaylistEntry.save();
+      const list = await Playlist.aggregate(songFromPlaylist);
+      const { isFavortiteListType } = await PlaylistType.findOne({
+        _id: "662b7a6e80f2c908c92a0b3d",
+      }).lean();
+
+      let flattenedPlaylist = list.map((item) => {
+        const duration = convertTimeToSeconds(item?.songData?.songDuration);
+        const introSec =
+          item?.songData?.introSec == ""
+            ? 0
+            : parseInt(item?.songData?.introSec);
+        const totalDuration = formatTime(duration + introSec);
+        return {
+          _id: item._id,
+          playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+          assignedPlayerId: item.assignedPlayer?._id,
+          songId: item.songData._id,
+          title: item.songData.title,
+          artist: item.songData.artist,
+          introSec:
+            item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+          songDuration: totalDuration,
+          isFav: item.songData.isFav,
+          dutyStatus: item?.assignedPlayer?.duty?.status,
+          category: item.songData.category,
+          tableUpVote: item.upVote,
+          tableDownVote: item.downVote,
+          upVote: item.upVoteCount,
+          downVote: item.downVoteCount,
+          sortOrder: item.sortOrder,
+          sortByMaster: item?.sortByMaster,
+          addByCustomer: item.addByCustomer,
+        };
+      });
+      if (isFavortiteListType) {
+        flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+      }
+      const finalPlaylist = playlistAlgorithm(
+        result?.length == 0 ? true : false,
+        flattenedPlaylist
+      );
       const response = new ResponseModel(
         true,
         "Song added to playlist successfully",
         {
           message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
           player: playerToAssign,
+          isFirstTimeFetched: result?.length > 0 ? false : true,
+          playlist: finalPlaylist,
         }
       );
       res.status(200).json(response);
@@ -447,4 +436,12 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Server Error", error: error.message });
   }
+};
+
+export const isPlaylistEmpty = async (req, res, next) => {
+  const result = await Playlist.find({ isDeleted: false });
+  const response = new ResponseModel(true, "Data Fetched successfully.", {
+    isFirstTimeFetched: result?.length == 0 ? true : false,
+  });
+  res.status(201).json(response);
 };

@@ -6,13 +6,16 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 import { ToggleFullScreen } from "@/app/_components";
 import { CustomLoader } from "@/app/_components";
 import {
+  useLazyGetIsPlaylistEmptyQuery,
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { Listener_URL } from "../../_utils/common/constants";
+import { useSelector } from "react-redux";
 
 const WallView = () => {
+  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
 
@@ -22,18 +25,45 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   let screenName = "Wall View";
+
   useEffect(() => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
 
-    socket.on("addSongToPlaylistApiResponse", (item) => {
-      fetchPlaylistSongList();
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+    socket.on("wallPlayerViewRes", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+    socket.on("undoActionResponse", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);
       }
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
     });
     return () => {
       console.log("Disconnecting socket...");
@@ -42,15 +72,27 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchIsPlaylistEmpty();
     getThemeByTitleHandler(screenName);
   }, []);
 
-  const fetchPlaylistSongList = async () => {
+  const fetchIsPlaylistEmpty = async () => {
+    let response = await getIsPlaylistEmptyApi();
+    if (response && !response.isError) {
+      const firstFetch = response?.data?.content?.isFirstTimeFetched;
+      fetchPlaylistSongList(firstFetch);
+    }
+  };
+
+  const fetchPlaylistSongList = async (firstFetch) => {
     try {
-      let response = await getPlaylistSongListApi(null);
+      let response = await getPlaylistSongListApi(firstFetch);
+
       if (response && !response.isError) {
-        setSongList(response?.data?.content?.list);
+        setSongList(response?.data?.content?.playlist);
+        if (response?.data?.content?.playlist?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setIsLoading(false);
     } catch (error) {
@@ -115,11 +157,13 @@ const WallView = () => {
                 >
                   <tr>
                     <td
-                      className={`lg:text-3xl text-lg text-start rounded-l-lg `}
+                      className={`lg:text-3xl text-lg text-start capitalize rounded-l-lg `}
                     >
                       {item?.title}
                     </td>
-                    <td className={`lg:text-3xl text-lg text-end rounded-r-lg`}>
+                    <td
+                      className={`lg:text-3xl text-lg text-end capitalize rounded-r-lg`}
+                    >
                       {item?.artist}
                     </td>
                   </tr>
@@ -132,7 +176,7 @@ const WallView = () => {
                   themeMode ? "text-black" : "text-white"
                 } w-full`}
               >
-                No Songs Found
+                The playlist is empty.
               </div>
             )}
           </>
