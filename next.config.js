@@ -1,8 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  env: {
-    SOCKET_LISTNER_URI: "http://localhost:3001",
-  },
+  // env: {
+  //   NEXT_PUBLIC_SOCKET_URL: "https://chat.mqasim.com/",
+  // },
   reactStrictMode: false,
 };
 module.exports = nextConfig;

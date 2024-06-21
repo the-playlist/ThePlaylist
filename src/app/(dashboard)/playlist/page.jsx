@@ -23,7 +23,6 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
 import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
@@ -80,10 +79,14 @@ const page = () => {
   );
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst, isFavSongs, currentSongSecond } = item;
+      const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+        item;
+      // if (isInsert == null) {
       if (isFavSongs != null) {
         setIsFavSongs(isFavSongs);
       }
@@ -92,6 +95,7 @@ const page = () => {
       }
       dispatch(setPlaylistLength(playlist?.length));
       setPlaylistSongList([...playlist]);
+      // }
     });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
@@ -101,6 +105,8 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
+      // debugger
+
       setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes", (item) => {
@@ -132,12 +138,16 @@ const page = () => {
           if (votingList?.isIncrement == true) {
             updatedSong.upVote += 1;
             if (updatedSong.downVote > 0) {
-              updatedSong.downVote -= 1;
+              if (votingList?.isVoted) {
+                updatedSong.downVote -= 1;
+              }
             }
           } else {
             updatedSong.downVote += 1;
             if (updatedSong.upVote > 0) {
-              updatedSong.upVote -= 1;
+              if (votingList?.isVoted) {
+                updatedSong.upVote -= 1;
+              }
             }
           }
           playlistSongListCopy[foundIndex] = updatedSong;
@@ -376,6 +386,7 @@ const page = () => {
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
+      setPlaylistSongList([]);
       socket.emit("emptyPlaylistRequest", {
         isFirst: true,
         playlist: [],

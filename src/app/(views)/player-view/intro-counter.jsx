@@ -1,5 +1,4 @@
 "use client";
-import { Listener_URL } from "@/app/_utils/common/constants";
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
@@ -17,7 +16,9 @@ export const IntroCounter = ({
   }, [performerList]);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
 
     // socket.on("bufferTimeReq", (item) => {
