@@ -239,9 +239,9 @@ const SelectSongModal = ({
                         />
                         <div className=" text-start">
                           {item?.title?.length > 12 ? (
-                            <div class="group relative flex justify-center">
+                            <div className="group relative flex justify-center">
                               {trimmedTitle}
-                              <span class="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                              <span className="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
                                 {item?.title}
                               </span>
                             </div>
