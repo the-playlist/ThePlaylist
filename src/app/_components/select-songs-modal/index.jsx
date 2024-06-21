@@ -108,6 +108,7 @@ const SelectSongModal = ({
         socket.emit("insertSongIntoPlaylistRequest", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
+          isInsert: false,
         });
         // socket.emit("addSongToPlaylistApi", {
         //   isFirst: isFirstTimeFetched,

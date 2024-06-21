@@ -57,6 +57,7 @@ export const addSongsToPlaylist = async (req, res, next) => {
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
+
   const finalPlaylist = playlistAlgorithm(
     result?.length == 0 ? true : false,
     flattenedPlaylist
