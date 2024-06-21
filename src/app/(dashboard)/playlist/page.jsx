@@ -83,7 +83,9 @@ const page = () => {
     const socket = io(Listener_URL, { autoConnect: false });
     socket.connect();
     socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst, isFavSongs, currentSongSecond } = item;
+      const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+        item;
+      // if (isInsert == null) {
       if (isFavSongs != null) {
         setIsFavSongs(isFavSongs);
       }
@@ -92,6 +94,7 @@ const page = () => {
       }
       dispatch(setPlaylistLength(playlist?.length));
       setPlaylistSongList([...playlist]);
+      // }
     });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
@@ -382,6 +385,7 @@ const page = () => {
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
+      setPlaylistSongList([]);
       socket.emit("emptyPlaylistRequest", {
         isFirst: true,
         playlist: [],
