@@ -94,7 +94,7 @@ const TableView = () => {
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
+      setVotingList(playlist);
     });
     socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
@@ -119,6 +119,26 @@ const TableView = () => {
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
+
+  useEffect(() => {
+    if (votingList?.length > 0) {
+      const updatedList = mergeListsWithTableUpVote(votingList, performer);
+      setPerformers([...updatedList]);
+    }
+  }, [votingList]);
+
+  // Function to merge lists based on tableUpVote
+  function mergeListsWithTableUpVote(list1, list2) {
+    const tableUpVoteMap = new Map(
+      list2.map((item) => [item._id, item.tableUpVote])
+    );
+
+    return list1.map((item) => ({
+      ...item,
+      tableUpVote: tableUpVoteMap.get(item._id),
+    }));
+  }
+  console.log("performer", performer);
 
   const fetchIsPlaylistEmpty = async () => {
     let response = await getIsPlaylistEmptyApi();
