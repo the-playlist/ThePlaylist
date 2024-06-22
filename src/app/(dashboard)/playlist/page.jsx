@@ -118,8 +118,8 @@ const page = () => {
       fetchPlaylistSongList(isFirst);
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      dispatch(setCurrentSongSecond(0));
+      const { playlist, isFirst, duration } = item;
+      // dispatch(setCurrentSongSecond(duration));
       setPlaylistSongList([...playlist]);
     });
 
@@ -266,7 +266,10 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    removeItemById(id);
+    debugger;
+    await removeItemById(id);
+
+    debugger;
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
@@ -275,11 +278,12 @@ const page = () => {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
+    debugger;
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
     });
-
+    debugger;
     if (playingState == true) {
       if (playlistSongList.length > 1) {
         dispatch(setPlayingState(false));
@@ -299,8 +303,14 @@ const page = () => {
   const removeItemById = async (id) => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
+    const index = currentArray.findIndex((i) => i._id == id);
     currentArray = currentArray.filter((item) => item._id != id);
+    let newSong;
+    if (currentArray.length > 1) {
+      newSong = currentArray[index + 1];
+    }
     setPlaylistSongList(currentArray);
+    dispatch(setCurrentSongSecond(newSong?.songDuration));
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
       playlist: currentArray,
