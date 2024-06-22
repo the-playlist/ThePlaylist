@@ -15,10 +15,11 @@ export const updateDutyStatus = async (req, res, next) => {
   try {
     const updates = req.body;
     const responseMessages = [];
-
-    for (const { id, status } of updates) {
+    for (const { id, status, startTime } of updates) {
       const filter = { _id: id };
-      const update = { $set: { "duty.status": status } };
+      const update = {
+        $set: { "duty.status": status, "duty.startTime": startTime },
+      };
       const updatedPlayer = await Players.findOneAndUpdate(filter, update, {
         new: true,
       });
