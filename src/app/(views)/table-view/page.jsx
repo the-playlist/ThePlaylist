@@ -14,7 +14,6 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 
@@ -71,7 +70,9 @@ const TableView = () => {
   }
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     socket.on("insertSongIntoPlaylistResponse", (item) => {

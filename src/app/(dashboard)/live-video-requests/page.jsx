@@ -5,7 +5,6 @@ import {
   useChangeStreamRequestStatusMutation,
   useLazyGetStreamRequestQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { Listener_URL } from "../../_utils/common/constants";
 import {
   CustomLoader,
   StreamRequest,
@@ -29,7 +28,9 @@ const StreamResponse = () => {
   const [loading, setLoading] = useState(true);
   const [recentActive, setRecentActive] = useState(null);
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     socket.on("sendReqToMasterRes", (item) => {

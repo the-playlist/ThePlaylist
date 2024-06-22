@@ -23,7 +23,6 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
 import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
@@ -80,7 +79,9 @@ const page = () => {
   );
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     socket.on("insertSongIntoPlaylistResponse", (item) => {
       const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
@@ -115,8 +116,8 @@ const page = () => {
       fetchPlaylistSongList(isFirst);
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      dispatch(setCurrentSongSecond(0));
+      const { playlist, isFirst, duration } = item;
+      // dispatch(setCurrentSongSecond(duration));
       setPlaylistSongList([...playlist]);
     });
 
@@ -263,7 +264,9 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    removeItemById(id);
+
+    await removeItemById(id);
+
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
@@ -298,8 +301,14 @@ const page = () => {
   const removeItemById = async (id) => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
+    const index = currentArray.findIndex((i) => i._id == id);
     currentArray = currentArray.filter((item) => item._id != id);
+    let newSong;
+    if (currentArray.length > 1) {
+      newSong = currentArray[index + 1];
+    }
     setPlaylistSongList(currentArray);
+    dispatch(setCurrentSongSecond(newSong?.songDuration));
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
       playlist: currentArray,

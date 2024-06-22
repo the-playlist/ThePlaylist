@@ -10,7 +10,6 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { Listener_URL } from "../_utils/common/constants";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
@@ -29,7 +28,9 @@ const Typeahead = () => {
   const [songLimit, setSongLimit] = useState(null);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.on("limitChangeByMasterRes", (item) => {
       const { title } = item;
       if (limitTitle == title) {

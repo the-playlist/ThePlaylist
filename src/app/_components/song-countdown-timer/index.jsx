@@ -56,6 +56,7 @@ const SongCountdownTimer = ({
       dispatch(setPlayingState(false));
     }
     dispatch(setSongsListUpdate());
+    debugger;
     advanceTheQueue(playlistSongList[0]?._id);
   };
 

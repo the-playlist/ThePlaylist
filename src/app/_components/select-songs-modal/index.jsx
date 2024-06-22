@@ -10,7 +10,6 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import GenericButton from "../generic-button";
 import { FaCircleInfo } from "react-icons/fa6";
 
@@ -35,7 +34,9 @@ const SelectSongModal = ({
   };
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     return () => {
@@ -239,9 +240,9 @@ const SelectSongModal = ({
                         />
                         <div className=" text-start">
                           {item?.title?.length > 12 ? (
-                            <div class="group relative flex justify-center">
+                            <div className="group relative flex justify-center">
                               {trimmedTitle}
-                              <span class="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                              <span className="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
                                 {item?.title}
                               </span>
                             </div>

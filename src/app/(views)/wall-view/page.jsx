@@ -11,8 +11,6 @@ import {
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
-import { useSelector } from "react-redux";
 
 const WallView = () => {
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
@@ -27,7 +25,9 @@ const WallView = () => {
   let screenName = "Wall View";
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
 
     socket.on("insertSongIntoPlaylistResponse", (item) => {

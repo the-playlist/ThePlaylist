@@ -10,7 +10,6 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
-import { Listener_URL } from "@/app/_utils/common/constants";
 import { IoMdAdd, IoIosRemove } from "react-icons/io";
 import CustomLoader from "../custom_loader";
 
@@ -32,7 +31,9 @@ const LimitAndAppearence = () => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     return () => {
@@ -113,6 +114,7 @@ const LimitAndAppearence = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
+      debugger;
       setLimitList(response?.data?.content);
     }
   };

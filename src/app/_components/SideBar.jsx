@@ -5,7 +5,6 @@ import { IoPlaySharp, IoPause } from "react-icons/io5";
 import { usePathname } from "next/navigation";
 import { HiMusicNote } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import { Listener_URL } from "../_utils/common/constants";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
@@ -47,7 +46,9 @@ const SideBar = () => {
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     return () => {
