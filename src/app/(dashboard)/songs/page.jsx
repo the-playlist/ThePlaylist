@@ -15,6 +15,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
+import { MdClear } from "react-icons/md";
 
 const SongsManagment = () => {
   const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
@@ -22,6 +23,8 @@ const SongsManagment = () => {
   const [addNewSongModal, setAddNewSongModal] = useState(false);
   const [deleteSongAPI, deleteSongResponse] = useDeleteSongByIdMutation();
   const [currentSongInfo, setCurrentSongInfo] = useState(null);
+  const [filteredsongs, setFilteredsongs] = useState([]);
+  const [searchTerm, setSearchTerm] = useState();
 
   const [songsList, setSongsList] = useState([]);
 
@@ -33,6 +36,7 @@ const SongsManagment = () => {
     let response = await songsListApi();
     if (response && !response.isError) {
       setSongsList(response.data?.content);
+      setFilteredsongs(response.data?.content);
     }
   };
   const onSongDeleteHandler = async () => {
@@ -55,18 +59,64 @@ const SongsManagment = () => {
       ) : (
         <>
           <div className="flex justify-between mt-5 items-center mx-1">
-            <div className=" text-xl font-bold text-black">Songs list</div>
+            <div className=" w-full">
+              <div className=" text-xl font-bold mb-4 text-black">
+                Songs list
+              </div>
+              <div className="relative w-1/4 mb-8 flex items-center ">
+                <input
+                  type="text"
+                  placeholder="Search song by title"
+                  value={searchTerm}
+                  onChange={(e) => {
+                    let selection = songsList.filter((song) =>
+                      song.title
+                        .toLowerCase()
+                        .startsWith(e.target.value.toLowerCase())
+                    );
+
+                    setSearchTerm(e.target.value.toLowerCase());
+                    setFilteredsongs(selection);
+                  }}
+                  className="block w-full py-3 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-primary"
+                />
+                <svg
+                  className="absolute top-0 left-0 w-6 h-6 mt-3 ml-3 text-gray-400"
+                  fill="none"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path d="M20 20l-4.172-4.172M12 18a6 6 0 100-12 6 6 0 000 12z" />
+                </svg>
+
+                {searchTerm?.length > 0 && (
+                  <button
+                    className="absolute right-0 top-2 hover:pointer rounded-r-lg px-4 py-2 "
+                    onClick={() => {
+                      setSearchTerm("");
+                      setFilteredsongs(songsList);
+                    }}
+                  >
+                    <MdClear size={20} className="text-gray-400" />
+                  </button>
+                )}
+              </div>
+            </div>
+
             <button
               onClick={() => {
                 setCurrentSongInfo(null);
                 setAddNewSongModal(true);
               }}
-              className=" self-end hover:bg-primary  btn btn-primary bg-primary border-none text-black "
+              className="  hover:bg-primary  btn btn-primary bg-primary border-none text-black "
             >
               + Add New Song
             </button>
           </div>
-          {songsList?.length > 0 ? (
+          {filteredsongs?.length > 0 ? (
             <div className=" max-h-[80vh] overflow-y-auto">
               <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
                 <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
@@ -82,7 +132,7 @@ const SongsManagment = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {songsList?.map((item, index) => (
+                  {filteredsongs?.map((item, index) => (
                     <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
                       <th className="rounded-l-2xl">{index + 1}</th>
                       <td>{item?.title}</td>
