@@ -11,6 +11,7 @@ import {
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
+import { motion, AnimatePresence } from "framer-motion";
 
 const WallView = () => {
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
@@ -140,13 +141,22 @@ const WallView = () => {
             <div className="flex items-center justify-center m-5">
               <Logo />
             </div>
-            <table className="table table-lg border-separate border-spacing-y-2 ">
-              {songList?.map((item, index) => (
-                <tbody
-                  className={` h-20 rounded-tl-lg font-medium
+
+            <ul>
+              <AnimatePresence>
+                {songList.map((item, index) => (
+                  <motion.li
+                    key={item?._id}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div
+                      className={` h-20 rounded-lg flex items-center justify-between mb-2 p-4  font-medium
               ${
                 index < 2
-                  ? "bg-yellow-400  text-black "
+                  ? "bg-yellow-400  text-black  "
                   : `${
                       themeMode
                         ? "bg-[#F0F0F0] text-black"
@@ -154,22 +164,19 @@ const WallView = () => {
                     }`
               }
               `}
-                >
-                  <tr>
-                    <td
-                      className={`lg:text-3xl text-lg text-start capitalize rounded-l-lg `}
                     >
-                      {item?.title}
-                    </td>
-                    <td
-                      className={`lg:text-3xl text-lg text-end capitalize rounded-r-lg`}
-                    >
-                      {item?.artist}
-                    </td>
-                  </tr>
-                </tbody>
-              ))}
-            </table>
+                      <div className={`lg:text-3xl text-lg  capitalize  `}>
+                        {item?.title}
+                      </div>
+                      <div className={`lg:text-3xl text-lg  capitalize `}>
+                        {item?.artist}
+                      </div>
+                    </div>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+
             {songList?.length == 0 && (
               <div
                 className={`flex justify-center text-lg items-center h-64 ${
