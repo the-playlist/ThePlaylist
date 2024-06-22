@@ -114,7 +114,6 @@ const LimitAndAppearence = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
-      debugger;
       setLimitList(response?.data?.content);
     }
   };
