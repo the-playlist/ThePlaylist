@@ -105,8 +105,6 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
-      // debugger
-
       setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes", (item) => {
@@ -266,24 +264,24 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    debugger;
+
     await removeItemById(id);
 
-    debugger;
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
+
     if (playlistSongList.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
-    debugger;
+
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
     });
-    debugger;
+
     if (playingState == true) {
       if (playlistSongList.length > 1) {
         dispatch(setPlayingState(false));
@@ -660,11 +658,11 @@ const page = () => {
                                                 setShowCountDown
                                               }
                                               duration={currentSongSecond}
-                                              advanceTheQueue={() =>
+                                              advanceTheQueue={() => {
                                                 deleteSongFromPlaylistHandler(
                                                   playlistSongList[0]?._id
-                                                )
-                                              }
+                                                );
+                                              }}
                                               playlistSongList={
                                                 playlistSongList
                                               }
