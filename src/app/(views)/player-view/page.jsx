@@ -11,6 +11,7 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { IntroCounter } from "./intro-counter";
+import { motion, AnimatePresence } from "framer-motion";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
@@ -127,6 +128,13 @@ const PerformerView = () => {
       setThemeMode(mode);
     }
   };
+
+  const listItemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
+    removed: { opacity: 0, y: 20 },
+  };
+
   return (
     <div
       className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
@@ -168,6 +176,7 @@ const PerformerView = () => {
                 The playlist is empty.
               </div>
             )}
+
             <table className="table table-lg border-separate border-spacing-y-2 ">
               {performer?.map((item, index) => (
                 <tbody

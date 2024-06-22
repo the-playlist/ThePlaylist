@@ -4,7 +4,7 @@ import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-
+import { motion, AnimatePresence } from "framer-motion";
 import {
   useAddUpdateVoteMutation,
   useLazyGetThemeByTitleQuery,
@@ -33,7 +33,6 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
-  const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
   const [votingList, setVotingList] = useState(null);
 
   const [disableVoteBtn, setDisableVoteBtn] = useState({
@@ -69,6 +68,12 @@ const TableView = () => {
     }
     return hash;
   }
+
+  const listItemVariants = {
+    hidden: { opacity: 0, y: -20 },
+    visible: { opacity: 1, y: 0 },
+    removed: { opacity: 0, y: 20 },
+  };
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -139,7 +144,6 @@ const TableView = () => {
       tableUpVote: tableUpVoteMap.get(item._id),
     }));
   }
-  console.log("performer", performer);
 
   const fetchIsPlaylistEmpty = async () => {
     let response = await getIsPlaylistEmptyApi();
@@ -393,47 +397,69 @@ const TableView = () => {
                 The playlist is empty.
               </div>
             )}
-            {performer?.map((item, index) => {
-              return (
-                <div
-                  className={`flex  ${
-                    index < 2 ? "bg-top-queue-bg" : ""
-                  } rounded-md flex-wrap my-2`}
-                >
-                  <div className="w-1/2  text-start flex items-center">
-                    {index < 2 ? (
-                      <p className="mx-5 font-extrabold text-lg  ">{`${
-                        index < 2 ? index + 1 : ""
-                      }`}</p>
-                    ) : (
-                      <ActionButtons key={index} index={index} item={item} />
-                    )}
-                    <p
-                      className={`font-semibold capitalize ${
-                        index < 2
-                          ? "text-black"
-                          : themeMode
-                          ? "text-black"
-                          : "text-white"
-                      }  text-sm lg:text-lg`}
+            <ul>
+              <AnimatePresence>
+                {performer?.map((item, index) => {
+                  return (
+                    <motion.div
+                      key={index}
+                      className={`flex ${
+                        index < 2 ? "bg-top-queue-bg" : ""
+                      } rounded-md flex-wrap my-2`}
+                      variants={listItemVariants}
+                      initial="hidden"
+                      animate="visible"
+                      exit="removed"
+                      transition={{ duration: 0.5 }}
+                      style={{ marginBottom: "10px" }}
                     >
-                      {item?.title}
-                    </p>
-                  </div>
-                  <div
-                    className={`w-1/2 p-4 text-end capitalize ${
-                      index < 2
-                        ? "text-black"
-                        : themeMode
-                        ? "text-black"
-                        : "text-white"
-                    } text-sm lg:text-lg`}
-                  >
-                    {item?.artist}
-                  </div>
-                </div>
-              );
-            })}
+                      <div
+                        className={`flex w-full  ${
+                          index < 2 ? "bg-top-queue-bg" : ""
+                        } rounded-md flex-wrap my-2`}
+                      >
+                        <div className="w-1/2  text-start flex items-center">
+                          {index < 2 ? (
+                            <p className="mx-5 font-extrabold text-lg  ">{`${
+                              index < 2 ? index + 1 : ""
+                            }`}</p>
+                          ) : (
+                            <ActionButtons
+                              key={index}
+                              index={index}
+                              item={item}
+                            />
+                          )}
+                          <p
+                            className={`font-semibold capitalize ${
+                              index < 2
+                                ? "text-black"
+                                : themeMode
+                                ? "text-black"
+                                : "text-white"
+                            }  text-sm lg:text-lg`}
+                          >
+                            {item?.title}
+                          </p>
+                        </div>
+                        <div
+                          className={`w-1/2 p-4 text-end capitalize ${
+                            index < 2
+                              ? "text-black"
+                              : themeMode
+                              ? "text-black"
+                              : "text-white"
+                          } text-sm lg:text-lg`}
+                        >
+                          {item?.artist}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </ul>
+
             <ButtonsAtEnd />
           </div>
         </>
