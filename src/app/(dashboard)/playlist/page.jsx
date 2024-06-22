@@ -264,7 +264,7 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-
+    debugger;
     await removeItemById(id, isTrashPress);
 
     setUndoItemsInStorage({
@@ -301,15 +301,16 @@ const page = () => {
   const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
-    const index = currentArray.findIndex((i) => i._id == id);
     currentArray = currentArray.filter((item) => item._id != id);
     let newSong;
     if (currentArray.length > 1) {
-      newSong = currentArray[index + 1];
+      newSong = playlistSongList[1];
     }
     setPlaylistSongList(currentArray);
     if (!isTrashPress) {
-      dispatch(setCurrentSongSecond(newSong?.songDuration));
+      dispatch(
+        setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
+      );
     }
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
