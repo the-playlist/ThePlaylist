@@ -262,10 +262,10 @@ const page = () => {
       console.error("Fetch failed:", error);
     }
   };
-  const deleteSongFromPlaylistHandler = async (id) => {
+  const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-
-    await removeItemById(id);
+    debugger;
+    await removeItemById(id, isTrashPress);
 
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -282,7 +282,7 @@ const page = () => {
       isDeleted: true,
     });
 
-    if (playingState == true) {
+    if (playingState == true && !isTrashPress) {
       if (playlistSongList.length > 1) {
         dispatch(setPlayingState(false));
         setShowCountDown(true);
@@ -298,17 +298,20 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
-  const removeItemById = async (id) => {
+  const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
-    const index = currentArray.findIndex((i) => i._id == id);
     currentArray = currentArray.filter((item) => item._id != id);
     let newSong;
     if (currentArray.length > 1) {
-      newSong = currentArray[index + 1];
+      newSong = playlistSongList[1];
     }
     setPlaylistSongList(currentArray);
-    dispatch(setCurrentSongSecond(newSong?.songDuration));
+    if (!isTrashPress) {
+      dispatch(
+        setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
+      );
+    }
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
       playlist: currentArray,
@@ -683,7 +686,8 @@ const page = () => {
                                             <button
                                               onClick={() => {
                                                 deleteSongFromPlaylistHandler(
-                                                  item?._id
+                                                  item?._id,
+                                                  true
                                                 );
                                               }}
                                               className=" hover:cursor-pointer ml-5"

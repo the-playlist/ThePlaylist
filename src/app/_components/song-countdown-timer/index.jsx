@@ -47,6 +47,7 @@ const SongCountdownTimer = ({
 
   const handleTimeZero = () => {
     if (playlistSongList.length > 1) {
+      debugger;
       const songDuration = convertTimeToSeconds(
         playlistSongList[1]?.songDuration
       );
@@ -56,7 +57,6 @@ const SongCountdownTimer = ({
       dispatch(setPlayingState(false));
     }
     dispatch(setSongsListUpdate());
-    debugger;
     advanceTheQueue(playlistSongList[0]?._id);
   };
 
