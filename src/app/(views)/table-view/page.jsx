@@ -12,7 +12,7 @@ import {
   useGetTableViewSongsMutation,
   useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { CustomLoader } from "@/app/_components";
+import { CustomLoader, ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
@@ -24,7 +24,8 @@ const TableView = () => {
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
-  const [getPlaylistSongTableView] = useGetTableViewSongsMutation();
+  const [getPlaylistSongTableView, { isLoading: getSongsLoader }] =
+    useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -463,6 +464,7 @@ const TableView = () => {
           </div>
         </>
       )}
+      {getSongsLoader && <ScreenLoader openModal={getSongsLoader} />}
     </div>
   );
 };

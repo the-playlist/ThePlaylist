@@ -26,8 +26,10 @@ import LimitAndAppearence from "./limit-and-appearance";
 import ViewMode from "./view-mode";
 import CountDown from "./count-down";
 import FavSongList from "./fav-songs-list";
+import ScreenLoader from "./screen-loader";
 
 export {
+  ScreenLoader,
   NavBar,
   Loader,
   ConfirmationModal,
