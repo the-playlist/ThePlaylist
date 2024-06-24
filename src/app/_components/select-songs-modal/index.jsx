@@ -101,11 +101,10 @@ const SelectSongModal = ({
       let response = await addSongToPlaylistApi(data);
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
-
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         closeModal();
         toast.success(response?.data?.description);
-        await fetchList(isFirstTimeFetched);
+        // await fetchList(isFirstTimeFetched);
         socket.emit("insertSongIntoPlaylistRequest", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,

@@ -166,7 +166,7 @@ const page = () => {
 
   useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList();
   }, []);
 
   useEffect(() => {
@@ -217,13 +217,6 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
   const fetchPlaylistSongList = async (firstFetch) => {
     let isFirst = localStorage.getItem("isFirstTimeFetched");
     try {
@@ -301,6 +294,9 @@ const page = () => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
     currentArray = currentArray.filter((item) => item._id != id);
+    if (currentArray?.length > 0) {
+      setIsFavExist(currentArray?.filter((item) => item?.isFav));
+    }
     let newSong;
     if (currentArray.length > 1) {
       newSong = playlistSongList[1];
@@ -327,7 +323,7 @@ const page = () => {
       const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
       const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
       updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
-      socket.emit("insertSongIntoPlaylistRequest", {
+      socket.emit("handleDragReq", {
         isFirst: false,
         playlist: updatedPlaylist,
       });

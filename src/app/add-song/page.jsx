@@ -16,7 +16,8 @@ const Typeahead = () => {
   let limitTitle = "Song Limit";
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
 
-  const [addSongToPlaylistByUserApi] = useAddSongToPlaylistByCustomerMutation();
+  const [addSongToPlaylistByUserApi, { isLoading }] =
+    useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -254,7 +255,11 @@ const Typeahead = () => {
               inputValue?.length > 0 ? "black" : "white"
             }`}
           >
-            Add
+            {isLoading ? (
+              <span className="loading loading-spinner loading-md"></span>
+            ) : (
+              "Add"
+            )}
           </span>
         </button>
       </div>

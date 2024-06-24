@@ -24,6 +24,8 @@ export const addSongsToPlaylist = async (req, res, next) => {
 
   const playlist = await Playlist.insertMany(songsWithExpiration);
   const list = await Playlist.aggregate(songFromPlaylist);
+  const newIsFirstValue = result?.length == 0 ? true : false;
+
   const { isFavortiteListType } = await PlaylistType.findOne({
     _id: "662b7a6e80f2c908c92a0b3d",
   }).lean();
@@ -58,17 +60,15 @@ export const addSongsToPlaylist = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
 
-  const finalPlaylist = playlistAlgorithm(
-    result?.length == 0 ? true : false,
-    flattenedPlaylist
-  );
+  const finalPlaylist = playlistAlgorithm(newIsFirstValue, flattenedPlaylist);
+
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
     {
       isFavortiteListType: isFavortiteListType,
       playlist: finalPlaylist,
-      isFirstTimeFetched: result?.length == 0 ? true : false,
+      isFirstTimeFetched: newIsFirstValue,
     }
   );
   res.status(201).json(response);

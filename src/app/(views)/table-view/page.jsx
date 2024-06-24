@@ -103,6 +103,10 @@ const TableView = () => {
       const { playlist, isFirst } = item;
       setVotingList(playlist);
     });
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
+      setVotingList([...playlist]);
+    });
     socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);

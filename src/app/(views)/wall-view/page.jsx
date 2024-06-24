@@ -33,6 +33,11 @@ const WallView = () => {
 
     socket.on("insertSongIntoPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
+      setSongList([...playlist]);
+    });
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
     socket.on("emptyPlaylistResponse", (item) => {
@@ -60,7 +65,7 @@ const WallView = () => {
     });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
+      setSongList([...playlist]);
     });
     socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
@@ -73,22 +78,13 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList();
     getThemeByTitleHandler(screenName);
   }, []);
-
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
 
   const fetchPlaylistSongList = async (firstFetch) => {
     try {
       let response = await getPlaylistSongListApi(firstFetch);
-
       if (response && !response.isError) {
         setSongList(response?.data?.content?.playlist);
         if (response?.data?.content?.playlist?.length == 0) {
