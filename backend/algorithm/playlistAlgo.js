@@ -2,6 +2,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
   if (typeof isFirstTimeFetched == "string") {
     isFirstTimeFetched = JSON.parse(isFirstTimeFetched);
   }
+  console.log("isFirstTimeFetched", isFirstTimeFetched);
 
   const flattenedRemainingPlaylist = flattenedPlaylist.filter(
     (song) => !song.sortByMaster
