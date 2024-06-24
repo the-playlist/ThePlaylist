@@ -264,7 +264,7 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    debugger;
+
     await removeItemById(id, isTrashPress);
 
     setUndoItemsInStorage({
