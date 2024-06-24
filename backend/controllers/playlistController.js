@@ -91,6 +91,8 @@ export const addSongsToPlaylist = async (req, res, next) => {
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
+  let firstFetch = req?.query?.isFirstTimeFetched;
+
   const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
     _id: SETTING_ID,
   }).lean();
@@ -134,7 +136,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    firstFetch != null ? firstFetch : isFirstTimeFetched,
     flattenedPlaylist
   );
 

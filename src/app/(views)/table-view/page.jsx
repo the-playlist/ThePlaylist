@@ -23,7 +23,6 @@ const TableView = () => {
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
-  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getPlaylistSongTableView, { isLoading: getSongsLoader }] =
     useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
@@ -83,6 +82,7 @@ const TableView = () => {
     });
     socket.on("voteCastingResponse", (item) => {
       const { isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
@@ -147,10 +147,11 @@ const TableView = () => {
 
   const fetchPlaylistSongList = async (firstFetch) => {
     try {
+      const firstTimeFetched = localStorage.getItem("isFirstTimeFetched");
       const deviceId = generateDeviceId();
       let payload = {
         id: deviceId,
-        firstFetch: firstFetch,
+        firstFetch: firstFetch ?? firstTimeFetched,
       };
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {

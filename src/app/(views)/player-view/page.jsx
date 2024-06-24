@@ -53,6 +53,7 @@ const PerformerView = () => {
     });
     socket.on("wallPlayerViewRes", (item) => {
       const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       setPerformers([...playlist]);
     });
     socket.on("emptyPlaylistResponse", (item) => {
@@ -98,13 +99,15 @@ const PerformerView = () => {
   }, [seconds, timerRunning]);
 
   useEffect(() => {
-    fetchPlaylistSongList();
+    fetchPlaylistSongList(null);
     getThemeByTitleHandler(screenName);
   }, []);
 
   const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
-      let response = await getPlaylistSongListApi(firstFetch);
+      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         const list = response?.data?.content?.playlist;
         if (list?.length == 0) {

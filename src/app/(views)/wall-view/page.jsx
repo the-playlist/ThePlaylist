@@ -51,6 +51,7 @@ const WallView = () => {
     });
     socket.on("wallPlayerViewRes", (item) => {
       const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       setSongList([...playlist]);
     });
     socket.on("undoActionResponse", (item) => {
@@ -83,8 +84,10 @@ const WallView = () => {
   }, []);
 
   const fetchPlaylistSongList = async (firstFetch) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
-      let response = await getPlaylistSongListApi(firstFetch);
+      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         setSongList(response?.data?.content?.playlist);
         if (response?.data?.content?.playlist?.length == 0) {
