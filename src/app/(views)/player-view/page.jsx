@@ -37,6 +37,10 @@ const PerformerView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
     socket.on("bufferTimeRes", (item) => {
       const { time } = item;
       setSeconds(time);
@@ -94,17 +98,9 @@ const PerformerView = () => {
   }, [seconds, timerRunning]);
 
   useEffect(() => {
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList();
     getThemeByTitleHandler(screenName);
   }, []);
-
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
 
   const fetchPlaylistSongList = async (firstFetch) => {
     try {

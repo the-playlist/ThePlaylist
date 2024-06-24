@@ -283,6 +283,19 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
           },
         },
       },
+      // Add this stage to flag comedy songs
+      {
+        $addFields: {
+          isComedy: { $eq: ["$category", "Comedy"] },
+        },
+      },
+      // Sort with comedy songs at the bottom
+      {
+        $sort: {
+          isComedy: 1, // Non-comedy songs first
+          title: 1, // Then sort by title if needed
+        },
+      },
     ];
 
     if (id) {
