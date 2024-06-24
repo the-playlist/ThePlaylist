@@ -34,6 +34,7 @@ const TableView = () => {
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
   const [votingList, setVotingList] = useState(null);
+  const [votingLoader, setVotingLoader] = useState(false);
 
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
@@ -163,11 +164,11 @@ const TableView = () => {
         id: deviceId,
         isFirstTimeFetched: firstFetch ?? isFirst,
       };
-
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         const { list, isFirstTimeFetched } = response?.data?.content;
         setPerformers(list || []);
+        setVotingLoader(false);
         if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
         }
@@ -315,7 +316,7 @@ const TableView = () => {
       updatedPerformer[index] = updatedItem;
 
       setPerformers(updatedPerformer);
-
+      setVotingLoader(true);
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
@@ -464,7 +465,7 @@ const TableView = () => {
           </div>
         </>
       )}
-      {getSongsLoader && <ScreenLoader openModal={getSongsLoader} />}
+      {votingLoader && <ScreenLoader openModal={votingLoader} />}
     </div>
   );
 };
