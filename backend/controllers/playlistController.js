@@ -69,9 +69,15 @@ export const addSongsToPlaylist = async (req, res, next) => {
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
-
   const finalPlaylist = playlistAlgorithm(newIsFirstValue, flattenedPlaylist);
+  const bulkOps = finalPlaylist.map((item, index) => ({
+    updateOne: {
+      filter: { _id: item?._id },
+      update: { $set: { sortOrder: index } },
+    },
+  }));
 
+  await Playlist.bulkWrite(bulkOps);
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
@@ -182,6 +188,7 @@ export const getSongsReportList = async (req, res, next) => {
 
 export const getSongsForTableView = async (req, res, next) => {
   const deviceId = req?.body?.id;
+  const firstFetch = req?.body?.firstFetch;
 
   const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
     _id: SETTING_ID,
@@ -231,7 +238,7 @@ export const getSongsForTableView = async (req, res, next) => {
   }
 
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    firstFetch != null ? firstFetch : isFirstTimeFetched,
     flattenedPlaylist
   );
 
