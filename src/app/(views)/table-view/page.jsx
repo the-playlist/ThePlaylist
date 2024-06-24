@@ -121,7 +121,7 @@ const TableView = () => {
   }, []);
 
   useEffect(() => {
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList(null);
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
@@ -144,25 +144,13 @@ const TableView = () => {
       tableUpVote: tableUpVoteMap.get(item._id),
     }));
   }
-  console.log("performer", performer);
-
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
 
   const fetchPlaylistSongList = async (firstFetch) => {
-    let isFirst = localStorage.getItem("isFirstTimeFetched");
-    isFirst = Boolean(isFirst);
-
     try {
       const deviceId = generateDeviceId();
       let payload = {
         id: deviceId,
-        isFirstTimeFetched: firstFetch ?? isFirst,
+        firstFetch: firstFetch,
       };
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
