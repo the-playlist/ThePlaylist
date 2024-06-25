@@ -14,9 +14,7 @@ const Login = () => {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
-    reset,
   } = useForm();
 
   const [width, setWidth] = useState("w-1/3");
