@@ -11,6 +11,7 @@ node_modules/
 /.now/
 
 # Ignore environment files
+.env
 .env.local
 .env.development.local
 .env.test.local
