@@ -35,10 +35,10 @@ jobs:
         run: chmod 700 ~/.ssh
 
       - name: Print SSH Key
-        run: echo "SSH Key: ${{ secrets.IONOS_SSH_KEY }}"
+        run: echo SSH Key: ${{ secrets.IONOS_SSH_KEY }}
 
       - name: Print Host
-        run: echo "SSH Key: ${{ secrets.IONOS_HOST }}"
+        run: echo SSH Key: ${{ secrets.IONOS_HOST }}
 
       - name: Ensure known_hosts file exists
         run: touch ~/.ssh/known_hosts
