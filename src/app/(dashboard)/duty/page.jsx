@@ -17,6 +17,7 @@ import _ from "lodash";
 import { useRouter } from "next/navigation";
 
 const DutyScreen = () => {
+  console.log("testing");
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
   const [getAssignSongsApi, getAssignSongsResponse] =
     useLazyGetAssignSongsWithPlayersQuery();
