@@ -32,7 +32,6 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
-  const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
   const [votingList, setVotingList] = useState(null);
   const [votingLoader, setVotingLoader] = useState(false);
 
