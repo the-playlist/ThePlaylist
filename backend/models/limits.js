@@ -10,7 +10,6 @@ const limitSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please enter title"],
     },
-
     subTitle: {
       type: String,
       default: "",

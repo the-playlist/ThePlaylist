@@ -11,8 +11,7 @@ import {
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
-import { useSelector } from "react-redux";
+import { motion, AnimatePresence } from "framer-motion";
 
 const WallView = () => {
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
@@ -27,10 +26,17 @@ const WallView = () => {
   let screenName = "Wall View";
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
 
     socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
+      setSongList([...playlist]);
+    });
+    socket.on("handleDragRes", (item) => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
@@ -43,8 +49,9 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-    socket.on("voteCastingResponse", (item) => {
+    socket.on("wallPlayerViewRes", (item) => {
       const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       setSongList([...playlist]);
     });
     socket.on("undoActionResponse", (item) => {
@@ -57,7 +64,14 @@ const WallView = () => {
         getThemeByTitleHandler(title);
       }
     });
-
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -65,22 +79,15 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList();
     getThemeByTitleHandler(screenName);
   }, []);
 
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
-
   const fetchPlaylistSongList = async (firstFetch) => {
-    try {
-      let response = await getPlaylistSongListApi(firstFetch);
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
 
+    try {
+      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         setSongList(response?.data?.content?.playlist);
         if (response?.data?.content?.playlist?.length == 0) {
@@ -133,13 +140,22 @@ const WallView = () => {
             <div className="flex items-center justify-center m-5">
               <Logo />
             </div>
-            <table className="table table-lg border-separate border-spacing-y-2 ">
-              {songList?.map((item, index) => (
-                <tbody
-                  className={` h-20 rounded-tl-lg font-medium
+
+            <ul>
+              <AnimatePresence>
+                {songList.map((item, index) => (
+                  <motion.li
+                    key={item?._id}
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 20 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    <div
+                      className={` h-20 rounded-lg flex items-center justify-between mb-2 p-4  font-medium
               ${
                 index < 2
-                  ? "bg-yellow-400  text-black "
+                  ? "bg-yellow-400  text-black  "
                   : `${
                       themeMode
                         ? "bg-[#F0F0F0] text-black"
@@ -147,22 +163,19 @@ const WallView = () => {
                     }`
               }
               `}
-                >
-                  <tr>
-                    <td
-                      className={`lg:text-3xl text-lg text-start capitalize rounded-l-lg `}
                     >
-                      {item?.title}
-                    </td>
-                    <td
-                      className={`lg:text-3xl text-lg text-end capitalize rounded-r-lg`}
-                    >
-                      {item?.artist}
-                    </td>
-                  </tr>
-                </tbody>
-              ))}
-            </table>
+                      <div className={`lg:text-3xl text-lg  capitalize  `}>
+                        {item?.title}
+                      </div>
+                      <div className={`lg:text-3xl text-lg  capitalize `}>
+                        {item?.artist}
+                      </div>
+                    </div>
+                  </motion.li>
+                ))}
+              </AnimatePresence>
+            </ul>
+
             {songList?.length == 0 && (
               <div
                 className={`flex justify-center text-lg items-center h-64 ${
