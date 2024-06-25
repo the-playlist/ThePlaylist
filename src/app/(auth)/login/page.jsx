@@ -10,6 +10,7 @@ const Login = () => {
   const [isPassword, setIsPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+
   const {
     register,
     handleSubmit,
@@ -17,6 +18,7 @@ const Login = () => {
     formState: { errors },
     reset,
   } = useForm();
+
   const [width, setWidth] = useState("w-1/3");
   useEffect(() => {
     const handleResize = () => {
