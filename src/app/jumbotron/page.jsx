@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { useLazyGetLiveStreamQuery } from "../_utils/redux/slice/emptySplitApi";
 import StreamRequests from "../_components/stream-requests";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../_utils/common/constants";
 import { ToggleFullScreen } from "../_components";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
@@ -15,7 +14,9 @@ const JumboTron = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
 
     socket.on("sendReqToMasterRes", (item) => {

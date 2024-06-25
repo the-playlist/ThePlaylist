@@ -95,15 +95,32 @@ const DutyScreen = () => {
     }
   };
 
-  const changeStatus = (id) => {
+  function getCurrentTime() {
+    return new Date().toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
+  }
+
+  const changeStatus = (id, status) => {
     setStaffList((prevStaffList) =>
       prevStaffList.map((player) =>
         player._id === id
-          ? { ...player, duty: { ...player.duty, status: !player.duty.status } }
+          ? {
+              ...player,
+              duty: {
+                ...player.duty,
+                status: !player.duty.status,
+                startTime: status == false ? getCurrentTime() : null,
+              },
+            }
           : player
       )
     );
   };
+
   return (
     <div className="">
       {getStaffListResponse?.isFetching ? (
@@ -150,6 +167,7 @@ const DutyScreen = () => {
                         payload.push({
                           id: item?._id,
                           status: item?.duty.status,
+                          startTime: item?.duty.startTime,
                         });
                       });
 
@@ -211,6 +229,7 @@ const DutyScreen = () => {
                     <tr className="text-base font-medium text-black">
                       <th>Players</th>
                       <th>Status</th>
+                      <th className="text-center">On Duty Time</th>
                       <th className=" float-right ">Change Status</th>
                     </tr>
                   </thead>
@@ -231,12 +250,14 @@ const DutyScreen = () => {
                               {item?.duty.status ? "on Duty" : "Off Duty"}
                             </div>
                           </td>
-
+                          <td className="text-center">
+                            {item?.duty?.startTime || "-"}
+                          </td>
                           <td className="rounded-e-2xl ">
                             <div className="flex justify-end">
                               <input
                                 onClick={() => {
-                                  changeStatus(item?._id);
+                                  changeStatus(item?._id, item?.duty.status);
                                 }}
                                 type="checkbox"
                                 className="toggle toggle-success mr-2 "

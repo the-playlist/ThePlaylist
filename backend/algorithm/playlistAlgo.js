@@ -1,4 +1,8 @@
 export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
+  if (typeof isFirstTimeFetched == "string") {
+    isFirstTimeFetched = JSON.parse(isFirstTimeFetched);
+  }
+
   const flattenedRemainingPlaylist = flattenedPlaylist.filter(
     (song) => !song.sortByMaster
   );
@@ -15,8 +19,8 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    isFirstTimeFetched == "true" ? flattenedRemainingPlaylist : remainingSongs,
-    isFirstTimeFetched == "true" ? null : firstTwoSongs
+    isFirstTimeFetched == true ? flattenedRemainingPlaylist : remainingSongs,
+    isFirstTimeFetched == true ? null : firstTwoSongs
   );
 
   // Sort remaining songs based on upVote - downVote (descending)
@@ -40,7 +44,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (isFirstTimeFetched == "true") {
+      if (isFirstTimeFetched == true) {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(
@@ -69,13 +73,21 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     }
   }
 
-  const lastPlayerFromFirstTwo =
-    firstTwoSongs != null ? firstTwoSongs[1]?.playerName : null;
-  const lastCategoryFromFirstTwo =
-    firstTwoSongs != null ? firstTwoSongs[1]?.category : null;
+  const lastPlayerFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[1]?.playerName
+    : null;
+  const lastCategoryFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[1]?.category
+    : null;
 
-  let lastPlayerName = lastPlayerFromFirstTwo;
   let lastCategory = lastCategoryFromFirstTwo;
+
+  const recentPlayers = [];
+  if (lastPlayerFromFirstTwo) {
+    recentPlayers.push(lastPlayerFromFirstTwo);
+  }
+
+  let nonBalladCountSinceLastBallad = 0;
 
   while (remainingSongs.length > 0) {
     let songAdded = false;
@@ -83,14 +95,29 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     for (let i = 0; i < remainingSongs.length; i++) {
       const song = remainingSongs[i];
 
-      if (
-        (lastPlayerName === null || song.playerName !== lastPlayerName) &&
-        (lastCategory === null ||
-          lastCategory !== "Ballad" ||
-          song.category !== "Ballad")
-      ) {
+      // Ensure the player is not among the last three unique players
+      const isPlayerAllowed = !recentPlayers.includes(song.playerName);
+
+      // Ensure at least three non-ballad songs since the last ballad
+      const isBalladAllowed =
+        song.category !== "Ballad" || nonBalladCountSinceLastBallad >= 3;
+
+      if (isPlayerAllowed && isBalladAllowed) {
         modifiedSongs.push(song);
-        lastPlayerName = song.playerName;
+
+        // Update recent players list
+        recentPlayers.push(song.playerName);
+        if (recentPlayers.length > 3) {
+          recentPlayers.shift(); // Remove the oldest entry to keep only the last three
+        }
+
+        // Update ballad tracking
+        if (song.category === "Ballad") {
+          nonBalladCountSinceLastBallad = 0;
+        } else {
+          nonBalladCountSinceLastBallad++;
+        }
+
         lastCategory = song.category;
         remainingSongs.splice(i, 1); // Remove the song from the remaining list
         songAdded = true;
@@ -99,15 +126,51 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     }
 
     if (!songAdded) {
-      // If no song was added in this iteration, it means we cannot find a suitable song
-      // and need to force add a song to avoid an infinite loop
+      // Relax player rule and try to find any non-ballad song
+      for (let i = 0; i < remainingSongs.length; i++) {
+        const song = remainingSongs[i];
+        if (
+          song.category !== "Ballad" &&
+          !recentPlayers.includes(song.playerName)
+        ) {
+          modifiedSongs.push(song);
+
+          // Update recent players list
+          recentPlayers.push(song.playerName);
+          if (recentPlayers.length > 3) {
+            recentPlayers.shift();
+          }
+
+          nonBalladCountSinceLastBallad++;
+          lastCategory = song.category;
+          remainingSongs.splice(i, 1); // Remove the song from the remaining list
+          songAdded = true;
+          break;
+        }
+      }
+    }
+
+    if (!songAdded) {
+      // If still no song added, force add the next available song
       const song = remainingSongs.shift(); // Get the first remaining song
       modifiedSongs.push(song);
-      lastPlayerName = song.playerName;
+
+      // Update recent players list
+      recentPlayers.push(song.playerName);
+      if (recentPlayers.length > 3) {
+        recentPlayers.shift();
+      }
+
+      // Update ballad tracking
+      if (song.category === "Ballad") {
+        nonBalladCountSinceLastBallad = 0;
+      } else {
+        nonBalladCountSinceLastBallad++;
+      }
+
       lastCategory = song.category;
     }
   }
 
-  // Concatenate comedy songs and customer-added songs to the end of the result
   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }

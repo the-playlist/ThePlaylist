@@ -5,7 +5,6 @@ import { IoPlaySharp, IoPause } from "react-icons/io5";
 import { usePathname } from "next/navigation";
 import { HiMusicNote } from "react-icons/hi";
 import { useEffect, useState } from "react";
-import { Listener_URL } from "../_utils/common/constants";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import {
@@ -47,7 +46,9 @@ const SideBar = () => {
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     return () => {
@@ -77,7 +78,14 @@ const SideBar = () => {
           const { playerName, title, _id } = playlistSongList[index + 1];
           dispatch(setPlaylistSongList(playlistSongList));
           dispatch(
-            setCurrentSong({ title: title, playerName: playerName, id: _id })
+            setCurrentSong({
+              title: title,
+              playerName: playerName,
+              id: _id,
+              duration: convertTimeToSeconds(
+                playlistSongList[index + 1].songDuration
+              ),
+            })
           );
 
           const songDuration = convertTimeToSeconds(
@@ -125,6 +133,23 @@ const SideBar = () => {
     }
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [currentSongSecond, playingState, pathname]); // Re-run useEffect when secondsRemaining changes
+
+  const startTimer = () => {
+    if (currentSong?.duration == currentSongSecond) {
+      socket.emit("bufferTimeReq", {
+        time: 10,
+      });
+      setTimeout(() => {
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
+
+        dispatch(setPlayingState(!playingState));
+      }, 10000);
+    } else {
+      dispatch(setPlayingState(!playingState));
+    }
+  };
 
   return (
     <>
@@ -178,7 +203,7 @@ const SideBar = () => {
               </div>
               <div className="p-2 mt-5 rounded-full bg-[#F7F7F7] flex justify-center items-center">
                 <button
-                  onClick={() => dispatch(setPlayingState(!playingState))}
+                  onClick={() => startTimer()}
                   className="h-8 w-8 bg-white shadow-xl rounded-full flex items-center justify-center mr-2 "
                 >
                   {playingState ? <IoPause /> : <IoPlaySharp />}

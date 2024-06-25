@@ -6,7 +6,7 @@
     "dev": "npm run next",
     "next": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 5000",
     "lint": "next lint",
     "node": "node server.js"
   },
@@ -59,11 +59,14 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "clsx": "^2.1.1",
     "daisyui": "^4.10.1",
     "eslint": "^8",
     "eslint-config-next": "14.1.4",
+    "framer-motion": "^11.2.11",
     "postcss": "^8",
-    "tailwindcss": "^3.3.0",
+    "tailwind-merge": "^2.3.0",
+    "tailwindcss": "^3.4.4",
     "typescript": "^5"
   }
 }

@@ -23,7 +23,6 @@ import {
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import { IoArrowUndo } from "react-icons/io5";
 import { SortByMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
@@ -41,6 +40,7 @@ import { convertTimeToSeconds } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
 import Ticker from "react-ticker";
+import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -69,6 +69,7 @@ const page = () => {
   const [showCountDown, setShowCountDown] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
+  const [votingList, setVotingList] = useState(null);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -78,30 +79,96 @@ const page = () => {
   );
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+      const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+        item;
+
+      if (isFavSongs != null) {
+        setIsFavSongs(isFavSongs);
+      }
+      if (currentSongSecond != null) {
+        dispatch(setCurrentSongSecond(currentSongSecond));
+      }
       dispatch(setPlaylistLength(playlist?.length));
       setPlaylistSongList([...playlist]);
     });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
+      dispatch(setPlaylistLength(0));
+      dispatch(setCurrentSongSecond(0));
+      dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
+      const { isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
+      setVotingList(item || {});
+    });
+    socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
     });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst, duration } = item;
+      // dispatch(setCurrentSongSecond(duration));
+      setPlaylistSongList([...playlist]);
+    });
+
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-    };
   }, []);
 
   useEffect(() => {
+    if (votingList != null) {
+      const playlistSongListCopy = [...playlistSongList];
+      function findAndIncrementUpVote() {
+        const foundIndex = playlistSongList?.findIndex(
+          (song) => song._id == votingList?.id
+        );
+        if (foundIndex !== -1) {
+          let updatedSong = { ...playlistSongList[foundIndex] };
+          if (votingList?.isIncrement == true) {
+            updatedSong.upVote += 1;
+            if (updatedSong.downVote > 0) {
+              if (votingList?.isVoted) {
+                updatedSong.downVote -= 1;
+              }
+            }
+          } else {
+            updatedSong.downVote += 1;
+            if (updatedSong.upVote > 0) {
+              if (votingList?.isVoted) {
+                updatedSong.upVote -= 1;
+              }
+            }
+          }
+          playlistSongListCopy[foundIndex] = updatedSong;
+          return playlistSongListCopy;
+        }
+      }
+
+      const finalPlaylist = playlistAlgorithm(
+        votingList?.isFirst,
+        findAndIncrementUpVote()
+      );
+      socket.emit("wallPlayerViewReq", {
+        isFirst: votingList?.isFirst,
+        playlist: finalPlaylist,
+      });
+      setPlaylistSongList([...finalPlaylist]);
+    }
+  }, [votingList]);
+
+  useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList(null);
   }, []);
 
   useEffect(() => {
@@ -113,7 +180,12 @@ const page = () => {
       const { playerName, title, _id } = playlistSongList[0];
       dispatch(setPlayListSongListLocalStoage(playlistSongList));
       dispatch(
-        setCurrentSong({ title: title, playerName: playerName, id: _id })
+        setCurrentSong({
+          title: title,
+          playerName: playerName,
+          id: _id,
+          duration: convertTimeToSeconds(playlistSongList[0].songDuration),
+        })
       );
 
       if (storedSeconds == 0 && storedSeconds === initialSongDuration) {
@@ -147,17 +219,12 @@ const page = () => {
     return () => clearTimeout(timeoutId); // Cleanup function to clear timeout on unmount
   }, [isUndoDisable]); // Empty dependency array ensures it runs only once on mount
 
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
-    }
-  };
   const fetchPlaylistSongList = async (firstFetch) => {
     let isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
       // setIsLoading(true);
+
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
@@ -190,30 +257,35 @@ const page = () => {
       console.error("Fetch failed:", error);
     }
   };
-  const deleteSongFromPlaylistHandler = async (id) => {
+  const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    removeItemById(id);
+
+    await removeItemById(id, isTrashPress);
+
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
+
     if (playlistSongList.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
+
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
     });
 
-    // socket.emit("addSongToPlaylistApi", { id: id, isFirst: false });
-    if (playingState == true) {
-      dispatch(setPlayingState(false));
-      setShowCountDown(true);
+    if (playingState == true && !isTrashPress) {
+      if (playlistSongList.length > 1) {
+        dispatch(setPlayingState(false));
+        setShowCountDown(true);
+        socket.emit("bufferTimeReq", {
+          time: 10,
+        });
+      }
     }
-    // socket.emit("advanceTheQueueApi", {
-    //   time: 10,
-    // });
 
     if (response && !response.error) {
       toast(response?.data?.description);
@@ -221,17 +293,29 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
-  const removeItemById = async (id) => {
+  const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...playlistSongList];
     await setPlaylistSongList([]);
     currentArray = currentArray.filter((item) => item._id != id);
+    if (currentArray?.length > 0) {
+      setIsFavExist(currentArray?.filter((item) => item?.isFav));
+    }
+    let newSong;
+    if (currentArray.length > 1) {
+      newSong = playlistSongList[1];
+    }
     setPlaylistSongList(currentArray);
+    if (!isTrashPress) {
+      dispatch(
+        setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
+      );
+    }
     socket.emit("RemoveSongFromPlaylistRequest", {
       isFirst: false,
       playlist: currentArray,
+      time: 10,
     });
   };
-
   const handleDragEnd = (result, index) => {
     if (!result.destination) return;
     dispatch(setIsFirstTimeFetched(false));
@@ -242,7 +326,7 @@ const page = () => {
       const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
       const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
       updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
-      socket.emit("insertSongIntoPlaylistRequest", {
+      socket.emit("handleDragReq", {
         isFirst: false,
         playlist: updatedPlaylist,
       });
@@ -255,7 +339,6 @@ const page = () => {
       updateSongsOrderHandler(updatedArr);
     }
   };
-
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
     try {
@@ -267,7 +350,6 @@ const page = () => {
       console.log(error);
     }
   };
-
   const toggleFavSongs = async () => {
     if (!isFavSongs) {
       const updatedPlaylist = [...playlistSongList];
@@ -277,48 +359,49 @@ const page = () => {
         favSongsList[0].songDuration
       );
       dispatch(setCurrentSongSecond(initialSongDuration));
+      socket.emit("insertSongIntoPlaylistRequest", {
+        isFirst: true,
+        playlist: favSongsList,
+        isFavSongs: !isFavSongs,
+        currentSongSecond: initialSongDuration,
+      });
     } else {
+      socket.emit("undoFavReq", {
+        isFirst: true,
+      });
+      setIsLoading(true);
       fetchPlaylistSongList();
     }
     setIsFavSongs(!isFavSongs);
     await updatePlaylistTypeAPI({
       isFavortiteListType: !isFavSongs,
     });
-    socket.emit("addSongToPlaylistApi", {
-      isFirst: true,
-    });
   };
-
   const setUndoItemsInStorage = (data) => {
     localStorage.setItem(LAST_ACTION, JSON.stringify(data));
     setIsUndoDisable(false);
   };
-
   const deleteAllSongsHandler = async () => {
+    dispatch(setPlayingState(false));
     localStorage.setItem("isFirstTimeFetched", true);
-    // setIsLoading(true);
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
-
+    dispatch(setPlaylistLength(0));
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
-      // fetchPlaylistSongList();
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
-      // socket.emit("addSongToPlaylistApi", {
-      //   isFirst: false,
-      // });
+      setPlaylistSongList([]);
       socket.emit("emptyPlaylistRequest", {
         isFirst: true,
         playlist: [],
       });
     }
   };
-
   const onUndoPressHandler = async () => {
     setIsLoading(true);
     const lastAction = JSON.parse(localStorage.getItem(LAST_ACTION));
@@ -576,11 +659,11 @@ const page = () => {
                                                 setShowCountDown
                                               }
                                               duration={currentSongSecond}
-                                              advanceTheQueue={() =>
+                                              advanceTheQueue={() => {
                                                 deleteSongFromPlaylistHandler(
                                                   playlistSongList[0]?._id
-                                                )
-                                              }
+                                                );
+                                              }}
                                               playlistSongList={
                                                 playlistSongList
                                               }
@@ -601,7 +684,8 @@ const page = () => {
                                             <button
                                               onClick={() => {
                                                 deleteSongFromPlaylistHandler(
-                                                  item?._id
+                                                  item?._id,
+                                                  true
                                                 );
                                               }}
                                               className=" hover:cursor-pointer ml-5"
@@ -671,6 +755,7 @@ const page = () => {
                   setShowCountDown={setShowCountDown}
                   openModal={showCountDown}
                   timer={10}
+                  socket={socket}
                 />
               )}
               {isConfirmationPopup && (

@@ -18,7 +18,6 @@ import {
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
-import { Listener_URL } from "@/app/_utils/common/constants";
 
 const LiveVideo = ({ streamPayload, setStreamPayload, tableno }) => {
   const { token, user_id, callId } = streamPayload;
@@ -104,7 +103,9 @@ export const MyLivestreamUI = ({
   }, [streamUrl]);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     socket.on("acceptedRejectStreamRes", (item) => {

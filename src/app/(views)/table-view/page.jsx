@@ -12,12 +12,10 @@ import {
   useGetTableViewSongsMutation,
   useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { CustomLoader } from "@/app/_components";
+import { CustomLoader, ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { Listener_URL } from "../../_utils/common/constants";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 
 const TableView = () => {
   let screenName = "Table View";
@@ -25,8 +23,8 @@ const TableView = () => {
   const searchParams = useSearchParams();
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
-  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
-  const [getPlaylistSongTableView] = useGetTableViewSongsMutation();
+  const [getPlaylistSongTableView, { isLoading: getSongsLoader }] =
+    useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -34,6 +32,10 @@ const TableView = () => {
   const [loading, setLoading] = useState(true);
   const [socket, setSocket] = useState();
   const [themeMode, setThemeMode] = useState(false);
+  const [updatedPlaylist, setUpdatedPlaylist] = useState([]);
+  const [votingList, setVotingList] = useState(null);
+  const [votingLoader, setVotingLoader] = useState(false);
+
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
     isTrue: null,
@@ -69,7 +71,9 @@ const TableView = () => {
   }
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.connect();
     setSocket(socket);
     socket.on("insertSongIntoPlaylistResponse", (item) => {
@@ -77,7 +81,8 @@ const TableView = () => {
       setPerformers([...playlist]);
     });
     socket.on("voteCastingResponse", (item) => {
-      const { playlist, isFirst } = item;
+      const { isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       fetchPlaylistSongList(isFirst);
     });
     socket.on("themeChangeByMasterRes", (item) => {
@@ -91,7 +96,11 @@ const TableView = () => {
     });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
+      setVotingList(playlist);
+    });
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
+      setVotingList([...playlist]);
     });
     socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
@@ -101,42 +110,54 @@ const TableView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
-
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
   }, []);
 
   useEffect(() => {
-    fetchIsPlaylistEmpty();
+    fetchPlaylistSongList(null);
     getThemeByTitleHandler(screenName);
     getLimitApiHandler();
   }, []);
 
-  const fetchIsPlaylistEmpty = async () => {
-    let response = await getIsPlaylistEmptyApi();
-    if (response && !response.isError) {
-      const firstFetch = response?.data?.content?.isFirstTimeFetched;
-      fetchPlaylistSongList(firstFetch);
+  useEffect(() => {
+    if (votingList?.length > 0) {
+      const updatedList = mergeListsWithTableUpVote(votingList, performer);
+      setPerformers([...updatedList]);
     }
-  };
+  }, [votingList]);
+
+  // Function to merge lists based on tableUpVote
+  function mergeListsWithTableUpVote(list1, list2) {
+    const tableUpVoteMap = new Map(
+      list2.map((item) => [item._id, item.tableUpVote])
+    );
+
+    return list1.map((item) => ({
+      ...item,
+      tableUpVote: tableUpVoteMap.get(item._id),
+    }));
+  }
 
   const fetchPlaylistSongList = async (firstFetch) => {
-    let isFirst = localStorage.getItem("isFirstTimeFetched");
-    isFirst = Boolean(isFirst);
-
     try {
+      const firstTimeFetched = localStorage.getItem("isFirstTimeFetched");
       const deviceId = generateDeviceId();
       let payload = {
         id: deviceId,
-        isFirstTimeFetched: firstFetch ?? isFirst,
+        firstFetch: firstFetch ?? firstTimeFetched,
       };
-
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         const { list, isFirstTimeFetched } = response?.data?.content;
         setPerformers(list || []);
+        setVotingLoader(false);
         if (list?.length == 0) {
           localStorage.setItem("isFirstTimeFetched", true);
         }
@@ -216,6 +237,9 @@ const TableView = () => {
     return randomId;
   }
 
+  function castVote(voteData) {
+    socket.emit("voteCastingRequest", voteData);
+  }
   const creatStreamUserHandler = async () => {
     let payload = {
       user_id: generateRandomStreamId(8),
@@ -275,25 +299,13 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-      if (isTrue) {
-        updatedItem.upVote++;
-        if (updatedItem.downVote > 0 && updatedItem.tableUpVote != 0) {
-          updatedItem.upVote--;
-        }
-      } else {
-        updatedItem.downVote++;
-        if (updatedItem.upVote > 0 && updatedItem.tableUpVote != 0) {
-          updatedItem.upVote--;
-        }
-      }
+
       updatedItem.tableUpVote = isTrue;
 
       updatedPerformer[index] = updatedItem;
 
-      const finalPlaylist = playlistAlgorithm(false, updatedPerformer);
-
-      setPerformers(finalPlaylist);
-
+      setPerformers(updatedPerformer);
+      setVotingLoader(true);
       await addUpdateVoteAPI({
         customerId: deviceId,
         songId: item?.songId,
@@ -302,30 +314,14 @@ const TableView = () => {
         isUpVote: isTrue,
       });
 
-      // const sortedSongs = updatedPerformer.sort((song1, song2) => {
-      //   // Sort by upvote (descending)
-      //   const upvoteDiff = song2.upVote - song1.upVote;
-      //   if (upvoteDiff !== 0) {
-      //     return upvoteDiff;
-      //   }
-
-      //   // If upVotes are equal, sort by downvote (descending)
-      //   return song2.downVote - song1.downVote;
-      // });
-      // console.log('sortedSongs',sortedSongs)
-
-      socket.emit("voteCastingRequest", {
+      castVote({
         isFirst: false,
-        playlist: finalPlaylist,
+        userId: deviceId,
+        playlist: updatedPerformer,
+        id: item?._id,
+        isIncrement: isTrue,
+        isVoted: item?.tableUpVote === 0 ? false : true,
       });
-      // socket.emit("votingRequest", {
-      //   customerId: deviceId,
-      //   songId: item?.songId,
-      //   playlistItemId: item?._id,
-      //   playerId: item?.assignedPlayerId,
-      //   isUpVote: isTrue,
-      //   isFirst: false,
-      // });
     };
 
     return (
@@ -436,6 +432,7 @@ const TableView = () => {
           </div>
         </>
       )}
+      {votingLoader && <ScreenLoader openModal={votingLoader} />}
     </div>
   );
 };

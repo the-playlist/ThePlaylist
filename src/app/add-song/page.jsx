@@ -10,14 +10,14 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { Listener_URL } from "../_utils/common/constants";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
   let limitTitle = "Song Limit";
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
 
-  const [addSongToPlaylistByUserApi] = useAddSongToPlaylistByCustomerMutation();
+  const [addSongToPlaylistByUserApi, { isLoading }] =
+    useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -29,7 +29,9 @@ const Typeahead = () => {
   const [songLimit, setSongLimit] = useState(null);
 
   useEffect(() => {
-    const socket = io(Listener_URL, { autoConnect: false });
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
     socket.on("limitChangeByMasterRes", (item) => {
       const { title } = item;
       if (limitTitle == title) {
@@ -38,11 +40,6 @@ const Typeahead = () => {
     });
     socket.connect();
     setSocket(socket);
-
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   const handleInputChange = (e) => {
@@ -65,7 +62,7 @@ const Typeahead = () => {
   };
   useEffect(() => {
     fetchSongsList();
-    // fetchAssignSongsList();
+
     getLimitByTitleHandler(limitTitle);
   }, []);
 
@@ -75,18 +72,6 @@ const Typeahead = () => {
       const songList = response.data?.content;
       setFilteredOptions(songList);
       setSongList(songList);
-    }
-  };
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        let data = response?.data?.content?.list;
-        setFilteredOptions(data);
-        setSongList(data);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
     }
   };
 
@@ -127,12 +112,12 @@ const Typeahead = () => {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         toast.success(response?.data?.description);
-        socket.emit("insertSongIntoPlaylistRequest", {
+        setInputValue("");
+        setSelectedSong(null);
+        socket.emit("songAddByCustomerReq", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });
-        setInputValue("");
-        setSelectedSong(null);
         router.back();
       } else {
         toast.error(response?.error?.data?.description);
@@ -270,7 +255,11 @@ const Typeahead = () => {
               inputValue?.length > 0 ? "black" : "white"
             }`}
           >
-            Add
+            {isLoading ? (
+              <span className="loading loading-spinner loading-md"></span>
+            ) : (
+              "Add"
+            )}
           </span>
         </button>
       </div>

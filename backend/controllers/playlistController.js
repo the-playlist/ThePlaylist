@@ -13,6 +13,8 @@ import mongoose from "mongoose";
 import { convertTimeToSeconds, formatTime } from "../utils/helper";
 import { playlistAlgorithm } from "../algorithm/playlistAlgo";
 
+export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
+
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
 
@@ -24,8 +26,18 @@ export const addSongsToPlaylist = async (req, res, next) => {
 
   const playlist = await Playlist.insertMany(songsWithExpiration);
   const list = await Playlist.aggregate(songFromPlaylist);
+  const newIsFirstValue = result?.length == 0;
+  await PlaylistType.updateOne(
+    {
+      _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+    },
+    {
+      $set: { isFirst: newIsFirstValue },
+    },
+    { new: true }
+  );
   const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: "662b7a6e80f2c908c92a0b3d",
+    _id: SETTING_ID,
   }).lean();
 
   let flattenedPlaylist = list.map((item) => {
@@ -57,30 +69,39 @@ export const addSongsToPlaylist = async (req, res, next) => {
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
-  const finalPlaylist = playlistAlgorithm(
-    result?.length == 0 ? true : false,
-    flattenedPlaylist
-  );
+  const finalPlaylist = playlistAlgorithm(newIsFirstValue, flattenedPlaylist);
+  const bulkOps = finalPlaylist.map((item, index) => ({
+    updateOne: {
+      filter: { _id: item?._id },
+      update: { $set: { sortOrder: index } },
+    },
+  }));
+
+  await Playlist.bulkWrite(bulkOps);
   const response = new ResponseModel(
     true,
     "Songs added to playlist successfully.",
     {
       isFavortiteListType: isFavortiteListType,
       playlist: finalPlaylist,
-      isFirstTimeFetched: result?.length == 0 ? true : false,
+      isFirstTimeFetched: newIsFirstValue,
     }
   );
   res.status(201).json(response);
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
-  const { isFirstTimeFetched } = req?.query;
+  let firstFetch = req?.query?.isFirstTimeFetched;
+
+  const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
+    _id: SETTING_ID,
+  }).lean();
 
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
 
   const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: "662b7a6e80f2c908c92a0b3d",
+    _id: SETTING_ID,
   }).lean();
 
   // After populating, flatten the objects and rename properties
@@ -115,7 +136,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    firstFetch != null ? firstFetch : isFirstTimeFetched,
     flattenedPlaylist
   );
 
@@ -123,7 +144,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     playlist: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
     playlistCount, // Add playlistCount to the response object
-    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
+    isFirstTimeFetched: isFirstTimeFetched,
   });
   res.status(200).json(response);
 };
@@ -143,7 +164,6 @@ function getMonday(date) {
 
 export const getSongsReportList = async (req, res, next) => {
   const { reportType } = req?.query;
-
   let filterByDate = {};
   if (reportType == 0) {
     const startOfDay = new Date(today);
@@ -170,11 +190,15 @@ export const getSongsReportList = async (req, res, next) => {
 
 export const getSongsForTableView = async (req, res, next) => {
   const deviceId = req?.body?.id;
-  const { isFirstTimeFetched } = req?.body;
+  const firstFetch = req?.body?.firstFetch;
+
+  const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
+    _id: SETTING_ID,
+  }).lean();
 
   const playlist = await Playlist.aggregate(songsForTableView);
   const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: "662b7a6e80f2c908c92a0b3d",
+    _id: SETTING_ID,
   }).lean();
   // After populating, flatten the objects and rename properties
   let flattenedPlaylist = playlist.map((item) => ({
@@ -216,14 +240,14 @@ export const getSongsForTableView = async (req, res, next) => {
   }
 
   const finalPlaylist = playlistAlgorithm(
-    isFirstTimeFetched,
+    firstFetch != null ? firstFetch : isFirstTimeFetched,
     flattenedPlaylist
   );
 
   const response = new ResponseModel(true, "Songs fetched successfully.", {
     list: finalPlaylist,
     isFavortiteListType: isFavortiteListType,
-    isFirstTimeFetched: finalPlaylist?.length == 0 ? true : false,
+    isFirstTimeFetched: isFirstTimeFetched,
   });
   res.status(200).json(response);
 };
@@ -256,13 +280,32 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
   await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
-
+  const activeSongs = await Playlist.find({ isDeleted: false });
+  if (activeSongs.length === 1) {
+    await PlaylistType.updateOne(
+      {
+        _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+      },
+      {
+        $set: { isFirst: true },
+      }
+    );
+  }
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
 
 export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
+  await PlaylistType.updateOne(
+    {
+      _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+    },
+    {
+      $set: { isFirst: true },
+    },
+    { new: true }
+  );
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
@@ -378,7 +421,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       await newPlaylistEntry.save();
       const list = await Playlist.aggregate(songFromPlaylist);
       const { isFavortiteListType } = await PlaylistType.findOne({
-        _id: "662b7a6e80f2c908c92a0b3d",
+        _id: SETTING_ID,
       }).lean();
 
       let flattenedPlaylist = list.map((item) => {

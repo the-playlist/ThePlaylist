@@ -3,7 +3,7 @@ import { setPlayingState } from "@/app/_utils/redux/slice/playlist-list";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch } from "react-redux";
 
-const CountDown = ({ openModal, timer, setShowCountDown }) => {
+const CountDown = ({ socket, openModal, timer, setShowCountDown }) => {
   const dispatch = useDispatch();
   const reff = useRef();
   const [seconds, setSeconds] = useState(timer);
@@ -28,6 +28,9 @@ const CountDown = ({ openModal, timer, setShowCountDown }) => {
       reff.current?.close();
       setShowCountDown(false);
       dispatch(setPlayingState(true));
+      socket.emit("startIntroSecondsRequest", {
+        time: 10,
+      });
     }
 
     return () => clearTimeout(timer);
