@@ -172,6 +172,5 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     }
   }
 
-  // Concatenate comedy songs and customer-added songs to the end of the result
   return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
 }
