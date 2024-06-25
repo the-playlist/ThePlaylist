@@ -104,6 +104,8 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse", (item) => {
+      const { isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes", (item) => {
@@ -166,7 +168,7 @@ const page = () => {
 
   useEffect(() => {
     setIsUndoDisable(JSON.parse(localStorage.getItem(LAST_ACTION)) == null);
-    fetchPlaylistSongList();
+    fetchPlaylistSongList(null);
   }, []);
 
   useEffect(() => {
@@ -219,6 +221,7 @@ const page = () => {
 
   const fetchPlaylistSongList = async (firstFetch) => {
     let isFirst = localStorage.getItem("isFirstTimeFetched");
+
     try {
       // setIsLoading(true);
 
