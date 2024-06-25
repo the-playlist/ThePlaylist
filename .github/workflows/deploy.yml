@@ -38,6 +38,8 @@ jobs:
           USERNAME: ${{ secrets.IONOS_USERNAME }}
           HOST: ${{ secrets.IONOS_HOST }}
         run: |
-          echo "${SSH_KEY}" > /tmp/ssh_key
+           echo "${SSH_KEY}" > /tmp/ssh_key
+
           chmod 600 /tmp/ssh_key
-          rsync -avz -e "ssh -i /tmp/ssh_key" ./ root@212.227.237.168:/var/www/html/ThePlaylist
+          ssh-keyscan -H 212.227.237.168 >> ~/.ssh/known_hosts
+    rsync -avz -e "ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" ./ root@212.227.237.168:/var/www/html/ThePlaylist
