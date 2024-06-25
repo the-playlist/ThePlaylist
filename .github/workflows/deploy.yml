@@ -34,12 +34,6 @@ jobs:
       - name: Set permissions for ~/.ssh directory
         run: chmod 700 ~/.ssh
 
-      - name: Print SSH Key
-        run: ${{ secrets.IONOS_SSH_KEY }}
-
-      - name: Print Host
-        run: ${{ secrets.IONOS_HOST }}
-
       - name: Ensure known_hosts file exists
         run: touch ~/.ssh/known_hosts
 
