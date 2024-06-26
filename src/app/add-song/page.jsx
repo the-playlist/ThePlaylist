@@ -29,7 +29,6 @@ const Typeahead = () => {
   const [songLimit, setSongLimit] = useState(null);
 
   useEffect(() => {
-    console.log('Remove Jawa');
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
     });
