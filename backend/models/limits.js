@@ -22,6 +22,14 @@ const limitSchema = new mongoose.Schema(
       type: Number,
       default: 5,
     },
+    isMessage: {
+      type: Boolean,
+      default: false,
+    },
+    message: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,

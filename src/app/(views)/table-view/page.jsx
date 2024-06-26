@@ -289,7 +289,7 @@ const TableView = () => {
             isTrue: isTrue,
           });
         } else {
-          toast.error("Vote limit reached. Please try again later.");
+          toast.error(votingLimit?.message);
         }
       }
     };
