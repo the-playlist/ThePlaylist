@@ -14,6 +14,7 @@ const JumboTron = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
 
   useEffect(() => {
+    console.log('jumbotorn')
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
     });
