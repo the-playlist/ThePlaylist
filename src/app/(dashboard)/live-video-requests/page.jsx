@@ -10,13 +10,21 @@ import {
   StreamRequest,
   CurrentLiveVideo,
 } from "@/app/_components";
-import { FaRegStopCircle } from "react-icons/fa";
-import { GoDotFill } from "react-icons/go";
 import { toast } from "react-toastify";
+import { Togglebutton } from "./toggle-button";
+import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { setIsWallViewOrJumbotron } from "@/app/_utils/redux/slice/playlist-list";
+
+export const WALL_VIEW = 1;
+export const JUMBOTRON_VIEW = 2;
 
 const StreamResponse = () => {
-  const arrayRef = useRef([]);
-  const [refresh, setRefresh] = useState(false);
+  const dispatch = useDispatch();
+
+  const viewMode_ = useSelector(
+    (state) => state?.playlistReducer?.isWallViewOrJumbotron
+  );
   const [socket, setSocket] = useState();
   const [getStreamRequestListApi, getStreamRequestResponse] =
     useLazyGetStreamRequestQuery();
@@ -84,12 +92,31 @@ const StreamResponse = () => {
     }
   };
 
+  const onToggleViewBtnPress = () => {
+    socket.emit("wallViewJumbotronRequest", {
+      screenName: viewMode_ === WALL_VIEW ? JUMBOTRON_VIEW : WALL_VIEW,
+    });
+  };
+
   return (
     <div className="min-h-screen py-10 ">
       {loading ? (
         <CustomLoader />
       ) : (
         <div className=" h-[90vh] overflow-y-scroll pb-10">
+          <Togglebutton
+            onLightModePress={() => {
+              dispatch(setIsWallViewOrJumbotron(WALL_VIEW));
+              onToggleViewBtnPress();
+            }}
+            onDarkModePress={() => {
+              dispatch(setIsWallViewOrJumbotron(JUMBOTRON_VIEW));
+              onToggleViewBtnPress();
+            }}
+            isLight={viewMode_ === WALL_VIEW}
+            btnText1={"Wall View"}
+            btnText2={"Jumbotron"}
+          />
           {streamAcceptedContent && (
             <div className="flex w-full flex-col">
               <span className=" text-lg font-semibold mb-2">Live View</span>

@@ -1,6 +1,13 @@
 import React from "react";
 
-const ViewMode = ({ onLightModePress, isLight, title, onDarkModePress }) => {
+const CustomToggleButton = ({
+  onLightModePress,
+  isLight,
+  title,
+  onDarkModePress,
+  btnText1,
+  btnText2,
+}) => {
   return (
     <div className="w-full  bg-white drop-shadow rounded-lg px-4 py-8 ">
       <div className="flex justify-between items-center ">
@@ -10,13 +17,13 @@ const ViewMode = ({ onLightModePress, isLight, title, onDarkModePress }) => {
             onClick={onLightModePress}
             className="w-1/2 py-3 text-center   rounded-full"
           >
-            Light
+            {btnText1}
           </button>
           <button
             onClick={onDarkModePress}
             className="w-1/2 py-3  text-black  text-center rounded-full"
           >
-            Dark
+            {btnText2}
           </button>
           <div
             className={` absolute text-center rounded-full w-1/2 py-3 drop-shadow  transform transition-transform duration-300  ${
@@ -25,7 +32,7 @@ const ViewMode = ({ onLightModePress, isLight, title, onDarkModePress }) => {
                 : " translate-x-full bg-black text-white "
             } `}
           >
-            {isLight ? "Light" : "Dark"}
+            {isLight ? btnText1 : btnText2}
           </div>
         </div>
       </div>
@@ -33,4 +40,4 @@ const ViewMode = ({ onLightModePress, isLight, title, onDarkModePress }) => {
   );
 };
 
-export default ViewMode;
+export default CustomToggleButton;

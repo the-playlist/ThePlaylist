@@ -12,6 +12,8 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
+import { JUMBOTRON_VIEW } from "@/app/(dashboard)/live-video-requests/page";
+import { useRouter } from "next/navigation";
 
 const WallView = () => {
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
@@ -24,6 +26,7 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   let screenName = "Wall View";
+  const router = useRouter();
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -31,6 +34,12 @@ const WallView = () => {
     });
     socket.connect();
 
+    socket.on("wallViewJumbotronResponse", (item) => {
+      const { screenName } = item;
+      if (screenName === JUMBOTRON_VIEW) {
+        router.replace("/jumbotron");
+      }
+    });
     socket.on("insertSongIntoPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       localStorage.setItem("isFirstTimeFetched", isFirst);
