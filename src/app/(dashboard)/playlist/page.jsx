@@ -19,7 +19,6 @@ import {
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
   useUndoDeletedSongsFromPlaylistMutation,
-  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
