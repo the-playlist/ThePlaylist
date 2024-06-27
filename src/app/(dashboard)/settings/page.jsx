@@ -13,11 +13,12 @@ import {
   FavSongList,
 } from "@/app/_components";
 import { SessionProvider } from "next-auth/react";
+import { NextUIProvider } from "@nextui-org/react";
 
 const SelectedItemContent =
   (WrappedComponent) =>
   ({ items }) => {
-    const [selectedItemId, setSelectedItemId] = useState(0);
+    const [selectedItemId, setSelectedItemId] = useState(2);
     const handleItemClick = (itemId) => {
       setSelectedItemId(itemId);
     };
@@ -118,9 +119,11 @@ const page = () => {
   ];
   return (
     <SessionProvider>
-      <div className="  overflow-y-auto max-h-screen pb-24 ">
-        <SelectableItemContent items={settingArray} />
-      </div>
+      <NextUIProvider>
+        <div className="  overflow-y-auto max-h-screen pb-24 ">
+          <SelectableItemContent items={settingArray} />
+        </div>
+      </NextUIProvider>
     </SessionProvider>
   );
 };

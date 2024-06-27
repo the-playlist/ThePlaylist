@@ -41,6 +41,6 @@
     "src/app/(dashboard)/live-video-requests/page.jsx",
     "src/app/(dashboard)/live-video-requests/page.jsx",
     "src/app/_components/SideBar.jsx"
-  ],
+, "src/app/next-ui-provider.jsx"  ],
   "exclude": ["node_modules"]
 }

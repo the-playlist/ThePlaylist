@@ -1,32 +1,31 @@
-name: CI/CD Pipeline
+name: Deploy
 
+# Controls when the action will run. 
 on:
+  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches:
-      - main
+    branches: [ main ]
 
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  deploy:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-    steps:
-      - name: Create ~/.ssh directory if not exists
-        run: mkdir -p ~/.ssh
 
-      - name: Set permissions for ~/.ssh directory
-        run: chmod 700 ~/.ssh
-
-      - name: Ensure known_hosts file exists
-        run: touch ~/.ssh/known_hosts
-
-      - name: Add host key to known_hosts
-        run: ssh-keyscan -H ${{ secrets.IONOS_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Deploy via rsync
-        env:
-          SSH_KEY: ${{ secrets.IONOS_SSH_KEY }}
-          USERNAME: ${{ secrets.IONOS_USERNAME }} # or 'root' if hardcoded
-          HOST: ${{ secrets.IONOS_HOST }} # or '212.227.237.168' if hardcoded
-        run: |
-          echo "${SSH_KEY}" > /tmp/ssh_key
-          chmod 600 /tmp/ssh_key
-          rsync -avz -e "ssh -i /tmp/ssh_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -vvv" ./ root@212.227.237.168:/var/www/html/ThePlaylist
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:       
+    - name: Deploy using ssh
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          cd /var/www/html/ThePlaylist
+          git pull origin main
+          git status
+          npm install --legacy-peer-deps
+          npm run build
+          pm2 restart theplaylist-app

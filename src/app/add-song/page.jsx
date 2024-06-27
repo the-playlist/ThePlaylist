@@ -98,7 +98,9 @@ const Typeahead = () => {
         localStorage.setItem("songCount", songCount + 1);
         addSongsHandler(id);
       } else {
-        toast.error("Song limit reached. Please try again later.");
+        toast.error(
+          songLimit?.message ?? "Song limit reached. Please try again later."
+        );
       }
     }
   };

@@ -12,6 +12,8 @@ import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { IoMdAdd, IoIosRemove } from "react-icons/io";
 import CustomLoader from "../custom_loader";
+import { IoMdInformationCircleOutline } from "react-icons/io";
+import { Tooltip, Button, Textarea } from "@nextui-org/react";
 
 const LimitAndAppearence = () => {
   const [getThemeListApi, getThemeListRes] = useLazyGetThemeListQuery();
@@ -67,6 +69,17 @@ const LimitAndAppearence = () => {
             : list
         )
       );
+    } else if (mode == "message") {
+      setLimitList((prevLimitList) =>
+        prevLimitList.map((list) =>
+          list._id === id
+            ? {
+                ...list,
+                message: value,
+              }
+            : list
+        )
+      );
     } else {
       setLimitList((prevLimitList) =>
         prevLimitList.map((list) =>
@@ -118,6 +131,22 @@ const LimitAndAppearence = () => {
     }
   };
 
+  const getToolTipMsg = (heading, value, time) => {
+    if (heading == "Vote Limit") {
+      return `A customer can cast ${value} vote in ${time} ${
+        time == 1 ? "minute" : "minutes"
+      }`;
+    } else if (heading == "Song Limit") {
+      return `A customer can add ${value} in ${time} ${
+        time == 1 ? "minute" : "minutes"
+      }`;
+    } else if (heading == "Queue Limit") {
+      return `${value} songs can be added in the playlist`;
+    } else {
+      return `${value} live requests can be received at a time.`;
+    }
+  };
+
   return (
     <div className="container mx-auto  py-8 ">
       <div className="flex mb-4 w-full relative bg-white drop-shadow rounded-3xl px-4 py-3">
@@ -153,12 +182,42 @@ const LimitAndAppearence = () => {
             limitList?.map((item, index) => {
               return (
                 <div className=" bg-white py-4 px-3 rounded-lg drop-shadow mb-5">
-                  <span className="text-lg font-semibold">{item?.heading}</span>
+                  <div className="flex items-center">
+                    <span className="text-lg font-semibold">
+                      {item?.heading}
+                    </span>
+                    <Tooltip
+                      offset={-20}
+                      showArrow={true}
+                      placement={"right"}
+                      content={
+                        <>
+                          <span className="p-3">
+                            {getToolTipMsg(
+                              item?.heading,
+                              item?.value,
+                              item?.time
+                            )}
+                          </span>
+                        </>
+                      }
+                    >
+                      <Button
+                        hideArrow={false}
+                        flat
+                        auto
+                        color="null"
+                        className="capitalize p-0 -ml-5"
+                      >
+                        <IoMdInformationCircleOutline size={24} />
+                      </Button>
+                    </Tooltip>
+                  </div>
                   <div className=" flex justify-between items-center mt-3">
                     <div className="  w-3/4">
                       <div className=" flex items-center w-full">
                         <span>{item?.title}:</span>
-                        <div className=" bg-white rounded-md drop-shadow border w-1/3 flex  ml-2 mr-5 h-12  ">
+                        <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  ml-2 mr-5 h-12  ">
                           <button
                             disabled={item?.value == 1}
                             onClick={() => {
@@ -195,7 +254,7 @@ const LimitAndAppearence = () => {
                         {item?.subTitle && (
                           <>
                             <span>{item?.subTitle}:</span>
-                            <div className=" bg-white rounded-md drop-shadow border w-1/3 flex  mx-2 h-12 p-1 ">
+                            <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  mx-2 h-12 p-1 mr-5 ">
                               <input
                                 type="number"
                                 className="w-full px-3 focus:outline-none"
@@ -218,16 +277,49 @@ const LimitAndAppearence = () => {
                             </div>
                           </>
                         )}
+                        {item?.isMessage && (
+                          <>
+                            <span>Message:</span>
+                            <div className=" flex w-1/3  mx-2 p-1  ">
+                              <Textarea
+                                onChange={(e) => {
+                                  const value = e.target.value;
+
+                                  changeLimitHandler(
+                                    item?._id,
+                                    "message",
+                                    value,
+                                    item?.heading
+                                  );
+                                }}
+                                radius={"sm"}
+                                isInvalid={item?.message?.length <= 0}
+                                errorMessage="The message cannot be empty"
+                                value={item?.message}
+                                variant="bordered"
+                                labelPlacement="outside"
+                                placeholder="Enter your error message"
+                                className=" w-4/5"
+                              />
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="  w-1/3">
+                    <div className="  w-1/4">
                       <GenericButton
-                        disabled={btnLoader != null}
+                        disabled={
+                          btnLoader != null || item?.isMessage
+                            ? item?.message?.length > 0
+                              ? false
+                              : true
+                            : false
+                        }
                         loading={index == btnLoader}
                         text="Update"
                         onClick={() => {
                           let payload;
-                          if (index == 2) {
+                          if (index > 1) {
                             payload = {
                               heading: item?.heading,
                               value: item?.value,
@@ -237,6 +329,7 @@ const LimitAndAppearence = () => {
                               heading: item?.heading,
                               value: item?.value,
                               time: item?.time,
+                              message: item?.message,
                             };
                           }
                           setBtnLoader(index);
