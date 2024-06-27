@@ -258,14 +258,11 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-
     await removeItemById(id, isTrashPress);
-
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
-
     if (playlistSongList.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
@@ -300,11 +297,11 @@ const page = () => {
       setIsFavExist(currentArray?.filter((item) => item?.isFav));
     }
     let newSong;
-    if (currentArray.length > 1) {
+    if (playlistSongList.length > 1) {
       newSong = playlistSongList[1];
     }
     setPlaylistSongList(currentArray);
-    if (!isTrashPress) {
+    if (!isTrashPress && currentArray?.length > 0) {
       dispatch(
         setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
       );
@@ -451,9 +448,9 @@ const page = () => {
               <button
                 onClick={async () => {
                   await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
-                  if (playlistSongList.length > 0) {
+                  if (playlistSongList?.length > 0) {
                     const songDuration = convertTimeToSeconds(
-                      playlistSongList[1].songDuration
+                      playlistSongList[1]?.songDuration
                     );
                     dispatch(setCurrentSongSecond(songDuration));
                   } else {
