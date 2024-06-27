@@ -49,7 +49,6 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
-  console.log("==> hello World");
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
