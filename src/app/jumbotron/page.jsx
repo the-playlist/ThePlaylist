@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import { useLazyGetLiveStreamQuery } from "../_utils/redux/slice/emptySplitApi";
 import StreamRequests from "../_components/stream-requests";
 import { io } from "socket.io-client";
-import { WALL_VIEW } from "../(dashboard)/live-video-requests/page";
 import { useRouter } from "next/navigation";
+import { WALL_VIEW } from "../_utils/common/constants";
 
 const JumboTron = () => {
   const [getLiveStreamApi] = useLazyGetLiveStreamQuery();

@@ -15,9 +15,7 @@ import { Togglebutton } from "./toggle-button";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { setIsWallViewOrJumbotron } from "@/app/_utils/redux/slice/playlist-list";
-
-export const WALL_VIEW = 1;
-export const JUMBOTRON_VIEW = 2;
+import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 
 const StreamResponse = () => {
   const dispatch = useDispatch();
