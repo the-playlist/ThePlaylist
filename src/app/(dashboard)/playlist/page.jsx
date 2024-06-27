@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -18,7 +19,6 @@ import {
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
   useUndoDeletedSongsFromPlaylistMutation,
-  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
@@ -51,7 +51,6 @@ const ACTION_TYPE = {
 const page = () => {
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
-  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
     useDeleteAllSongsFromPlaylistMutation();
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
