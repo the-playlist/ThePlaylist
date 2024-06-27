@@ -7,11 +7,9 @@ import { CustomLoader, ToggleFullScreen, CountDown } from "@/app/_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
-  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { IntroCounter } from "./intro-counter";
-import { motion, AnimatePresence } from "framer-motion";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();

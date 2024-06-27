@@ -12,8 +12,8 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { JUMBOTRON_VIEW } from "@/app/(dashboard)/live-video-requests/page";
 import { useRouter } from "next/navigation";
+import { JUMBOTRON_VIEW } from "@/app/_utils/common/constants";
 
 const WallView = () => {
   const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();

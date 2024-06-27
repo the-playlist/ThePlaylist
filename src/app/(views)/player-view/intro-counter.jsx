@@ -8,11 +8,12 @@ export const IntroCounter = ({
   index,
   performerList,
 }) => {
-  const [introCountdown, setIntroCountdown] = useState(introSec);
+  const [introCountdown, setIntroCountdown] = useState(introTimer);
   const [isTimerOn, setIsTimerOn] = useState(false);
 
   useEffect(() => {
-    setIntroCountdown(introSec);
+    setIsTimerOn(false);
+    setIntroCountdown(introTimer);
   }, [performerList]);
 
   useEffect(() => {
@@ -20,13 +21,6 @@ export const IntroCounter = ({
       autoConnect: false,
     });
     socket.connect();
-
-    // socket.on("bufferTimeReq", (item) => {
-    //   if (index === 0) {
-    //     setIsTimerOn(false);
-    //     setIntroCountdown(introSec);
-    //   }
-    // });
 
     socket.on("startIntroSecondsResponse", (item) => {
       if (index === 0) {
@@ -39,7 +33,6 @@ export const IntroCounter = ({
   }, []);
 
   const resetAndStartTimer = () => {
-    setIntroCountdown(introSec); // Reset countdown
     setIsTimerOn(true);
   };
   useEffect(() => {
@@ -57,7 +50,7 @@ export const IntroCounter = ({
 
   return (
     <div className=" h-10 w-10 text-sm bg-white rounded-full justify-center items-center flex float-end ">
-      {introTimer}
+      {introCountdown}
     </div>
   );
 };
