@@ -1,24 +1,27 @@
 "use client";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { useLazyGetLiveStreamQuery } from "../_utils/redux/slice/emptySplitApi";
 import StreamRequests from "../_components/stream-requests";
 import { io } from "socket.io-client";
-import { ToggleFullScreen } from "../_components";
-import { RiFullscreenFill } from "react-icons/ri";
-import { MdOutlineFullscreenExit } from "react-icons/md";
+import { WALL_VIEW } from "../(dashboard)/live-video-requests/page";
+import { useRouter } from "next/navigation";
 
 const JumboTron = () => {
   const [getLiveStreamApi] = useLazyGetLiveStreamQuery();
   const [content, setContent] = useState(null);
-  const elementRef = useRef(null);
-  const [isFullScreen, setIsFullScreen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
     });
     socket.connect();
-
+    socket.on("wallViewJumbotronResponse", (item) => {
+      const { screenName } = item;
+      if (screenName === WALL_VIEW) {
+        router.replace("/wall-view");
+      }
+    });
     socket.on("sendReqToMasterRes", (item) => {
       if (item?.stopByUser) {
         getLiveStreamHandler();

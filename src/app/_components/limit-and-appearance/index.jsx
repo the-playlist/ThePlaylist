@@ -357,6 +357,8 @@ const LimitAndAppearence = () => {
                 modeList?.map((item) => {
                   return (
                     <ViewMode
+                      btnText1={"Light"}
+                      btnText2={"Dark"}
                       title={item?.title}
                       isLight={item?.mode}
                       onLightModePress={() => {
