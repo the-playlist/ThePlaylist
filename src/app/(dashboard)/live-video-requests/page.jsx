@@ -73,11 +73,13 @@ const StreamResponse = () => {
   const changeStatusHandler = async (data) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      const { activeStream } = response?.data?.content;
       getStreamRequestHandler();
       socket.emit("acceptedRejectStreamReq", {
         id: data?.callId,
         isActive: data?.isActive ? true : false,
         recentActive: recentActive,
+        activeStream: activeStream,
       });
     }
   };

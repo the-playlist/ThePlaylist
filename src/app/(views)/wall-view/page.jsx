@@ -49,7 +49,7 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-    socket.on("wallPlayerViewRes", (item) => {
+    socket.on("wallViewRes", (item) => {
       const { playlist, isFirst } = item;
       localStorage.setItem("isFirstTimeFetched", isFirst);
       setSongList([...playlist]);

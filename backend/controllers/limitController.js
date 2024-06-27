@@ -1,4 +1,5 @@
 import Limit from "../models/limits";
+import Stream from "../models/streaming";
 import ResponseModel from "./responseModel";
 
 export const addUpdateLimit = async (req, res) => {
@@ -23,9 +24,13 @@ export const addUpdateLimit = async (req, res) => {
 
 export const getLimitList = async (req, res) => {
   const response = await Limit.find().sort({ sortOrder: 1 }).lean();
-  return res
-    .status(201)
-    .json(new ResponseModel(true, "Limit added successfully", response));
+  const streamReqLength = await Stream.find({ isActive: true }).lean();
+  return res.status(201).json(
+    new ResponseModel(true, "Limit added successfully", {
+      list: response,
+      activeStream: streamReqLength?.length,
+    })
+  );
 };
 
 export const getLimitByTitle = async (req, res) => {

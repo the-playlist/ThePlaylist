@@ -127,7 +127,8 @@ const LimitAndAppearence = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
-      setLimitList(response?.data?.content);
+      const { list, activeStream } = response?.data?.content;
+      setLimitList(list);
     }
   };
 

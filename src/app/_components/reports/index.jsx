@@ -31,7 +31,7 @@ const Reports = () => {
 
   const fetchReportList = async () => {
     let response = await reportsSongsApi(selectedFilter);
-    console.log("response", response);
+
     if (response && !response.isError) {
       setReportsList(response?.data?.content);
     }

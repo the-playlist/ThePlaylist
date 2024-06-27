@@ -10,7 +10,6 @@ import {
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
   useGetTableViewSongsMutation,
-  useLazyGetIsPlaylistEmptyQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CustomLoader, ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
@@ -34,7 +33,8 @@ const TableView = () => {
   const [themeMode, setThemeMode] = useState(false);
   const [votingList, setVotingList] = useState(null);
   const [votingLoader, setVotingLoader] = useState(false);
-
+  const [currentActiveStreams, setCurrentActiveStreams] = useState(0);
+  const [streamLimit, setStreamLimit] = useState(0);
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
     isTrue: null,
@@ -90,6 +90,12 @@ const TableView = () => {
         getThemeByTitleHandler(title);
       }
     });
+    socket.on("checkActiveStream", (item) => {
+      const { activeStream } = item;
+
+      setCurrentActiveStreams(activeStream || 0);
+    });
+
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
     });
@@ -178,13 +184,13 @@ const TableView = () => {
   const getLimitApiHandler = async () => {
     let response = await getLimitListApi();
     if (response && !response.isError) {
-      const voteLimit = response?.data?.content.find(
-        (item) => item.heading == "Vote Limit"
+      const { list, activeStream } = response?.data?.content;
+      const streamReqLimit = list?.find(
+        (item) => item.heading == "Live Request Limit"
       );
-      const queueLimit = response?.data?.content.find(
-        (item) => item.heading == "Queue Limit"
-      );
-
+      const voteLimit = list?.find((item) => item.heading == "Vote Limit");
+      const queueLimit = list?.find((item) => item.heading == "Queue Limit");
+      setStreamLimit(streamReqLimit?.value || 0);
       setQueueLimit(queueLimit || 0);
       setVotingLimit(voteLimit);
     }
@@ -211,10 +217,11 @@ const TableView = () => {
           </div>
         </button>
         <button
+          disabled={currentActiveStreams == streamLimit}
           onClick={() => {
             creatStreamUserHandler();
           }}
-          className="ml-4 w-full text-base flex items-center  bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400"
+          className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400`}
         >
           <FaVideo size={16} className="mr-2" /> Live Video
         </button>

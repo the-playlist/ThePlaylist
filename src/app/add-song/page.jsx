@@ -2,8 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { MdClear } from "react-icons/md";
 import {
-  useLazyGetOnDutyPlayerSongListQuery,
-  useLazyGetAssignSongsWithPlayersQuery,
   useAddSongToPlaylistByCustomerMutation,
   useLazyGetLimitByTitleQuery,
   useLazyGetAddSongListForCustomerQuery,
@@ -37,6 +35,9 @@ const Typeahead = () => {
       if (limitTitle == title) {
         getLimitByTitleHandler(title);
       }
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      fetchSongsList();
     });
     socket.connect();
     setSocket(socket);

@@ -15,7 +15,6 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
-  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const ref = useRef(null);
@@ -27,6 +26,7 @@ const PerformerView = () => {
   const [timerRunning, setTimerRunning] = useState(false);
 
   let screenName = "Player View";
+
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
@@ -51,9 +51,10 @@ const PerformerView = () => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
-    socket.on("wallPlayerViewRes", (item) => {
+    socket.on("playerViewRes", (item) => {
       const { playlist, isFirst } = item;
       localStorage.setItem("isFirstTimeFetched", isFirst);
+
       setPerformers([...playlist]);
     });
     socket.on("emptyPlaylistResponse", (item) => {
@@ -120,6 +121,7 @@ const PerformerView = () => {
       console.error("Fetch failed:", error);
     }
   };
+
   const getThemeByTitleHandler = async (title) => {
     let response = await getThemeByTitleApi(title);
     if (response && !response.isError) {

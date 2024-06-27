@@ -82,11 +82,13 @@ export const sendStreamRequestToMaster = async (req, res) => {
   } else {
     request = await Stream.create({ url, userId, tableno, callId, token });
   }
-
+  const activeStream = await Stream.find({ isActive: true }).lean();
   let response = new ResponseModel(
     true,
-    existingRequest ? "Request sent successfully" : "Request sent successfully",
-    request
+    existingRequest
+      ? "Request updated successfully"
+      : "Request sent successfully",
+    { request: request, activeStream: activeStream?.length }
   );
   res.status(200).json(response);
 };
@@ -99,10 +101,14 @@ export const changeStreamStatus = async (req, res) => {
     await Stream.updateMany({ _id: { $ne: id } }, { isAccepted: false });
   }
   await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
+  const activeStream = await Stream.find({ isActive: true }).lean();
 
   let response = new ResponseModel(
     true,
-    `${isActive == false && "Request Declined"}`
+    `${isActive == false && "Request Declined"}`,
+    {
+      activeStream: activeStream?.length,
+    }
   );
   res.status(200).json(response);
 };

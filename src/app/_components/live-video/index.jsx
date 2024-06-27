@@ -145,12 +145,15 @@ export const MyLivestreamUI = ({
   const removeRecentLiveStream = async (data, socket, showMessage) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      const { activeStream } = response?.data?.content;
+
       if (!showMessage) {
         toast(response?.data?.description);
       }
       socket.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: false,
+        activeStream: activeStream,
       });
       call?.stopLive();
       call?.endCall();
@@ -163,6 +166,8 @@ export const MyLivestreamUI = ({
   const changeStatusHandler = async (data, isTimeOut) => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      const { activeStream } = response?.data?.content;
+
       toast(
         isTimeOut
           ? "Stream request time out"
@@ -174,6 +179,7 @@ export const MyLivestreamUI = ({
         id: streamPayload?.callId,
         isActive: false,
         stopByUser: data?.stopByUser,
+        activeStream: activeStream,
       });
       call?.stopLive();
       call?.endCall();
@@ -194,14 +200,16 @@ export const MyLivestreamUI = ({
     };
     const response = await sendStreamReqApi(payload);
     if (response?.data.success) {
+      const { request, activeStream } = response?.data?.content;
       socket?.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: true,
         streamPayload: streamPayload,
+        activeStream: activeStream,
       });
-      setContent(response?.data?.content);
-      toast(response?.data?.description);
 
+      setContent(request);
+      toast(response?.data?.description);
       handleClick();
     }
   };
@@ -235,7 +243,6 @@ export const MyLivestreamUI = ({
   const handleClick = () => {
     setIsActive(true);
     setTimer(60);
-    setIsRequestSent(true);
   };
 
   return (
