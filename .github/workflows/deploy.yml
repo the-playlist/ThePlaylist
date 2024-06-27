@@ -37,7 +37,7 @@ jobs:
           port: 22
           script: |
             cd /var/www/html/ThePlaylist
-            git pull --ff-only
+            git pull origin main
             git status
             npm install --legacy-peer-deps
             npm run build
