@@ -188,6 +188,7 @@ const TableView = () => {
       const streamReqLimit = list?.find(
         (item) => item.heading == "Live Request Limit"
       );
+      setCurrentActiveStreams(activeStream || 0);
       const voteLimit = list?.find((item) => item.heading == "Vote Limit");
       const queueLimit = list?.find((item) => item.heading == "Queue Limit");
       setStreamLimit(streamReqLimit?.value || 0);
