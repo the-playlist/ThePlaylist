@@ -10,6 +10,7 @@ import { useDispatch } from "react-redux";
 import {
   setCurrentSong,
   setCurrentSongSecond,
+  setIsAdvanceTheQueeDisable,
   setPlayingState,
   setPlaylistSongList,
   setSongsListUpdate,
@@ -139,11 +140,12 @@ const SideBar = () => {
       socket.emit("bufferTimeReq", {
         time: 10,
       });
+      dispatch(setIsAdvanceTheQueeDisable(true));
       setTimeout(() => {
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
-
+        dispatch(setIsAdvanceTheQueeDisable(false));
         dispatch(setPlayingState(!playingState));
       }, 10000);
     } else {

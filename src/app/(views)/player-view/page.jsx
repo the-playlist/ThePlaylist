@@ -40,6 +40,7 @@ const PerformerView = () => {
       setPerformers([...playlist]);
     });
     socket.on("bufferTimeRes", (item) => {
+      setTimerRunning(false);
       const { time } = item;
       setSeconds(time);
       setTimerRunning(true);
@@ -216,7 +217,9 @@ const PerformerView = () => {
                 </tbody>
               ))}
             </table>
-            <CountDown openModal={seconds > 0} timer={seconds} />
+            {seconds > 0 && (
+              <CountDown openModal={seconds > 0} timer={seconds} />
+            )}
           </>
         )}
       </div>
