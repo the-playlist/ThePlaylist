@@ -134,17 +134,21 @@ const LimitAndAppearence = () => {
 
   const getToolTipMsg = (heading, value, time) => {
     if (heading == "Vote Limit") {
-      return `A customer can cast ${value} vote in ${time} ${
-        time == 1 ? "minute" : "minutes"
-      }`;
+      return `A customer can cast ${value} ${
+        value == 1 ? "vote" : "votes"
+      } in ${time} ${time == 1 ? "minute" : "minutes"}`;
     } else if (heading == "Song Limit") {
-      return `A customer can add ${value} in ${time} ${
-        time == 1 ? "minute" : "minutes"
-      }`;
+      return `A customer can add ${value} ${
+        value == 1 ? "song" : "songs"
+      } in ${time} ${time == 1 ? "minute" : "minutes"}`;
     } else if (heading == "Queue Limit") {
-      return `${value} songs can be added in the playlist`;
+      return `${value} ${
+        value == 1 ? "song" : "songs"
+      } can be added in the playlist`;
     } else {
-      return `${value} live requests can be received at a time.`;
+      return `${value} live ${
+        value == 1 ? "request" : "requests"
+      } can be received at a time.`;
     }
   };
 
@@ -234,8 +238,9 @@ const LimitAndAppearence = () => {
                             <IoIosRemove />
                           </button>
                           <input
-                            className="w-full  text-center m-auto focus:outline-none"
+                            className="w-full disabled:bg-inherit  text-center m-auto focus:outline-none"
                             value={item?.value}
+                            disabled={true}
                           />
                           <button
                             onClick={() => {
@@ -258,12 +263,13 @@ const LimitAndAppearence = () => {
                             <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  mx-2 h-12 p-1 mr-5 ">
                               <input
                                 type="number"
-                                className="w-full px-3 focus:outline-none"
+                                className="w-full px-3 disabled:bg-inherit focus:outline-none"
                                 value={item?.time}
                                 min="1"
                                 onChange={(e) => {
                                   const value = e.target.value;
                                   const limitedValue = value < 1 ? 1 : value;
+
                                   changeLimitHandler(
                                     item?._id,
                                     "time",
