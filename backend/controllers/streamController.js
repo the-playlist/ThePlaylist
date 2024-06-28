@@ -82,7 +82,10 @@ export const sendStreamRequestToMaster = async (req, res) => {
   } else {
     request = await Stream.create({ url, userId, tableno, callId, token });
   }
-  const activeStream = await Stream.find({ isActive: true }).lean();
+  const activeStream = await Stream.find({
+    isActive: true,
+    isAccepted: false,
+  }).lean();
   let response = new ResponseModel(
     true,
     existingRequest
@@ -101,7 +104,10 @@ export const changeStreamStatus = async (req, res) => {
     await Stream.updateMany({ _id: { $ne: id } }, { isAccepted: false });
   }
   await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
-  const activeStream = await Stream.find({ isActive: true }).lean();
+  const activeStream = await Stream.find({
+    isActive: true,
+    isAccepted: false,
+  }).lean();
 
   let response = new ResponseModel(
     true,
