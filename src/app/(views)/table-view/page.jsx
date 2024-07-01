@@ -208,7 +208,7 @@ const TableView = () => {
           onClick={() => {
             router.push("/add-song");
           }}
-          className=" text-base w-full items-center bg-top-queue-bg hover:cursor-pointer disabled:bg-gray-300 disabled:text-gray-200 hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
+          className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
         >
           <div className="flex items-center justify-center">
             <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
@@ -222,7 +222,7 @@ const TableView = () => {
           onClick={() => {
             creatStreamUserHandler();
           }}
-          className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400`}
+          className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white`}
         >
           <FaVideo size={16} className="mr-2" /> Live Video
         </button>
