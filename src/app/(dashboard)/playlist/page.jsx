@@ -351,8 +351,10 @@ const page = () => {
   };
   const toggleFavSongs = async () => {
     if (!isFavSongs) {
+      let isFirst = localStorage.getItem("isFirstTimeFetched");
       const updatedPlaylist = [...playlistSongList];
-      const favSongsList = updatedPlaylist.filter((item) => item.isFav);
+      let favSongsList = updatedPlaylist.filter((item) => item.isFav);
+      favSongsList = playlistAlgorithm(isFirst, favSongsList);
       setPlaylistSongList(favSongsList);
       const initialSongDuration = convertTimeToSeconds(
         favSongsList[0].songDuration
@@ -752,14 +754,7 @@ const page = () => {
                   }}
                 />
               )}
-              {showCountDown && (
-                <CountDown
-                  setShowCountDown={setShowCountDown}
-                  openModal={showCountDown}
-                  timer={10}
-                  socket={socket}
-                />
-              )}
+
               {isConfirmationPopup && (
                 <ConfirmationPopup
                   isLoading={deleteAllSongsResponse?.isLoading}
@@ -770,6 +765,14 @@ const page = () => {
                 />
               )}
             </div>
+          )}
+          {showCountDown && (
+            <CountDown
+              setShowCountDown={setShowCountDown}
+              openModal={showCountDown}
+              timer={10}
+              socket={socket}
+            />
           )}
         </>
       )}

@@ -23,11 +23,6 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
     isFirstTimeFetched == true ? null : firstTwoSongs
   );
 
-  // Sort remaining songs based on upVote - downVote (descending)
-  modifiedRemainingSongs.sort(
-    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
-  );
-
   // Create a map to store sortByMaster songs with their original sortOrder
   const sortByMasterMap = new Map();
 
@@ -171,6 +166,13 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
       lastCategory = song.category;
     }
   }
+  const finalPlaylist = [
+    ...modifiedSongs,
+    ...comedySongs,
+    ...customerAddedSongs,
+  ];
+  // Sort remaining songs based on upVote - downVote (descending)
+  finalPlaylist.sort((a, b) => b.upVote - b.downVote - (a.upVote - a.downVote));
 
-  return [...modifiedSongs, ...customerAddedSongs, ...comedySongs];
+  return finalPlaylist;
 }
