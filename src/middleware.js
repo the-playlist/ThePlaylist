@@ -8,6 +8,8 @@ export const middleware = async (request) => {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
+  const origin = request.nextUrl.origin;
+  console.log("origin", origin);
   const isPublicPath = path === "/login" ? true : false;
 
   if ((isPublicPath && session) || (session && path === "/")) {
