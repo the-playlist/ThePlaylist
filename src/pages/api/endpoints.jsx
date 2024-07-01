@@ -1,4 +1,3 @@
-// const BASE_URL = "http://localhost:3000/";
 const BASE_URL = "https://the-playlist-rosy.vercel.app/";
 
 export const ENDPOINTS = {
