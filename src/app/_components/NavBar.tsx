@@ -9,6 +9,7 @@ import "@szhsin/react-menu/dist/transitions/slide.css";
 import { signOut } from "next-auth/react";
 import { MdLogout } from "react-icons/md";
 import { RiMenu2Fill } from "react-icons/ri";
+import { IoCloseCircleSharp } from "react-icons/io5";
 
 const MenuOption = () => {
   return (
@@ -71,11 +72,15 @@ const NavBar = () => {
               </button>
 
               <div
-                className={`fixed top-0 z-50 left-0  w-full h-screen bg-white text-white transition-transform duration-300 ease-in-out transform ${
+                className={`fixed top-0 z-50 left-0 w-full h-screen bg-inherit 
+                } text-white transition-transform duration-300 ease-in-out transform ${
                   isOpen ? "translate-y-0" : "-translate-y-full"
                 }`}
               >
-                <ul className="p-4 flex-col w-full    ">
+                <ul
+                  className={`p-4 flex-col z-50 w-full bg-white
+                `}
+                >
                   <div className="flex  items-center justify-center">
                     <img src="/assets/logo.png" className="h-10  my-5 " />
                   </div>
@@ -104,6 +109,14 @@ const NavBar = () => {
                       </li>
                     );
                   })}
+                  <button
+                    onClick={() => {
+                      setIsOpen(false);
+                    }}
+                    className="flex items-center w-full justify-center"
+                  >
+                    <IoCloseCircleSharp color="black" size={26} />
+                  </button>
                 </ul>
               </div>
             </div>

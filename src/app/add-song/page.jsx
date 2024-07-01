@@ -169,7 +169,7 @@ const Typeahead = () => {
           </svg>
           {inputValue && (
             <button
-              className="absolute right-0 top-1 hover:pointer rounded-r-lg px-4 py-2 "
+              className="absolute right-0 top-1  rounded-r-lg px-4 py-2 "
               onClick={handleClearClick}
             >
               <MdClear size={20} />
@@ -240,7 +240,7 @@ const Typeahead = () => {
           onClick={() => {
             router.back();
           }}
-          className="w-full text-base flex items-center  bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white hover:bg-gray-400"
+          className="w-full text-base flex items-center  bg-[#1F1F1F]  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white "
         >
           <div className="flex items-center justify-center">Go Back</div>
         </button>
@@ -251,7 +251,7 @@ const Typeahead = () => {
           }}
           className={`flex w-full items-center ml-4 ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
-          }  hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center `}
+          }   text-black font-bold py-3 px-4 rounded-md justify-center `}
         >
           <span
             className={`text-base text-${

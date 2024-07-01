@@ -76,6 +76,9 @@ const page = () => {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
   );
+  const isAdvanceTheQueeDisable = useSelector(
+    (state) => state?.playlistReducer?.isAdvanceTheQueeDisable
+  );
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -446,6 +449,7 @@ const page = () => {
           >
             {playlistSongList?.length > 0 && (
               <button
+                disabled={isAdvanceTheQueeDisable}
                 onClick={async () => {
                   await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
                   if (playlistSongList?.length > 0) {
@@ -740,7 +744,9 @@ const page = () => {
                   btnText={"Add"}
                   title={"Select songs"}
                   openModal={selectSongModal}
-                  fetchList={fetchPlaylistSongList}
+                  fetchList={() => {
+                    console.log("fetch list");
+                  }}
                   closeModal={() => {
                     setSelectSongModal(false);
                   }}
