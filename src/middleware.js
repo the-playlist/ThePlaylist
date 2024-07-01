@@ -8,15 +8,17 @@ export const middleware = async (request) => {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-  const origin = request.nextUrl.origin;
-  console.log("origin", origin);
   const isPublicPath = path === "/login" ? true : false;
 
   if ((isPublicPath && session) || (session && path === "/")) {
-    return NextResponse.redirect(new URL("/playlist", request.nextUrl));
+    return NextResponse.redirect(
+      new URL("/playlist", process.env.NEXT_PUBLIC_BASE_API_URL)
+    );
   }
   if (!isPublicPath && !session) {
-    return NextResponse.redirect(new URL("/login", request.nextUrl));
+    return NextResponse.redirect(
+      new URL("/login", process.env.NEXT_PUBLIC_BASE_API_URL)
+    );
   }
   return NextResponse.next();
 };
