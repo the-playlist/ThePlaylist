@@ -8,14 +8,14 @@ export const middleware = async (request) => {
     req: request,
     secret: process.env.NEXTAUTH_SECRET,
   });
-
+  const origin = process.env.NEXT_PUBLIC_BASE_URL || request.nextUrl.origin;
   const isPublicPath = path === "/login" ? true : false;
 
   if ((isPublicPath && session) || (session && path === "/")) {
-    return NextResponse.redirect(new URL("/playlist", request.nextUrl));
+    return NextResponse.redirect(new URL(`${origin}/playlist`));
   }
   if (!isPublicPath && !session) {
-    return NextResponse.redirect(new URL("/login", request.nextUrl));
+    return NextResponse.redirect(new URL(`${origin}/login`));
   }
   return NextResponse.next();
 };
