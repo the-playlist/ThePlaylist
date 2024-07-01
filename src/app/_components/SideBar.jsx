@@ -155,8 +155,8 @@ const SideBar = () => {
 
   return (
     <>
-      <div className=" drop-shadow-lg lg:block md:block hidden bg-white relative  rounded-2xl mr-5 w-1/6 ">
-        <ul className="p-4 flex-col w-full    ">
+      <div className=" drop-shadow-lg lg:block md:block hidden bg-white relative  rounded-3xl mr-5 w-1/6 ">
+        <ul className="p-4 flex-col w-full">
           <div className="flex  items-center justify-center">
             <Link href={"/players"} className="hover:cursor-pointer">
               <img src="/assets/logo.png" className="h-10  my-5 " />
@@ -169,14 +169,14 @@ const SideBar = () => {
                 <li
                   className={`${
                     isActive
-                      ? "  bg-[#FEF9EB]  border border-top-queue-bg "
+                      ? "bg-[#FEF9EB]  border border-top-queue-bg "
                       : "my-5 "
-                  }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl p-4 my-3`}
+                  }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl lg:p-4 p-2 my-3`}
                 >
-                  <div className={`   flex justify-start items-center`}>
-                    {i.icon(isActive)}
+                  <div className={`flex justify-start items-center`}>
+                    <div className="w-[23px]">{i.icon(isActive)}</div>
                     <div
-                      className={`ml-10 mr-3 m lg:text-base text-sm ${
+                      className={`lg:ml-10 ml-2 mr-3 m lg:text-base text-sm ${
                         isActive ? "text-top-queue-bg" : "text-black "
                       }`}
                     >

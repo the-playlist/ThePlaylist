@@ -104,7 +104,7 @@ const SelectSongModal = ({
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         closeModal();
         toast.success(response?.data?.description);
-        // await fetchList(isFirstTimeFetched);
+        await fetchList(isFirstTimeFetched);
         socket.emit("insertSongIntoPlaylistRequest", {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
