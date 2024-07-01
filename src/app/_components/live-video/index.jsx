@@ -83,24 +83,20 @@ export const MyLivestreamUI = ({
   const localParticipant = useLocalParticipant();
   const isCallLive = useIsCallLive();
   const egress = useCallEgress();
+
   const [changeStatusApi] = useChangeStreamRequestStatusMutation();
   const [sendStreamReqApi] = useSendStreamRequestMutation();
   const [timer, setTimer] = useState(60);
   const [isActive, setIsActive] = useState(false);
   const [content, setContent] = useState({});
-  const [streamUrl, setStreamUrl] = useState(null);
   const [socket, setSocket] = useState();
   const [currentLive, setCurrentLive] = useState(null);
 
   useEffect(() => {
-    setStreamUrl(egress?.hls?.playlist_url);
-  }, [egress?.hls?.playlist_url]);
-
-  useEffect(() => {
-    if (streamUrl) {
+    if (socket != undefined) {
       streamRequestHandler();
     }
-  }, [streamUrl]);
+  }, [socket]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -121,7 +117,7 @@ export const MyLivestreamUI = ({
           call?.stopLive();
           call?.endCall();
           setStreamPayload(null);
-          setStreamUrl(null);
+
           router.replace(`/table-view?tableno=${tableno}`);
         }
         setIsActive(false);
@@ -158,7 +154,7 @@ export const MyLivestreamUI = ({
       call?.stopLive();
       call?.endCall();
       setStreamPayload(null);
-      setStreamUrl(null);
+
       router.replace(`/table-view?tableno=${tableno}`);
     }
   };
@@ -184,14 +180,14 @@ export const MyLivestreamUI = ({
       call?.stopLive();
       call?.endCall();
       setStreamPayload(null);
-      setStreamUrl(null);
+
       router.replace(`/table-view?tableno=${tableno}`);
     }
   };
 
   const streamRequestHandler = async () => {
     let payload = {
-      url: streamUrl,
+      url: null,
       tableno:
         streamPayload?.tableno != "null" ? streamPayload?.tableno : tableno,
       userId: streamPayload?.user_id,
@@ -273,7 +269,7 @@ export const MyLivestreamUI = ({
                 if (!isCallLive) {
                   call?.endCall();
                   setStreamPayload(null);
-                  setStreamUrl(null);
+
                   router.replace(`/table-view?tableno=${tableno}`);
                 } else {
                   let payload = {
