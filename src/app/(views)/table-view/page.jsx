@@ -206,20 +206,13 @@ const TableView = () => {
         } flex justify-end p-4`}
       >
         <button
-          disabled={queueLimit?.value == performer?.length}
           onClick={() => {
             router.push("/add-song");
           }}
           className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
         >
           <div className="flex items-center justify-center">
-            <div
-              className={`rounded-full ${
-                queueLimit?.value == performer?.length
-                  ? "bg-gray-400"
-                  : "bg-[#1F1F1F]"
-              } mr-2 p-1`}
-            >
+            <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
               <IoAdd size={16} color="white" />
             </div>
             Add a Song
