@@ -117,7 +117,7 @@ const SongsManagment = () => {
             </button>
           </div>
           {filteredsongs?.length > 0 ? (
-            <div className=" max-h-[80vh] overflow-y-auto">
+            <div className=" max-h-[80vh] pb-10 overflow-y-auto">
               <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
                 <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
                   <tr className="text-black text-lg font-thin">
