@@ -223,7 +223,9 @@ const LimitAndAppearence = () => {
                   <div className=" flex justify-between items-center mt-3">
                     <div className="  w-3/4">
                       <div className=" flex items-center w-full">
-                        <span>{item?.title}:</span>
+                        <span className="font-semibold text-black">
+                          {item?.title}:
+                        </span>
                         <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  ml-2 mr-5 h-12  ">
                           <button
                             disabled={item?.value == 1}
@@ -261,7 +263,9 @@ const LimitAndAppearence = () => {
 
                         {item?.subTitle && (
                           <>
-                            <span>{item?.subTitle}:</span>
+                            <span className="font-semibold text-black">
+                              {item?.subTitle}:
+                            </span>
                             <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  mx-2 h-12 p-1 mr-5 ">
                               <input
                                 type="number"
@@ -286,66 +290,88 @@ const LimitAndAppearence = () => {
                             </div>
                           </>
                         )}
-                        {item?.isMessage && (
-                          <>
-                            <span>Message:</span>
-                            <div className=" flex w-1/3  mx-2 p-1  ">
-                              <Textarea
-                                onChange={(e) => {
-                                  const value = e.target.value;
-
-                                  changeLimitHandler(
-                                    item?._id,
-                                    "message",
-                                    value,
-                                    item?.heading
-                                  );
-                                }}
-                                radius={"sm"}
-                                isInvalid={item?.message?.length <= 0}
-                                errorMessage="The message cannot be empty"
-                                value={item?.message}
-                                variant="bordered"
-                                labelPlacement="outside"
-                                placeholder="Enter your error message"
-                                className=" w-4/5"
-                              />
-                            </div>
-                          </>
-                        )}
                       </div>
                     </div>
-                    <div className="  w-1/4">
-                      <GenericButton
-                        disabled={
-                          btnLoader != null || item?.isMessage
-                            ? item?.message?.length > 0
-                              ? false
-                              : true
-                            : false
-                        }
-                        loading={index == btnLoader}
-                        text="Update"
-                        onClick={() => {
-                          let payload;
-                          if (index > 1) {
+                    {index > 1 && (
+                      <div className="  w-1/4">
+                        <GenericButton
+                          disabled={
+                            btnLoader != null || item?.isMessage
+                              ? item?.message?.length > 0
+                                ? false
+                                : true
+                              : false
+                          }
+                          loading={index == btnLoader}
+                          text="Update"
+                          onClick={() => {
+                            let payload;
+
                             payload = {
                               heading: item?.heading,
                               value: item?.value,
                             };
-                          } else {
+
+                            setBtnLoader(index);
+                            addUpdateLimitHandler(payload);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-end justify-between mt-3">
+                    {item?.isMessage && (
+                      <div className=" w-full items-center">
+                        <span className=" font-semibold text-black ">
+                          Alert Message:
+                        </span>
+
+                        <div className="  rounded-md  border-[1.5px] border-[#D4D4D4]  w-[57%] flex mt-1 h-11 p-1 mr-5 ">
+                          <input
+                            type="text"
+                            className="w-full px-3 text-sm text-black disabled:bg-inherit focus:outline-none"
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              changeLimitHandler(
+                                item?._id,
+                                "message",
+                                value,
+                                item?.heading
+                              );
+                            }}
+                            value={item?.message}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {index < 2 && (
+                      <div className="  w-1/4">
+                        <GenericButton
+                          disabled={
+                            btnLoader != null || item?.isMessage
+                              ? item?.message?.length > 0
+                                ? false
+                                : true
+                              : false
+                          }
+                          loading={index == btnLoader}
+                          text="Update"
+                          onClick={() => {
+                            let payload;
+
                             payload = {
                               heading: item?.heading,
                               value: item?.value,
                               time: item?.time,
                               message: item?.message,
                             };
-                          }
-                          setBtnLoader(index);
-                          addUpdateLimitHandler(payload);
-                        }}
-                      />
-                    </div>
+
+                            setBtnLoader(index);
+                            addUpdateLimitHandler(payload);
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               );
