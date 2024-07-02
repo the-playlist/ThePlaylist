@@ -35,7 +35,7 @@ export const markSongAsFav = async (req, res, next) => {
     );
     let response = new ResponseModel(
       true,
-      isFav ? "Song marked as favourite" : "Song unmarked as favourite",
+      isFav ? "Song marked as favourite" : "Song marked as unfavourite",
       null
     );
     res.status(200).json(response);

@@ -219,7 +219,7 @@ function AddEditPlayer({
                 <CircularProgress color="warning" variant="outlined" />
               </div>
             )}
-            <div className="border-3 border-red overflow-y-auto  max-h-36">
+            <div className="overflow-y-auto  max-h-36">
               {filteredsongs?.map((i, index) => {
                 const isInclude = !selectedSongsList.some(
                   (item) => item._id === i._id
