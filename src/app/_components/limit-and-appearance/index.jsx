@@ -12,8 +12,9 @@ import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { IoMdAdd, IoIosRemove } from "react-icons/io";
 import CustomLoader from "../custom_loader";
-import { IoMdInformationCircleOutline } from "react-icons/io";
+
 import { Tooltip, Button, Textarea } from "@nextui-org/react";
+import { FaCircleInfo } from "react-icons/fa6";
 
 const LimitAndAppearence = () => {
   const [getThemeListApi, getThemeListRes] = useLazyGetThemeListQuery();
@@ -195,9 +196,10 @@ const LimitAndAppearence = () => {
                       offset={-20}
                       showArrow={true}
                       placement={"right"}
+                      color="foreground"
                       content={
                         <>
-                          <span className="p-3">
+                          <span className="p-3 text-white">
                             {getToolTipMsg(
                               item?.heading,
                               item?.value,
@@ -214,7 +216,7 @@ const LimitAndAppearence = () => {
                         color="null"
                         className="capitalize p-0 -ml-5"
                       >
-                        <IoMdInformationCircleOutline size={24} />
+                        <FaCircleInfo size={20} />
                       </Button>
                     </Tooltip>
                   </div>
