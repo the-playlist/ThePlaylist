@@ -86,7 +86,7 @@ export const MyLivestreamUI = ({
 
   const [changeStatusApi] = useChangeStreamRequestStatusMutation();
   const [sendStreamReqApi] = useSendStreamRequestMutation();
-  const [timer, setTimer] = useState(60);
+  const [timer, setTimer] = useState(300);
   const [isActive, setIsActive] = useState(false);
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
@@ -224,7 +224,7 @@ export const MyLivestreamUI = ({
               isActive: false,
             };
             changeStatusHandler(payload, true);
-            return 60;
+            return 300;
           }
           return prevTimer - 1;
         });
@@ -238,7 +238,7 @@ export const MyLivestreamUI = ({
 
   const handleClick = () => {
     setIsActive(true);
-    setTimer(60);
+    setTimer(300);
   };
 
   return (
@@ -247,8 +247,8 @@ export const MyLivestreamUI = ({
         <div className="text-white text-md px-5">
           {`Your request has been sent to master: `}
           <span className="countdown font-mono text-lg  text-white">
-            <span style={{ "--value": timer }}> </span>
-            {` sec`}
+            {/* <span style={{ "--value": timer }}> </span> */}
+            {`${timer} sec`}
           </span>
         </div>
       )}
