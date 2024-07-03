@@ -18,6 +18,7 @@ import {
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
+const CALL_ID = "CALL_ID";
 
 const LiveVideo = ({ streamPayload, setStreamPayload, tableno }) => {
   const { token, user_id, callId } = streamPayload;
@@ -91,6 +92,30 @@ export const MyLivestreamUI = ({
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
   const [currentLive, setCurrentLive] = useState(null);
+
+  // This method below will be decline any on the requests by the Use if he kill or go back from the Application
+  useEffect(() => {
+    const handleBrowserState = async (active) => {
+      if (!active) {
+        let payload = {
+          id: localStorage.getItem(CALL_ID),
+          stopByUser: true,
+          isActive: false,
+        };
+        await changeStatusHandler(payload, false);
+      }
+    };
+    const handleFocus = () => handleBrowserState(true);
+    const handleBlur = () => handleBrowserState(false);
+
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
 
   useEffect(() => {
     if (socket != undefined) {
@@ -171,7 +196,15 @@ export const MyLivestreamUI = ({
           ? "Stream request cancelled"
           : response?.data?.description
       );
-      socket.emit("sendReqToMasterApi", {
+      let socketConnection = socket;
+
+      if (!socketConnection) {
+        socketConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+          autoConnect: false,
+        });
+        socketConnection.connect();
+      }
+      socketConnection.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: false,
         stopByUser: data?.stopByUser,
@@ -203,7 +236,7 @@ export const MyLivestreamUI = ({
         streamPayload: streamPayload,
         activeStream: activeStream,
       });
-
+      localStorage.setItem(CALL_ID, request?._id);
       setContent(request);
       toast(response?.data?.description);
       handleClick();
