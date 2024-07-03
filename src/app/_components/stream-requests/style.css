@@ -1,0 +1,24 @@
+.fullScreenContainer {
+  display: flex;
+  flex-direction: column;
+  height: 90%;
+  width: 100%;
+}
+
+.innerContainer {
+  flex: 1;
+  height: 90%;
+  width: 100%;
+}
+
+.acceptedContainer {
+  display: flex;
+  flex-direction: column;
+  height: 24rem;
+}
+
+.defaultContainer {
+  display: flex;
+  flex-direction: column;
+  height: 14rem;
+}

@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef, memo } from "react";
+import React, { useEffect, useState, useRef, memo, useCallback } from "react";
 import { io } from "socket.io-client";
 import {
   useChangeStreamRequestStatusMutation,
@@ -14,8 +14,12 @@ import { toast } from "react-toastify";
 import { Togglebutton } from "./toggle-button";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
-import { setIsWallViewOrJumbotron } from "@/app/_utils/redux/slice/playlist-list";
+import {
+  setIsWallViewOrJumbotron,
+  setStreamContent,
+} from "@/app/_utils/redux/slice/playlist-list";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
+import { VideoStreamUI } from "./video-stream-ui";
 
 const StreamResponse = () => {
   const dispatch = useDispatch();
@@ -23,12 +27,15 @@ const StreamResponse = () => {
   const viewMode_ = useSelector(
     (state) => state?.playlistReducer?.isWallViewOrJumbotron
   );
+  const streamContent = useSelector(
+    (state) => state?.playlistReducer?.streamContent
+  );
   const [socket, setSocket] = useState();
   const [getStreamRequestListApi, getStreamRequestResponse] =
     useLazyGetStreamRequestQuery();
   const [changeStatusApi, changeStatusResponse] =
     useChangeStreamRequestStatusMutation();
-  const [streamContent, setStreamContent] = useState([]);
+  // const [streamContent, setStreamContent] = useState([]);
   const [streamAcceptedContent, setStreamAcceptedContent] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -67,7 +74,7 @@ const StreamResponse = () => {
       const {
         content: { isAcceptedRequests, isActiveRequests },
       } = response?.data;
-      setStreamContent(isActiveRequests);
+      dispatch(setStreamContent(isActiveRequests));
       setStreamAcceptedContent(isAcceptedRequests[0]);
       if (isAcceptedRequests[0]?.isAccepted) {
         setRecentActive(isAcceptedRequests[0]);
@@ -76,19 +83,24 @@ const StreamResponse = () => {
     setLoading(false);
   };
 
-  const changeStatusHandler = async (data) => {
-    let response = await changeStatusApi(data);
-    if (response?.data.success) {
-      const { activeStream } = response?.data?.content;
-      getStreamRequestHandler();
-      socket.emit("acceptedRejectStreamReq", {
-        id: data?.callId,
-        isActive: data?.isActive ? true : false,
-        recentActive: recentActive,
-        activeStream: activeStream,
-      });
-    }
-  };
+  const changeStatusHandler = useCallback(
+    async (data) => {
+      dispatch(setStreamContent(streamContent.filter((i) => i._id != data.id)));
+
+      let response = await changeStatusApi(data);
+      if (response?.data.success) {
+        const { activeStream } = response?.data?.content;
+        getStreamRequestHandler();
+        socket.emit("acceptedRejectStreamReq", {
+          id: data?.callId,
+          isActive: data?.isActive ? true : false,
+          recentActive: recentActive,
+          activeStream: activeStream,
+        });
+      }
+    },
+    [streamContent]
+  );
 
   const onToggleViewBtnPress = () => {
     socket.emit("wallViewJumbotronRequest", {
@@ -139,53 +151,12 @@ const StreamResponse = () => {
               <div className="flex flex-wrap items-center justify-start ">
                 {streamContent.map((item, index) => {
                   return (
-                    <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
-                      <div className="flex justify-between items-center mb-3 ">
-                        <h2 className="card-title">Table no:{item?.tableno}</h2>
-                      </div>
-                      <div className="bg-black h-56 rounded-md">
-                        <figure>
-                          <StreamRequest item={item} socket={socket} />
-                        </figure>
-                      </div>
-                      <div className="mt-3">
-                        <div className=" flex justify-between items-center">
-                          <div className="card-actions justify-end w-full mr-2">
-                            <button
-                              onClick={() => {
-                                let payload = {
-                                  callId: item?.callId,
-                                  id: item?._id,
-                                  isAccepted: true,
-                                  isActive: true,
-                                };
-
-                                changeStatusHandler(payload);
-                              }}
-                              className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
-                            >
-                              Accept
-                            </button>
-                          </div>
-                          <div className="card-actions justify-end w-full  ml-2">
-                            <button
-                              onClick={() => {
-                                let payload = {
-                                  callId: item?.callId,
-                                  id: item?._id,
-                                  isActive: false,
-                                };
-
-                                changeStatusHandler(payload);
-                              }}
-                              className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <VideoStreamUI
+                      key={item._id}
+                      item={item}
+                      socket={socket}
+                      changeStatusHandler={changeStatusHandler}
+                    />
                   );
                 })}
               </div>
