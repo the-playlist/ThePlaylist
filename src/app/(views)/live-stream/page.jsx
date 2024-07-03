@@ -38,6 +38,7 @@ const Livestream = () => {
       <div className=" flex items-center justify-center p-5">
         <Logo />
       </div>
+      <h2 className="text-white">{tableno}</h2>
       {streamPayload && (
         <LiveVideo
           setStreamPayload={setStreamPayload}

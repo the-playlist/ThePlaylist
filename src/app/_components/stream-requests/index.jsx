@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useEffect, useMemo } from "react";
 import {
   LivestreamLayout,
   StreamCall,
@@ -14,31 +14,40 @@ import "./style.css";
 const StreamRequests = memo(({ item, fullScreen, isAccepted }) => {
   const { callId, token, userId } = item;
   const apiKey = "d7r2k5cjtzqj";
-  const user = {
-    id: userId,
-    name: "Stream-Viewer",
-    image: "https://getstream.io/random_svg/?id=oliver&name=Stream-Viewer",
-  };
-  const client = new StreamVideoClient({ apiKey, user, token });
-  const call = client.call("livestream", callId);
-  call.join();
-  call.camera.disable();
-  call.microphone.disable();
+
+  // Create user object only once
+  const user = useMemo(
+    () => ({
+      id: userId,
+      name: "Stream-Viewer",
+      image: "https://getstream.io/random_svg/?id=oliver&name=Stream-Viewer",
+    }),
+    [userId]
+  );
+
+  // Initialize StreamVideoClient and call only once
+  const { client, call } = useMemo(() => {
+    const client = new StreamVideoClient({ apiKey, user, token });
+    const call = client.call("livestream", callId);
+    return { client, call };
+  }, [apiKey, user, token, callId]);
+
+  useEffect(() => {
+    // Join call and disable camera/microphone only once
+    call.join();
+    call.camera.disable();
+    call.microphone.disable();
+  }, [call]);
+
+  console.log("Stream Video ... 786");
 
   return (
     <div>
       <StreamVideo client={client}>
         <StreamCall call={call}>
           {fullScreen ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: "90%",
-                width: "100%",
-              }}
-            >
-              <div style={{ flex: 1, height: "90%", width: "100%" }}>
+            <div className="fullScreenContainer">
+              <div className="innerContainer">
                 <StreamTheme>
                   <LivestreamLayout
                     showParticipantCount={false}
@@ -51,13 +60,9 @@ const StreamRequests = memo(({ item, fullScreen, isAccepted }) => {
             </div>
           ) : (
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                height: isAccepted ? "24rem" : "14rem",
-              }}
+              className={isAccepted ? "acceptedContainer" : "defaultContainer"}
             >
-              <div style={{ flex: 1 }}>
+              <div className="innerContainer">
                 <LivestreamLayout
                   showParticipantCount={false}
                   showDuration={false}

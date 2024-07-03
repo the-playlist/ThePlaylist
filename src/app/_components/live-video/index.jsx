@@ -87,7 +87,7 @@ export const MyLivestreamUI = ({
 
   const [changeStatusApi] = useChangeStreamRequestStatusMutation();
   const [sendStreamReqApi] = useSendStreamRequestMutation();
-  const [timer, setTimer] = useState(300);
+  const [timer, setTimer] = useState(1000);
   const [isActive, setIsActive] = useState(false);
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
@@ -257,7 +257,7 @@ export const MyLivestreamUI = ({
               isActive: false,
             };
             changeStatusHandler(payload, true);
-            return 300;
+            return 1000;
           }
           return prevTimer - 1;
         });
@@ -271,7 +271,7 @@ export const MyLivestreamUI = ({
 
   const handleClick = () => {
     setIsActive(true);
-    setTimer(300);
+    setTimer(1000);
   };
 
   return (
