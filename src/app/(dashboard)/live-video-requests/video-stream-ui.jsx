@@ -9,7 +9,18 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
       </div>
       <div className="bg-black h-56 rounded-md">
         <figure>
-          <StreamRequest item={item} socket={socket} />
+          <StreamRequest
+            userLeftHandler={() => {
+              let payload = {
+                callId: item?.callId,
+                id: item?._id,
+                isActive: false,
+              };
+              changeStatusHandler(payload);
+            }}
+            item={item}
+            socket={socket}
+          />
         </figure>
       </div>
       <div className="mt-3">

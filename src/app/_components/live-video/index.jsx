@@ -74,20 +74,12 @@ export const MyLivestreamUI = ({
 }) => {
   const router = useRouter();
   const call = useCall();
-  const {
-    useIsCallLive,
-    useLocalParticipant,
-    useParticipantCount,
-    useCallEgress,
-  } = useCallStateHooks();
-  const totalParticipants = useParticipantCount();
+  const { useIsCallLive, useLocalParticipant } = useCallStateHooks();
   const localParticipant = useLocalParticipant();
   const isCallLive = useIsCallLive();
-  const egress = useCallEgress();
-
   const [changeStatusApi] = useChangeStreamRequestStatusMutation();
   const [sendStreamReqApi] = useSendStreamRequestMutation();
-  const [timer, setTimer] = useState(1000);
+  const [timer, setTimer] = useState(300);
   const [isActive, setIsActive] = useState(false);
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
@@ -228,6 +220,7 @@ export const MyLivestreamUI = ({
       token: streamPayload?.token,
     };
     const response = await sendStreamReqApi(payload);
+
     if (response?.data.success) {
       const { request, activeStream } = response?.data?.content;
       socket?.emit("sendReqToMasterApi", {
@@ -240,6 +233,9 @@ export const MyLivestreamUI = ({
       setContent(request);
       toast(response?.data?.description);
       handleClick();
+    } else {
+      toast.error(response?.data?.description);
+      router.back();
     }
   };
 
@@ -257,7 +253,7 @@ export const MyLivestreamUI = ({
               isActive: false,
             };
             changeStatusHandler(payload, true);
-            return 1000;
+            return 300;
           }
           return prevTimer - 1;
         });
@@ -271,8 +267,15 @@ export const MyLivestreamUI = ({
 
   const handleClick = () => {
     setIsActive(true);
-    setTimer(1000);
+    setTimer(300);
   };
+  function formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    const formattedSeconds =
+      remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
+    return `${minutes}:${formattedSeconds}`;
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
@@ -281,7 +284,7 @@ export const MyLivestreamUI = ({
           {`Your request has been sent to master: `}
           <span className="countdown font-mono text-lg  text-white">
             {/* <span style={{ "--value": timer }}> </span> */}
-            {`${timer} sec`}
+            {`${formatTime(timer)}`}
           </span>
         </div>
       )}
@@ -302,7 +305,6 @@ export const MyLivestreamUI = ({
                 if (!isCallLive) {
                   call?.endCall();
                   setStreamPayload(null);
-
                   router.replace(`/table-view?tableno=${tableno}`);
                 } else {
                   let payload = {

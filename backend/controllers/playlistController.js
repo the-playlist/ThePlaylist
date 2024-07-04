@@ -335,150 +335,139 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
   }
-  try {
-    // Fetch players assigned to the song and are on duty
-    const players = await Players.aggregate([
-      {
-        $match: {
-          assignSongs: new mongoose.Types.ObjectId(songId),
-          "duty.status": true,
-        },
+  const players = await Players.aggregate([
+    {
+      $match: {
+        assignSongs: new mongoose.Types.ObjectId(songId),
+        "duty.status": true,
       },
-      {
-        $lookup: {
-          from: "playlists",
-          localField: "_id",
-          foreignField: "assignedPlayer",
-          as: "playlistEntries",
-          pipeline: [
-            {
-              $match: {
-                songData: new mongoose.Types.ObjectId(songId),
-                isDeleted: false,
-              },
+    },
+    {
+      $lookup: {
+        from: "playlists",
+        localField: "_id",
+        foreignField: "assignedPlayer",
+        as: "playlistEntries",
+        pipeline: [
+          {
+            $match: {
+              songData: new mongoose.Types.ObjectId(songId),
+              isDeleted: false,
             },
-          ],
-        },
+          },
+        ],
       },
-      {
-        $addFields: {
-          isInPlaylist: { $gt: [{ $size: "$playlistEntries" }, 0] },
-        },
+    },
+    {
+      $addFields: {
+        isInPlaylist: { $gt: [{ $size: "$playlistEntries" }, 0] },
       },
-      {
-        $sort: { createdAt: 1 }, // Sort players by createdAt in ascending order
+    },
+    {
+      $sort: { createdAt: 1 }, // Sort players by createdAt in ascending order
+    },
+    {
+      $project: {
+        _id: 1,
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        phone: 1,
+        isInPlaylist: 1,
+        playlistEntries: 1,
       },
-      {
-        $project: {
-          _id: 1,
-          firstName: 1,
-          lastName: 1,
-          email: 1,
-          phone: 1,
-          isInPlaylist: 1,
-          playlistEntries: 1,
-        },
-      },
-    ]);
+    },
+  ]);
 
-    let playerToAssign = null;
+  let playerToAssign = null;
 
-    if (players.length > 0) {
-      // Find a player who is not in the playlist
-      playerToAssign = players.find((player) => !player.isInPlaylist);
+  if (players.length > 0) {
+    // Find a player who is not in the playlist
+    playerToAssign = players.find((player) => !player.isInPlaylist);
 
-      // If all players are already in the playlist, select the second player
-      if (!playerToAssign) {
-        // If the first and last players are the same, select the second player
-        if (
-          players.length > 1 &&
-          players[0]._id.equals(players[players.length - 1]._id)
-        ) {
-          playerToAssign = players[1];
-        } else {
-          // playerToAssign = players[0];
-          return res
-            .status(400)
-            .json(
-              new ResponseModel(false, "Song Already exist in the playlist")
-            );
-        }
+    // If all players are already in the playlist, select the second player
+    if (!playerToAssign) {
+      // If the first and last players are the same, select the second player
+      if (
+        players.length > 1 &&
+        players[0]._id.equals(players[players.length - 1]._id)
+      ) {
+        playerToAssign = players[1];
+      } else {
+        // playerToAssign = players[0];
+        return res
+          .status(400)
+          .json(new ResponseModel(false, "Song Already exist in the playlist"));
       }
     }
+  }
 
-    if (playerToAssign) {
-      const playlistCount = await Playlist.countDocuments({
-        isDeleted: false,
-      });
-      // Assign the song to this player
-      const newPlaylistEntry = new Playlist({
-        assignedPlayer: playerToAssign._id,
-        songData: new mongoose.Types.ObjectId(songId),
-        addByCustomer: addByCustomer,
-        expiresAt: calculateExpirationTime(),
-        sortOrder: playlistCount,
-      });
-      await newPlaylistEntry.save();
-      const list = await Playlist.aggregate(songFromPlaylist);
-      const { isFavortiteListType } = await PlaylistType.findOne({
-        _id: SETTING_ID,
-      }).lean();
+  if (playerToAssign) {
+    const playlistCount = await Playlist.countDocuments({
+      isDeleted: false,
+    });
+    const newPlaylistEntry = new Playlist({
+      assignedPlayer: playerToAssign._id,
+      songData: new mongoose.Types.ObjectId(songId),
+      addByCustomer: addByCustomer,
+      expiresAt: calculateExpirationTime(),
+      sortOrder: playlistCount,
+    });
+    await newPlaylistEntry.save();
+    const list = await Playlist.aggregate(songFromPlaylist);
+    const { isFavortiteListType } = await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
 
-      let flattenedPlaylist = list.map((item) => {
-        const duration = convertTimeToSeconds(item?.songData?.songDuration);
-        const introSec =
-          item?.songData?.introSec == ""
-            ? 0
-            : parseInt(item?.songData?.introSec);
-        const totalDuration = formatTime(duration + introSec);
-        return {
-          _id: item._id,
-          playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-          assignedPlayerId: item.assignedPlayer?._id,
-          songId: item.songData._id,
-          title: item.songData.title,
-          artist: item.songData.artist,
-          introSec:
-            item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
-          songDuration: totalDuration,
-          isFav: item.songData.isFav,
-          dutyStatus: item?.assignedPlayer?.duty?.status,
-          category: item.songData.category,
-          tableUpVote: item.upVote,
-          tableDownVote: item.downVote,
-          upVote: item.upVoteCount,
-          downVote: item.downVoteCount,
-          sortOrder: item.sortOrder,
-          sortByMaster: item?.sortByMaster,
-          addByCustomer: item.addByCustomer,
-        };
-      });
-      if (isFavortiteListType) {
-        flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-      }
-      const finalPlaylist = playlistAlgorithm(
-        result?.length == 0 ? true : false,
-        flattenedPlaylist
-      );
-      const response = new ResponseModel(
-        true,
-        "Song added to playlist successfully",
-        {
-          message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
-          player: playerToAssign,
-          isFirstTimeFetched: result?.length > 0 ? false : true,
-          playlist: finalPlaylist,
-        }
-      );
-      res.status(200).json(response);
-    } else {
-      res.status(200).json({
-        message: "No players available to assign the song",
-        players,
-      });
+    let flattenedPlaylist = list.map((item) => {
+      const duration = convertTimeToSeconds(item?.songData?.songDuration);
+      const introSec =
+        item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
+      const totalDuration = formatTime(duration + introSec);
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+        songDuration: totalDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: item.upVote,
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item?.sortByMaster,
+        addByCustomer: item.addByCustomer,
+      };
+    });
+    if (isFavortiteListType) {
+      flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
     }
-  } catch (error) {
-    res.status(500).json({ message: "Server Error", error: error.message });
+    const finalPlaylist = playlistAlgorithm(
+      result?.length == 0 ? true : false,
+      flattenedPlaylist
+    );
+    const response = new ResponseModel(
+      true,
+      "Song added to playlist successfully",
+      {
+        message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
+        player: playerToAssign,
+        isFirstTimeFetched: result?.length > 0 ? false : true,
+        playlist: finalPlaylist,
+      }
+    );
+    res.status(200).json(response);
+  } else {
+    res.status(200).json({
+      message: "No players available to assign the song",
+      players,
+    });
   }
 };
 
