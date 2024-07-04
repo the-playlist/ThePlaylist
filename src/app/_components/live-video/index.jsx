@@ -99,11 +99,14 @@ export const MyLivestreamUI = ({
     };
     const handleFocus = () => handleBrowserState(true);
     const handleBlur = () => handleBrowserState(false);
-
+    window.addEventListener("popstate", () => {
+      handleBlur();
+    });
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
 
     return () => {
+      window.removeEventListener("popstate", handleBlur);
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("blur", handleBlur);
     };
@@ -180,7 +183,6 @@ export const MyLivestreamUI = ({
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       const { activeStream } = response?.data?.content;
-
       toast(
         isTimeOut
           ? "Stream request time out"
@@ -205,7 +207,6 @@ export const MyLivestreamUI = ({
       call?.stopLive();
       call?.endCall();
       setStreamPayload(null);
-
       router.replace(`/table-view?tableno=${tableno}`);
     }
   };
