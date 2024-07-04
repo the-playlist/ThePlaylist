@@ -199,7 +199,7 @@ export const MyLivestreamUI = ({
       socketConnection.emit("sendReqToMasterApi", {
         id: streamPayload?.callId,
         isActive: false,
-        stopByUser: data?.stopByUser,
+        stopByUser: data?.stopByUser || true,
         activeStream: activeStream,
       });
       call?.stopLive();
