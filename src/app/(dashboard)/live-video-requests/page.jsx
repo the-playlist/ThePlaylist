@@ -74,6 +74,7 @@ const StreamResponse = () => {
       const {
         content: { isAcceptedRequests, isActiveRequests },
       } = response?.data;
+
       dispatch(setStreamContent(isActiveRequests));
       setStreamAcceptedContent(isAcceptedRequests[0]);
       if (isAcceptedRequests[0]?.isAccepted) {
@@ -147,7 +148,6 @@ const StreamResponse = () => {
           {streamContent?.length > 0 ? (
             <>
               <span className=" text-lg font-semibold mb-4">Requests</span>
-
               <div className="flex flex-wrap items-center justify-start ">
                 {streamContent.map((item, index) => {
                   return (

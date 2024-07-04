@@ -1,3 +1,4 @@
+import Limit from "../models/limits";
 import Stream from "../models/streaming";
 import ResponseModel from "./responseModel";
 import { StreamChat } from "stream-chat";
@@ -68,7 +69,21 @@ export const createStreamUser = (req, res) => {
 
 export const sendStreamRequestToMaster = async (req, res) => {
   const { url, userId, tableno, callId, token } = req?.body || {};
+  const heading = "Live Stream Limit";
+  const currentActiveStreams = await Stream.find({
+    isActive: true,
+    isAccepted: false,
+  }).lean();
 
+  const limit = await Limit.findOne({ heading });
+  if (limit && currentActiveStreams.length >= limit.value) {
+    let response = new ResponseModel(
+      false,
+      "Active stream limit reached. Cannot create new stream."
+    );
+    res.status(200).json(response);
+    return;
+  }
   let request;
 
   const existingRequest = await Stream.findOne({ userId });

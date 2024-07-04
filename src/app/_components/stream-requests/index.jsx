@@ -39,8 +39,6 @@ const StreamRequests = memo(({ item, fullScreen, isAccepted }) => {
     call.microphone.disable();
   }, [call]);
 
-  console.log("Stream Video ... 786");
-
   return (
     <div>
       <StreamVideo client={client}>
@@ -50,6 +48,7 @@ const StreamRequests = memo(({ item, fullScreen, isAccepted }) => {
               <div className="innerContainer">
                 <StreamTheme>
                   <LivestreamLayout
+                    enableFullscreen={true}
                     showParticipantCount={false}
                     showDuration={true}
                     showLiveBadge={true}
