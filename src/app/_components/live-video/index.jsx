@@ -99,14 +99,14 @@ export const MyLivestreamUI = ({
     };
     const handleFocus = () => handleBrowserState(true);
     const handleBlur = () => handleBrowserState(false);
-    window.addEventListener("popstate", () => {
-      handleBlur();
-    });
+    // window.addEventListener("popstate", () => {
+    //   handleBlur();
+    // });
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
 
     return () => {
-      window.removeEventListener("popstate", handleBlur);
+      // window.removeEventListener("popstate", handleBlur);
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("blur", handleBlur);
     };
