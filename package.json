@@ -18,7 +18,7 @@
     "@nextui-org/react": "^2.4.2",
     "@nextui-org/tooltip": "^2.0.36",
     "@reduxjs/toolkit": "^1.9.7",
-    "@stream-io/video-react-sdk": "^1.0.1",
+    "@stream-io/video-react-sdk": "^1.2.13",
     "@szhsin/react-menu": "^4.1.0",
     "@videosdk.live/react-sdk": "^0.1.90",
     "bcrypt": "^5.1.1",
