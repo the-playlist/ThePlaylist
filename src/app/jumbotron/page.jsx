@@ -16,12 +16,6 @@ const JumboTron = () => {
       autoConnect: false,
     });
     socket.connect();
-    socket.on("wallViewJumbotronResponse", (item) => {
-      const { screenName } = item;
-      if (screenName === WALL_VIEW) {
-        router.replace("/wall-view");
-      }
-    });
     socket.on("sendReqToMasterRes", (item) => {
       if (item?.stopByUser) {
         getLiveStreamHandler();

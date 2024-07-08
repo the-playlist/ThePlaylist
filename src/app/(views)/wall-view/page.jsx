@@ -13,10 +13,9 @@ import {
 import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { JUMBOTRON_VIEW } from "@/app/_utils/common/constants";
+import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 
 const WallView = () => {
-  const [getIsPlaylistEmptyApi] = useLazyGetIsPlaylistEmptyQuery();
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
 
@@ -25,7 +24,11 @@ const WallView = () => {
   const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
+  const [currentActive, setCurrentActive] = useState(
+    localStorage.getItem("currentActive")
+  );
   let screenName = "Wall View";
+
   const router = useRouter();
 
   useEffect(() => {
@@ -36,8 +39,10 @@ const WallView = () => {
 
     socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
-      if (screenName === JUMBOTRON_VIEW) {
-        router.replace("/jumbotron");
+      setCurrentActive(screenName);
+      localStorage.setItem("currentActive", screenName);
+      if (screenName == WALL_VIEW) {
+        fetchPlaylistSongList();
       }
     });
     socket.on("insertSongIntoPlaylistResponse", (item) => {
@@ -88,6 +93,11 @@ const WallView = () => {
   }, []);
 
   useEffect(() => {
+    const currentActive = localStorage.getItem("currentActive");
+    if (currentActive == null) {
+      setCurrentActive(1);
+      localStorage.setItem("currentActive", 1);
+    }
     fetchPlaylistSongList();
     getThemeByTitleHandler(screenName);
   }, []);
@@ -116,52 +126,63 @@ const WallView = () => {
       setThemeMode(mode);
     }
   };
+
   return (
     <div
       ref={elementRef}
       className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
     >
-      <div className="overflow-x-auto mx-auto p-10">
+      <div className="overflow-x-auto mx-auto ">
         {isLoading ? (
           <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
         ) : (
           <>
-            <div className=" float-right">
-              <button
-                onClick={() => {
-                  ToggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
-                }}
-              >
-                {!isFullScreen ? (
-                  <RiFullscreenFill
-                    size={30}
-                    color={themeMode ? "black" : "white"}
-                  />
-                ) : (
-                  <MdOutlineFullscreenExit
-                    size={40}
-                    color={themeMode ? "black" : "white"}
-                  />
-                )}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-center m-5">
-              <Logo />
-            </div>
-
-            <ul>
-              <AnimatePresence>
-                {songList.map((item, index) => (
-                  <motion.li
-                    key={item?._id}
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    transition={{ duration: 0.5 }}
-                  >
-                    <div
-                      className={` h-20 rounded-lg flex items-center justify-between mb-2 p-4  font-medium
+            <div
+              className={`p-10 
+                
+                   ${
+                     currentActive == WALL_VIEW
+                       ? "opacity-100 block"
+                       : "opacity-0 hidden"
+                   }
+              
+                
+              `}
+            >
+              <div className=" float-right">
+                <button
+                  onClick={() => {
+                    ToggleFullScreen(elementRef, isFullScreen, setIsFullScreen);
+                  }}
+                >
+                  {!isFullScreen ? (
+                    <RiFullscreenFill
+                      size={30}
+                      color={themeMode ? "black" : "white"}
+                    />
+                  ) : (
+                    <MdOutlineFullscreenExit
+                      size={40}
+                      color={themeMode ? "black" : "white"}
+                    />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center justify-center m-5">
+                <Logo />
+              </div>
+              <ul>
+                <AnimatePresence>
+                  {songList.map((item, index) => (
+                    <motion.li
+                      key={item?._id}
+                      initial={{ opacity: 0, y: -20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 20 }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div
+                        className={` h-20 rounded-lg flex items-center justify-between mb-2 p-4  font-medium
               ${
                 index < 2
                   ? "bg-yellow-400  text-black  "
@@ -172,28 +193,44 @@ const WallView = () => {
                     }`
               }
               `}
-                    >
-                      <div className={`lg:text-3xl text-lg  capitalize  `}>
-                        {item?.title}
+                      >
+                        <div className={`lg:text-3xl text-lg  capitalize  `}>
+                          {item?.title}
+                        </div>
+                        <div className={`lg:text-3xl text-lg  capitalize `}>
+                          {item?.artist}
+                        </div>
                       </div>
-                      <div className={`lg:text-3xl text-lg  capitalize `}>
-                        {item?.artist}
-                      </div>
-                    </div>
-                  </motion.li>
-                ))}
-              </AnimatePresence>
-            </ul>
+                    </motion.li>
+                  ))}
+                </AnimatePresence>
+              </ul>
 
-            {songList?.length == 0 && (
-              <div
-                className={`flex justify-center text-lg items-center h-64 ${
-                  themeMode ? "text-black" : "text-white"
-                } w-full`}
-              >
-                The playlist is empty.
-              </div>
-            )}
+              {songList?.length == 0 && (
+                <div
+                  className={`flex justify-center text-lg items-center h-64 ${
+                    themeMode ? "text-black" : "text-white"
+                  } w-full`}
+                >
+                  The playlist is empty.
+                </div>
+              )}
+            </div>
+            <div
+              className={`flex w-full h-[100vh]
+                ${
+                  currentActive == JUMBOTRON_VIEW
+                    ? "opacity-100 block"
+                    : "opacity-0 "
+                }
+                
+            `}
+            >
+              <iframe
+                src="http://localhost:3000/jumbotron"
+                className="w-full h-full"
+              ></iframe>
+            </div>
           </>
         )}
       </div>

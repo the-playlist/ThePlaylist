@@ -54,7 +54,7 @@ export const createStreamUser = (req, res) => {
   try {
     const serverClient = StreamChat.getInstance(api_key, api_secret_key);
     const token = serverClient.createToken(user_id);
-    let response = new ResponseModel(true, "Player added successfully", {
+    let response = new ResponseModel(true, "Stream Session Created", {
       token,
       user_id,
       callId,
@@ -77,10 +77,7 @@ export const sendStreamRequestToMaster = async (req, res) => {
 
   const limit = await Limit.findOne({ heading });
   if (limit && currentActiveStreams.length >= limit.value) {
-    let response = new ResponseModel(
-      false,
-      "Active stream limit reached. Cannot create new stream."
-    );
+    let response = new ResponseModel(false, limit?.message);
     res.status(200).json(response);
     return;
   }

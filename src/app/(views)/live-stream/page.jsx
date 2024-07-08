@@ -26,7 +26,6 @@ const Livestream = () => {
       callId: callId,
       tableno: tableno,
     };
-
     let response = await createStreamUserApi(payload);
     if (response.data.success) {
       setStreamPayload(response.data.content);
