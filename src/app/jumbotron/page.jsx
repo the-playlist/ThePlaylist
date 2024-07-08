@@ -53,12 +53,12 @@ const JumboTron = () => {
   };
 
   return (
-    <div className="min-h-screen p-5 bg-[#272a30] ">
+    <div className="min-h-screen bg-[#272a30]   ">
       <div className="bg-[#272a30]">
         {content != null ? (
           <StreamRequests item={content} fullScreen={true} />
         ) : (
-          <div className="flex items-center justify-center">
+          <div className="flex items-center justify-center p-5">
             <span className=" bg-white mr-2 loading loading-spinner loading-md"></span>
             <div className="text-white text-2xl">
               Waiting for the livestream to start

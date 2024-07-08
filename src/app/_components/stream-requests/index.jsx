@@ -45,28 +45,45 @@ const StreamRequests = memo(
 
     useEffect(() => {
       // Join call and disable camera/microphone only once
-      call.join();
+      call.join({ create: true });
       call.camera.disable();
       call.microphone.disable();
     }, [call]);
+
+    // useEffect(() => {
+    //   setTimeout(() => {
+
+    //     const elementToClick = document.querySelector(
+    //       ".str-video__livestream-layout__go-fullscreen"
+    //     );
+    //     // Simulate a click event on the element
+    //     if (elementToClick) {
+    //       elementToClick?.click();
+    //     } else {
+    //       console.error(
+    //         'Element with class "str-video__livestream-layout__go-fullscreen" not found.'
+    //       );
+    //     }
+    //   }, 5000);
+    // }, []);
 
     return (
       <div>
         <StreamVideo client={client}>
           <StreamCall call={call}>
             {fullScreen ? (
-              <div className="fullScreenContainer">
-                <div className="innerContainer">
-                  <StreamTheme>
+              <StreamTheme>
+                <div className="fullScreenContainer">
+                  <div className="innerContainer">
                     <LivestreamLayout
                       showParticipantCount={false}
                       showDuration={true}
                       showLiveBadge={true}
                       muted={false}
                     />
-                  </StreamTheme>
+                  </div>
                 </div>
-              </div>
+              </StreamTheme>
             ) : (
               <div
                 className={

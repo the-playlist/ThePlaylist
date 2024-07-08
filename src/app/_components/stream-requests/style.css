@@ -1,13 +1,14 @@
 .fullScreenContainer {
-  display: flex;
+   display: flex;
   flex-direction: column;
-  height: 90%;
-  width: 100%;
+  height: 100vh;
+  width: 100%; 
+  padding: 20px;
 }
 
 .innerContainer {
   flex: 1;
-  height: 90%;
+  height: 100%;
   width: 100%;
 }
 
