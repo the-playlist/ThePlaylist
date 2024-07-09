@@ -6,7 +6,6 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 import { ToggleFullScreen } from "@/app/_components";
 import { CustomLoader } from "@/app/_components";
 import {
-  useLazyGetIsPlaylistEmptyQuery,
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
