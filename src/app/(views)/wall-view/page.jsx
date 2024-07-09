@@ -23,12 +23,15 @@ const WallView = () => {
   const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
-  const [currentActive, setCurrentActive] = useState(
-    localStorage.getItem("currentActive")
-  );
+  const [currentActive, setCurrentActive] = useState(null);
   let screenName = "Wall View";
 
-  const router = useRouter();
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const getCurrentActiveScreen = localStorage.getItem("currentActive");
+      setCurrentActive(getCurrentActiveScreen);
+    }
+  }, []);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -93,7 +96,7 @@ const WallView = () => {
 
   useEffect(() => {
     const currentActive = localStorage.getItem("currentActive");
-    if (currentActive == null) {
+    if (currentActive == null && typeof window !== "undefined") {
       setCurrentActive(1);
       localStorage.setItem("currentActive", 1);
     }
@@ -226,7 +229,7 @@ const WallView = () => {
             `}
             >
               <iframe
-                src="http://localhost:3000/jumbotron"
+                src={process.env.NEXT_PUBLIC_JUMBOTRON_URL}
                 className="w-full h-full"
               ></iframe>
             </div>
