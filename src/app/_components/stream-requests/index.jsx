@@ -14,7 +14,7 @@ import "./style.css";
 const StreamRequests = memo(
   ({ item, fullScreen, isAccepted, userLeftHandler }) => {
     const { callId, token, userId } = item;
-    const apiKey = "d7r2k5cjtzqj";
+    const apiKey = process.env.NEXT_PUBLIC_STREAM_API_KEY;
 
     // Create user object only once
     const user = useMemo(
@@ -49,23 +49,6 @@ const StreamRequests = memo(
       call.camera.disable();
       call.microphone.disable();
     }, [call]);
-
-    // useEffect(() => {
-    //   setTimeout(() => {
-
-    //     const elementToClick = document.querySelector(
-    //       ".str-video__livestream-layout__go-fullscreen"
-    //     );
-    //     // Simulate a click event on the element
-    //     if (elementToClick) {
-    //       elementToClick?.click();
-    //     } else {
-    //       console.error(
-    //         'Element with class "str-video__livestream-layout__go-fullscreen" not found.'
-    //       );
-    //     }
-    //   }, 5000);
-    // }, []);
 
     return (
       <div>
