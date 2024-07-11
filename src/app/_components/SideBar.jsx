@@ -155,7 +155,7 @@ const SideBar = () => {
 
   return (
     <>
-      <div className=" drop-shadow-lg lg:block md:block hidden bg-white relative  rounded-3xl mr-5 w-1/6 ">
+      <div className=" drop-shadow-lg  lg:block md:block hidden bg-white relative  rounded-3xl mr-5 w-1/6 ">
         <ul className="p-4 flex-col w-full">
           <div className="flex  items-center justify-center">
             <Link href={"/players"} className="hover:cursor-pointer">

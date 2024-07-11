@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import ToastProvider from "./toast-provider";
 import ReduxProvider from "./redux-store";
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
