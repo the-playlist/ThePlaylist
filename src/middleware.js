@@ -14,7 +14,9 @@ export const middleware = async (request) => {
     return NextResponse.redirect(new URL("/playlist", request.nextUrl));
   }
   if (!isPublicPath && !session) {
-    return NextResponse.redirect(new URL("https://comedycatch.com/login"));
+    return NextResponse.redirect(
+      new URL(`${process.env.NEXT_PUBLIC_BASE_API_URL}/login`)
+    );
   }
   return NextResponse.next();
 };
@@ -22,4 +24,3 @@ export const middleware = async (request) => {
 export const config = {
   matcher: ["/", "/players", "/songs", "/duty", "/login", "/playlist"],
 };
-
