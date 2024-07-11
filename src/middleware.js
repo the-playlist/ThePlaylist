@@ -14,7 +14,9 @@ export const middleware = async (request) => {
     return NextResponse.redirect(new URL("/playlist", request.nextUrl));
   }
   if (!isPublicPath && !session) {
-    return NextResponse.redirect(new URL("/login", request.nextUrl));
+    return NextResponse.redirect(
+      new URL("/login", process.env.NEXT_PUBLIC_BASE_API_URL)
+    );
   }
   return NextResponse.next();
 };
