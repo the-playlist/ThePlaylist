@@ -14,7 +14,7 @@ export const middleware = async (request) => {
     return NextResponse.redirect(new URL("/playlist", request.nextUrl));
   }
   if (!isPublicPath && !session) {
-    return NextResponse.redirect(new URL(`https://comedycatch.com/login`));
+    return NextResponse.redirect(new URL("/login", request.nextUrl));
   }
   return NextResponse.next();
 };
