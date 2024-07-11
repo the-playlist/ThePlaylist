@@ -155,7 +155,6 @@ const page = () => {
           return playlistSongListCopy;
         }
       }
-
       const finalPlaylist = playlistAlgorithm(
         votingList?.isFirst,
         findAndIncrementUpVote()

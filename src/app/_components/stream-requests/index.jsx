@@ -60,7 +60,7 @@ const StreamRequests = memo(
                   <div className="innerContainer">
                     <LivestreamLayout
                       showParticipantCount={false}
-                      showDuration={true}
+                      showDuration={false}
                       showLiveBadge={true}
                       muted={false}
                     />
