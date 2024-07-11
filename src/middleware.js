@@ -22,3 +22,4 @@ export const middleware = async (request) => {
 export const config = {
   matcher: ["/", "/players", "/songs", "/duty", "/login", "/playlist"],
 };
+
