@@ -32,7 +32,7 @@ const MenuOption = () => {
       <MenuItem
         onClick={() => {
           signOut({
-            callbackUrl: `https://comedycatch.com/login`,
+            callbackUrl: `${process.env.NEXT_PUBLIC_BASE_API_URL}/login`,
             redirect: true,
           });
         }}
