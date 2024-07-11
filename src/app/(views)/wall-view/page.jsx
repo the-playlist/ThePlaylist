@@ -68,6 +68,7 @@ const WallView = () => {
     socket.on("wallViewRes", (item) => {
       const { playlist, isFirst } = item;
       localStorage.setItem("isFirstTimeFetched", isFirst);
+
       setSongList([...playlist]);
     });
     socket.on("undoActionResponse", (item) => {
