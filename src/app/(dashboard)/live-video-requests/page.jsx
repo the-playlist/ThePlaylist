@@ -134,7 +134,7 @@ const StreamResponse = () => {
                     id: streamAcceptedContent?._id,
                     isActive: false,
                   };
-                  changeStatusHandler(payload);
+                  // changeStatusHandler(payload);
                 }}
               />
             </div>
