@@ -51,7 +51,6 @@ const StreamResponse = () => {
       if (stopByUser) {
         toast("Stream has been stopped by user");
       }
-
       getStreamRequestHandler();
     });
 
@@ -74,7 +73,6 @@ const StreamResponse = () => {
       const {
         content: { isAcceptedRequests, isActiveRequests },
       } = response?.data;
-
       dispatch(setStreamContent(isActiveRequests));
       setStreamAcceptedContent(isAcceptedRequests[0]);
       if (isAcceptedRequests[0]?.isAccepted) {
@@ -84,24 +82,20 @@ const StreamResponse = () => {
     setLoading(false);
   };
 
-  const changeStatusHandler = useCallback(
-    async (data) => {
-      dispatch(setStreamContent(streamContent.filter((i) => i._id != data.id)));
-
-      let response = await changeStatusApi(data);
-      if (response?.data.success) {
-        const { activeStream } = response?.data?.content;
-        getStreamRequestHandler();
-        socket.emit("acceptedRejectStreamReq", {
-          id: data?.callId,
-          isActive: data?.isActive ? true : false,
-          recentActive: recentActive,
-          activeStream: activeStream,
-        });
-      }
-    },
-    [streamContent]
-  );
+  const changeStatusHandler = async (data) => {
+    dispatch(setStreamContent(streamContent.filter((i) => i._id != data.id)));
+    let response = await changeStatusApi(data);
+    if (response?.data.success) {
+      const { activeStream } = response?.data?.content;
+      // getStreamRequestHandler();
+      socket.emit("acceptedRejectStreamReq", {
+        id: data?.callId,
+        isActive: data?.isActive ? true : false,
+        recentActive: recentActive,
+        activeStream: activeStream,
+      });
+    }
+  };
 
   const onToggleViewBtnPress = () => {
     socket.emit("wallViewJumbotronRequest", {

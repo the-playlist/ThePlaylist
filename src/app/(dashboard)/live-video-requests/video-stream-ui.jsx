@@ -10,13 +10,13 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
       <div className="bg-black h-56 rounded-md">
         <figure>
           <StreamRequest
-            userLeftHandler={() => {
+            userLeftHandler={async () => {
               let payload = {
                 callId: item?.callId,
                 id: item?._id,
                 isActive: false,
               };
-              changeStatusHandler(payload);
+              await changeStatusHandler(payload);
             }}
             item={item}
             socket={socket}
@@ -27,7 +27,7 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
         <div className=" flex justify-between items-center">
           <div className="card-actions justify-end w-full mr-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 let payload = {
                   callId: item?.callId,
                   id: item?._id,
@@ -35,7 +35,7 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                   isActive: true,
                 };
 
-                changeStatusHandler(payload);
+                await changeStatusHandler(payload);
               }}
               className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"
             >
@@ -44,14 +44,14 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
           </div>
           <div className="card-actions justify-end w-full  ml-2">
             <button
-              onClick={() => {
+              onClick={async () => {
                 let payload = {
                   callId: item?.callId,
                   id: item?._id,
                   isActive: false,
                 };
 
-                changeStatusHandler(payload);
+                await changeStatusHandler(payload);
               }}
               className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
             >
