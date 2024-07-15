@@ -16,7 +16,8 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                 id: item?._id,
                 isActive: false,
               };
-              // await changeStatusHandler(payload);
+              debugger;
+              await changeStatusHandler(payload);
             }}
             item={item}
             socket={socket}
@@ -51,7 +52,7 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                   isActive: false,
                 };
 
-                // await changeStatusHandler(payload);
+                await changeStatusHandler(payload);
               }}
               className="btn btn-primary bg-black border-0 text-white hover:bg-black w-full"
             >
