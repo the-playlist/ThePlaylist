@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef, memo, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { io } from "socket.io-client";
 import {
   useChangeStreamRequestStatusMutation,
@@ -50,13 +50,15 @@ const StreamResponse = () => {
       const { stopByUser, streamPayload } = item;
       if (stopByUser) {
         toast("Stream has been stopped by user");
+        getStreamRequestHandler();
+      } else if (streamPayload) {
+        getStreamRequestHandler();
       }
-      getStreamRequestHandler();
     });
 
-    socket.on("acceptedRejectStreamRes", (item) => {
-      getStreamRequestHandler();
-    });
+    // socket.on("acceptedRejectStreamRes", (item) => {
+    //   getStreamRequestHandler();
+    // });
     return () => {
       console.log("Disconnecting socket...");
       socket.disconnect();
@@ -87,7 +89,7 @@ const StreamResponse = () => {
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       const { activeStream } = response?.data?.content;
-      // getStreamRequestHandler();
+      getStreamRequestHandler();
       socket.emit("acceptedRejectStreamReq", {
         id: data?.callId,
         isActive: data?.isActive ? true : false,
