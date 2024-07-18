@@ -292,32 +292,6 @@ const LimitAndAppearence = () => {
                         )}
                       </div>
                     </div>
-                    {/* {index > 1 && (
-                      <div className="  w-1/4">
-                        <GenericButton
-                          disabled={
-                            btnLoader != null || item?.isMessage
-                              ? item?.message?.length > 0
-                                ? false
-                                : true
-                              : false
-                          }
-                          loading={index == btnLoader}
-                          text="Update"
-                          onClick={() => {
-                            let payload;
-
-                            payload = {
-                              heading: item?.heading,
-                              value: item?.value,
-                            };
-
-                            setBtnLoader(index);
-                            addUpdateLimitHandler(payload);
-                          }}
-                        />
-                      </div>
-                    )} */}
                   </div>
                   <div className="flex items-end justify-between mt-3">
                     {item?.isMessage && (
@@ -344,7 +318,6 @@ const LimitAndAppearence = () => {
                         </div>
                       </div>
                     )}
-                    {/* {index < 2 && ( */}
                     <div className="  w-1/4">
                       <GenericButton
                         disabled={
@@ -370,13 +343,11 @@ const LimitAndAppearence = () => {
                               message: item?.message,
                             };
                           }
-
                           setBtnLoader(index);
                           addUpdateLimitHandler(payload);
                         }}
                       />
                     </div>
-                    {/* )} */}
                   </div>
                 </div>
               );

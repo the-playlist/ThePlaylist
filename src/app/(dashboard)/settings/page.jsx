@@ -97,8 +97,8 @@ const page = () => {
     {
       id: 1,
       icon: (color) => <FavSongIcon color={color} />,
-      title: "Favourite Songs",
-      desc: "Such as add all the songs marked favourite to the playlist.",
+      title: "Favorite Songs",
+      desc: "Such as add all the songs marked favorite to the playlist.",
       detail: <FavSongList />,
     },
     {
