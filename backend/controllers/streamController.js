@@ -110,22 +110,26 @@ export const sendStreamRequestToMaster = async (req, res) => {
 
 export const changeStreamStatus = async (req, res) => {
   const { id, isActive, isAccepted } = req?.body || {};
-
+  let activeStream;
   if (isAccepted) {
     await Stream.findOneAndUpdate({ _id: id }, { isAccepted });
     await Stream.updateMany({ _id: { $ne: id } }, { isAccepted: false });
   }
-  await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
-  const activeStream = await Stream.find({
-    isActive: true,
-    isAccepted: false,
-  }).lean();
+  if (!isActive) {
+    await Stream.deleteOne({ _id: id });
+  } else {
+    await Stream.findOneAndUpdate({ _id: id }, { isActive }, { new: true });
+    activeStream = await Stream.find({
+      isActive: true,
+      isAccepted: false,
+    }).lean();
+  }
 
   let response = new ResponseModel(
     true,
     `${isActive == false && "Request Declined"}`,
     {
-      activeStream: activeStream?.length,
+      activeStream: activeStream?.length || 0,
     }
   );
   res.status(200).json(response);

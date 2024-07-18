@@ -23,6 +23,7 @@ const JumboTron = () => {
     });
 
     socket.on("acceptedRejectStreamRes", (item) => {
+      debugger;
       if (content == null || item?.id != content?.callId) {
         getLiveStreamHandler();
       }
@@ -41,6 +42,7 @@ const JumboTron = () => {
     let response = await getLiveStreamApi();
 
     if (response?.data?.success) {
+      debugger;
       const { content } = response?.data;
       setContent(content[0]);
     }

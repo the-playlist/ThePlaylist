@@ -79,7 +79,7 @@ export const MyLivestreamUI = ({
   const isCallLive = useIsCallLive();
   const [changeStatusApi] = useChangeStreamRequestStatusMutation();
   const [sendStreamReqApi] = useSendStreamRequestMutation();
-  const [timer, setTimer] = useState(300);
+  const [timer, setTimer] = useState(600);
   const [isActive, setIsActive] = useState(false);
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
@@ -94,7 +94,7 @@ export const MyLivestreamUI = ({
           stopByUser: true,
           isActive: false,
         };
-        await changeStatusHandler(payload, false);
+        // await changeStatusHandler(payload, false);
       }
     };
     const handleFocus = () => handleBrowserState(true);
@@ -254,7 +254,7 @@ export const MyLivestreamUI = ({
               isActive: false,
             };
             changeStatusHandler(payload, true);
-            return 300;
+            return 600;
           }
           return prevTimer - 1;
         });
@@ -268,7 +268,7 @@ export const MyLivestreamUI = ({
 
   const handleClick = () => {
     setIsActive(true);
-    setTimer(300);
+    setTimer(600);
   };
   function formatTime(seconds) {
     const minutes = Math.floor(seconds / 60);
