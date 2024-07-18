@@ -112,8 +112,8 @@ export const changeStreamStatus = async (req, res) => {
   const { id, isActive, isAccepted } = req?.body || {};
   let activeStream;
   if (isAccepted) {
+    await Stream.deleteOne({ isAccepted: true });
     await Stream.findOneAndUpdate({ _id: id }, { isAccepted });
-    await Stream.updateMany({ _id: { $ne: id } }, { isAccepted: false });
   }
   if (!isActive) {
     await Stream.deleteOne({ _id: id });

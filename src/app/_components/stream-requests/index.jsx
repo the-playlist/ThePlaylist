@@ -38,9 +38,9 @@ const StreamRequests = memo(
         userLeftHandler();
       };
       // Add listener for call ended event
-      call.on("call.session_participant_left", handleCallEnded);
+      call.on("call.session_ended", handleCallEnded);
       // Cleanup function to remove listener on unmount
-      return () => call.off("call.session_participant_left", handleCallEnded);
+      return () => call.off("call.session_ended", handleCallEnded);
     }, [call]);
 
     useEffect(() => {

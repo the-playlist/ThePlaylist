@@ -94,7 +94,7 @@ export const MyLivestreamUI = ({
           stopByUser: true,
           isActive: false,
         };
-        // await changeStatusHandler(payload, false);
+        await changeStatusHandler(payload, false);
       }
     };
     const handleFocus = () => handleBrowserState(true);
