@@ -9,15 +9,13 @@ import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 
 const WallView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
-
   const [isLoading, setIsLoading] = useState(true);
   const [songList, setSongList] = useState([]);
   const elementRef = useRef(null);
@@ -33,67 +31,67 @@ const WallView = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-      autoConnect: false,
-    });
-    socket.connect();
+  // useEffect(() => {
+  //   const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+  //     autoConnect: false,
+  //   });
+  //   socket.connect();
 
-    socket.on("wallViewJumbotronResponse", (item) => {
-      const { screenName } = item;
-      setCurrentActive(screenName);
-      localStorage.setItem("currentActive", screenName);
-      if (screenName == WALL_VIEW) {
-        fetchPlaylistSongList();
-      }
-    });
-    socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      localStorage.setItem("isFirstTimeFetched", isFirst);
-      setSongList([...playlist]);
-    });
-    socket.on("handleDragRes", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
-    });
-    socket.on("emptyPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
-    });
+  //   socket.on("wallViewJumbotronResponse", (item) => {
+  //     const { screenName } = item;
+  //     setCurrentActive(screenName);
+  //     localStorage.setItem("currentActive", screenName);
+  //     if (screenName == WALL_VIEW) {
+  //       fetchPlaylistSongList();
+  //     }
+  //   });
+  //   socket.on("insertSongIntoPlaylistResponse", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     localStorage.setItem("isFirstTimeFetched", isFirst);
+  //     setSongList([...playlist]);
+  //   });
+  //   socket.on("handleDragRes", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     setSongList([...playlist]);
+  //   });
+  //   socket.on("emptyPlaylistResponse", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     setSongList([...playlist]);
+  //   });
 
-    socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
-    });
-    socket.on("wallViewRes", (item) => {
-      const { playlist, isFirst } = item;
-      localStorage.setItem("isFirstTimeFetched", isFirst);
+  //   socket.on("RemoveSongFromPlaylistResponse", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     setSongList([...playlist]);
+  //   });
+  //   socket.on("wallViewRes", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     localStorage.setItem("isFirstTimeFetched", isFirst);
 
-      setSongList([...playlist]);
-    });
-    socket.on("undoActionResponse", (item) => {
-      const { playlist, isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("themeChangeByMasterRes", (item) => {
-      const { title } = item;
-      if (screenName == title) {
-        getThemeByTitleHandler(title);
-      }
-    });
-    socket.on("songAddByCustomerRes", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
-    });
-    socket.on("undoFavRes", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
-  }, []);
+  //     setSongList([...playlist]);
+  //   });
+  //   socket.on("undoActionResponse", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     fetchPlaylistSongList(isFirst);
+  //   });
+  //   socket.on("themeChangeByMasterRes", (item) => {
+  //     const { title } = item;
+  //     if (screenName == title) {
+  //       getThemeByTitleHandler(title);
+  //     }
+  //   });
+  //   socket.on("songAddByCustomerRes", (item) => {
+  //     const { playlist, isFirst } = item;
+  //     setSongList([...playlist]);
+  //   });
+  //   socket.on("undoFavRes", (item) => {
+  //     const { isFirst } = item;
+  //     fetchPlaylistSongList(isFirst);
+  //   });
+  //   return () => {
+  //     console.log("Disconnecting socket...");
+  //     socket.disconnect();
+  //   };
+  // }, []);
 
   useEffect(() => {
     const currentActive = localStorage.getItem("currentActive");
