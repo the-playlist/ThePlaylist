@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
-const CountDown = ({ openModal, timer }) => {
+export const CountDown = ({ openModal, timer }) => {
   const reff = useRef();
 
   useEffect(() => {
@@ -24,5 +24,3 @@ const CountDown = ({ openModal, timer }) => {
     </div>
   );
 };
-
-export default CountDown;

@@ -6,11 +6,7 @@ import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { TbMusicX } from "react-icons/tb";
-import {
-  CustomLoader,
-  SelectSongModal,
-  SongCountdownTimer,
-} from "../../_components";
+import { SelectSongModal, SongCountdownTimer } from "../../_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetAssignSongsWithPlayersQuery,
@@ -41,6 +37,7 @@ import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
 import Ticker from "react-ticker";
 import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
+import { CustomLoader } from "@/app/_components/custom_loader";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {

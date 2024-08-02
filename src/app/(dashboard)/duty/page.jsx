@@ -8,13 +8,10 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
-import {
-  CustomLoader,
-  GenericButton,
-  SelectSongModal,
-} from "@/app/_components";
+import { GenericButton, SelectSongModal } from "@/app/_components";
 import _ from "lodash";
 import { useRouter } from "next/navigation";
+import { CustomLoader } from "@/app/_components/custom_loader";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();

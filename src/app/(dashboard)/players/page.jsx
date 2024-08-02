@@ -1,7 +1,6 @@
 "use client";
 import {
   ConfirmationModal,
-  CustomLoader,
   OptionButton,
   ShowQualifiedList,
   SongIcon,
@@ -14,6 +13,7 @@ import {
   useLazyGetAllPlayersQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
+import { CustomLoader } from "@/app/_components/custom_loader";
 
 const Players = () => {
   const [addModalOpens, setAddModalOpens] = useState(false);
