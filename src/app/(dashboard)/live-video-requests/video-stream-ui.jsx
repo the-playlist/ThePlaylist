@@ -1,5 +1,5 @@
+import { StreamRequests } from "@/app/_components/stream-requests";
 import React, { memo } from "react";
-import { StreamRequest } from "@/app/_components";
 
 export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
   return (
@@ -9,7 +9,7 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
       </div>
       <div className="bg-black h-56 rounded-md">
         <figure>
-          <StreamRequest
+          <StreamRequests
             userLeftHandler={async () => {
               let payload = {
                 callId: item?.callId,
