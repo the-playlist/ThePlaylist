@@ -11,10 +11,11 @@ import {
   useLazyGetLimitListQuery,
   useGetTableViewSongsMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { CustomLoader, ScreenLoader } from "@/app/_components";
+import { ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
+import { CustomLoader } from "@/app/_components/custom_loader";
 
 const TableView = () => {
   let screenName = "Table View";

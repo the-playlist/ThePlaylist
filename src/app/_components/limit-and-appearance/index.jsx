@@ -11,10 +11,9 @@ import {
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { IoMdAdd, IoIosRemove } from "react-icons/io";
-import CustomLoader from "../custom_loader";
-
-import { Tooltip, Button, Textarea } from "@nextui-org/react";
+import { Tooltip, Button } from "@nextui-org/react";
 import { FaCircleInfo } from "react-icons/fa6";
+import { CustomLoader } from "../custom_loader";
 
 const LimitAndAppearence = () => {
   const [getThemeListApi, getThemeListRes] = useLazyGetThemeListQuery();

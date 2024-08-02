@@ -1,10 +1,9 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useLazyGetLiveStreamQuery } from "../_utils/redux/slice/emptySplitApi";
-import StreamRequests from "../_components/stream-requests";
 import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
-import { WALL_VIEW } from "../_utils/common/constants";
+import { StreamRequests } from "../_components/stream-requests";
 
 const JumboTron = () => {
   const [getLiveStreamApi] = useLazyGetLiveStreamQuery();
@@ -23,7 +22,6 @@ const JumboTron = () => {
     });
 
     socket.on("acceptedRejectStreamRes", (item) => {
-      debugger;
       if (content == null || item?.id != content?.callId) {
         getLiveStreamHandler();
       }
@@ -40,9 +38,7 @@ const JumboTron = () => {
 
   const getLiveStreamHandler = async () => {
     let response = await getLiveStreamApi();
-
     if (response?.data?.success) {
-      debugger;
       const { content } = response?.data;
       setContent(content[0]);
     }

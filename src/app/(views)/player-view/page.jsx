@@ -3,12 +3,13 @@ import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
-import { CustomLoader, ToggleFullScreen, CountDown } from "@/app/_components";
+import { CountDown } from "@/app/_components/count-down";
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
+import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
 
 const PerformerView = () => {
@@ -146,11 +147,7 @@ const PerformerView = () => {
         ) : (
           <>
             <div className=" float-right">
-              <button
-                onClick={() => {
-                  ToggleFullScreen(ref, isFullScreen, setIsFullScreen);
-                }}
-              >
+              <button className="bg-transparent" onClick={() => {}}>
                 {!isFullScreen ? (
                   <RiFullscreenFill
                     size={30}
@@ -164,7 +161,7 @@ const PerformerView = () => {
                 )}
               </button>
             </div>
-            <div className="  flex items-center justify-center m-5">
+            <div className="flex items-center justify-center m-5">
               <Logo />
             </div>
             {performer.length === 0 && (

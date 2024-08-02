@@ -16,7 +16,6 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                 id: item?._id,
                 isActive: false,
               };
-              debugger;
               await changeStatusHandler(payload);
             }}
             item={item}

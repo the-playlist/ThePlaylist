@@ -5,11 +5,7 @@ import {
   useChangeStreamRequestStatusMutation,
   useLazyGetStreamRequestQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import {
-  CustomLoader,
-  StreamRequest,
-  CurrentLiveVideo,
-} from "@/app/_components";
+import { CurrentLiveVideo } from "@/app/_components";
 import { toast } from "react-toastify";
 import { Togglebutton } from "./toggle-button";
 import { useSelector } from "react-redux";
@@ -20,6 +16,7 @@ import {
 } from "@/app/_utils/redux/slice/playlist-list";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 import { VideoStreamUI } from "./video-stream-ui";
+import { CustomLoader } from "@/app/_components/custom_loader";
 
 const StreamResponse = () => {
   const dispatch = useDispatch();

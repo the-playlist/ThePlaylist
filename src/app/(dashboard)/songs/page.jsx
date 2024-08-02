@@ -2,7 +2,6 @@
 import {
   AddEditSong,
   ConfirmationModal,
-  CustomLoader,
   OptionButton,
   ShowQualifiedList,
   SongIcon,
@@ -16,6 +15,7 @@ import React, { useEffect, useState } from "react";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { MdClear } from "react-icons/md";
+import { CustomLoader } from "../../_components/custom_loader";
 
 const SongsManagment = () => {
   const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
