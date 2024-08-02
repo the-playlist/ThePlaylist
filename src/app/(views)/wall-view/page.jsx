@@ -217,7 +217,7 @@ const WallView = () => {
                 </div>
               )}
             </div>
-            <div
+            {/* <div
               className={`flex w-full h-[100vh]
                 ${
                   currentActive == JUMBOTRON_VIEW
@@ -231,7 +231,7 @@ const WallView = () => {
                 src={process.env.NEXT_PUBLIC_JUMBOTRON_URL}
                 className="w-full h-full"
               ></iframe>
-            </div>
+            </div> */}
           </>
         )}
       </div>
