@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { FaRegStopCircle } from "react-icons/fa";
 import { GoDotFill } from "react-icons/go";
-import StreamRequest from "../stream-requests";
+import { StreamRequests } from "../stream-requests";
 
 const CurrentLiveVideo = memo(({ item, onStopClick, socket }) => {
   return (
@@ -21,7 +21,7 @@ const CurrentLiveVideo = memo(({ item, onStopClick, socket }) => {
         <div className=" p-5">
           <div className="bg-black h-96 rounded-md">
             <figure>
-              <StreamRequest item={item} socket={socket} isAccepted={true} />
+              <StreamRequests item={item} socket={socket} isAccepted={true} />
             </figure>
           </div>
           <div className="mt-3 ">
