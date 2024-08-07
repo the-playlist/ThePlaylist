@@ -51,7 +51,8 @@ const Typeahead = () => {
       return;
     }
     const filtered = songList.filter((option) =>
-      option.title.toLowerCase().includes(value.toLowerCase())
+      option.title.toLowerCase().includes(value.toLowerCase()) ||
+      option.artist.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredOptions(filtered);
   };

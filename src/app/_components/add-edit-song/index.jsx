@@ -192,12 +192,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                       min: {
                         value: 1,
                         message: "Intro seconds must be greater than 0",
-                      },
-                      max: {
-                        value: 59,
-                        message:
-                          "Maximum intro seconds cannot exceed 59 seconds",
-                      },
+                      }
                     })}
                   />
                 </div>
