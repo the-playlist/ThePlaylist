@@ -13,6 +13,36 @@ import { io } from "socket.io-client";
 import GenericButton from "../generic-button";
 import { FaCircleInfo } from "react-icons/fa6";
 
+const AssignedSongsDropdown = ({ item }) => {
+  function generateObjectByPlayerId(record, playerId) {
+    const assignedPlayer = record.assignedPlayers.find(
+      (player) => player._id == playerId
+    );
+    if (!assignedPlayer) {
+      return null;
+    }
+    return {
+      _id: assignedPlayer._id,
+      playerName: assignedPlayer.playerName,
+    };
+  }
+
+  return (
+    <select
+      value={item?.selectedPlayers?._id}
+      onChange={(e) => {
+        const value = generateObjectByPlayerId(item, e.target.value);
+        item.selectedPlayers = value;
+      }}
+      className="select select-bordered w-full max-w-xs focus:outline-none"
+    >
+      {item?.assignedPlayers?.map((item) => {
+        return <option value={item?._id}>{`${item.playerName}`}</option>;
+      })}
+    </select>
+  );
+};
+
 const SelectSongModal = ({
   playlistCount,
   title,
@@ -69,11 +99,28 @@ const SelectSongModal = ({
     }
   };
 
+  const getRandomId = (length) => {
+    return Math.floor(Math.random() * length);
+  };
+
+  let assignedPlayers = [];
+  const getRandomSelectedPlayer = (playersList) => {
+    let randomIndex = getRandomId(playersList?.length);
+    const playerId = playersList[randomIndex]._id;
+    let occurance = assignedPlayers.filter((item) => item === playerId).length;
+    if (occurance > 2) {
+      randomIndex = getRandomId(playersList?.length);
+    }
+    const selectedPlayer = playersList[randomIndex];
+    assignedPlayers.push(playerId);
+    return selectedPlayer;
+  };
+
   function addSelectedPlayers(data) {
     return data?.map((item, index) => {
       const selectedPlayer =
         item.assignedPlayers && item.assignedPlayers.length > 0
-          ? item.assignedPlayers[0]
+          ? getRandomSelectedPlayer(item.assignedPlayers)
           : {};
       return {
         ...item,
@@ -253,23 +300,7 @@ const SelectSongModal = ({
                     </div>
                     <div className="w-3/12 text-center">
                       {item?.assignedPlayers?.length > 1 ? (
-                        <select
-                          onChange={(e) => {
-                            item.selectedPlayers = generateObjectByPlayerId(
-                              item,
-                              e.target.value
-                            );
-                          }}
-                          className="select select-bordered w-full max-w-xs focus:outline-none"
-                        >
-                          {item?.assignedPlayers?.map((item) => {
-                            return (
-                              <option
-                                value={item?._id}
-                              >{`${item.playerName}`}</option>
-                            );
-                          })}
-                        </select>
+                        <AssignedSongsDropdown item={item} />
                       ) : (
                         <div>{`${item?.assignedPlayers[0].playerName}`}</div>
                       )}
@@ -314,6 +345,7 @@ const SelectSongModal = ({
                   const selectedPlayers = playersList.filter(
                     (item) => item.isChecked == true
                   );
+                  debugger;
                   getDesiredOuptut(selectedPlayers);
                 }
               }}
