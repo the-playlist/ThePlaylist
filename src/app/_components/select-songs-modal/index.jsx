@@ -14,6 +14,7 @@ import GenericButton from "../generic-button";
 import { FaCircleInfo } from "react-icons/fa6";
 
 const AssignedSongsDropdown = ({ item }) => {
+  const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
   function generateObjectByPlayerId(record, playerId) {
     const assignedPlayer = record.assignedPlayers.find(
       (player) => player._id == playerId
@@ -29,9 +30,11 @@ const AssignedSongsDropdown = ({ item }) => {
 
   return (
     <select
-      value={item?.selectedPlayers?._id}
+      value={selectedId}
       onChange={(e) => {
+        e.preventDefault();
         const value = generateObjectByPlayerId(item, e.target.value);
+        setSelectedId(value._id);
         item.selectedPlayers = value;
       }}
       className="select select-bordered w-full max-w-xs focus:outline-none"
@@ -131,18 +134,6 @@ const SelectSongModal = ({
     });
   }
 
-  function generateObjectByPlayerId(record, playerId) {
-    const assignedPlayer = record.assignedPlayers.find(
-      (player) => player._id == playerId
-    );
-    if (!assignedPlayer) {
-      return null;
-    }
-    return {
-      _id: assignedPlayer._id,
-      playerName: assignedPlayer.playerName,
-    };
-  }
   const addSongsHandler = async (data) => {
     try {
       let response = await addSongToPlaylistApi(data);
@@ -345,7 +336,6 @@ const SelectSongModal = ({
                   const selectedPlayers = playersList.filter(
                     (item) => item.isChecked == true
                   );
-                  debugger;
                   getDesiredOuptut(selectedPlayers);
                 }
               }}
