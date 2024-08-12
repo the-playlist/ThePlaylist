@@ -99,9 +99,6 @@ export const MyLivestreamUI = ({
     };
     const handleFocus = () => handleBrowserState(true);
     const handleBlur = () => handleBrowserState(false);
-    // window.addEventListener("popstate", () => {
-    //   handleBlur();
-    // });
     window.addEventListener("focus", handleFocus);
     window.addEventListener("blur", handleBlur);
 
@@ -110,6 +107,23 @@ export const MyLivestreamUI = ({
       window.removeEventListener("focus", handleFocus);
       window.removeEventListener("blur", handleBlur);
     };
+  }, []);
+
+  useEffect(() => {
+    var btn = document.getElementById("btn");
+    btn?.addEventListener("click", function () {
+      window?.history?.pushState({}, null, null);
+    });
+    let count = 0;
+    window?.addEventListener("popstate", async function () {
+      count += 1; // handle this case to only trigger changeStatusHandler function at once
+      let payload = {
+        id: localStorage.getItem(CALL_ID),
+        stopByUser: true,
+        isActive: false,
+      };
+      count === 1 && (await changeStatusHandler(payload, false));
+    });
   }, []);
 
   useEffect(() => {
@@ -277,7 +291,6 @@ export const MyLivestreamUI = ({
       remainingSeconds < 10 ? `0${remainingSeconds}` : remainingSeconds;
     return `${minutes}:${formattedSeconds}`;
   }
-
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "5px" }}>
       {isActive && (
