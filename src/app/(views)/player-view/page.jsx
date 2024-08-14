@@ -177,7 +177,7 @@ const PerformerView = () => {
             <table className="table table-lg border-separate border-spacing-y-2 ">
               {performer?.map((item, index) => (
                 <tbody
-                  className={`h-20  text-base rounded-tl-lg   font-medium  
+                  className={`text-base rounded-tl-lg font-medium  
               ${
                 index < 2
                   ? "bg-yellow-400 text-black"
@@ -190,16 +190,20 @@ const PerformerView = () => {
                   `
               }`}
                 >
-                  <tr className="rounded-l-lg">
+                  <tr className="rounded-l-lg ">
                     <td
-                      className={`lg:text-3xl text-lg text-start rounded-l-lg`}
+                      className={`lg:text-[30px]  text-lg text-start rounded-l-lg `}
                     >
                       {index + 1}
                     </td>
-                    <td className={`lg:text-3xl text-lg capitalize text-start`}>
+                    <td
+                      className={`lg:text-[55px] leading-[55px] text-lg capitalize text-left `}
+                    >
                       {item?.title}
                     </td>
-                    <td className={`lg:text-3xl text-lg capitalize text-end`}>
+                    <td
+                      className={`lg:text-[40px] leading-[50px] text-lg capitalize text-end `}
+                    >
                       {item?.playerName}
                     </td>
                     <td className="text-black rounded-r-lg text-end w-1/12">
