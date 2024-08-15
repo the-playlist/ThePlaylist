@@ -11,6 +11,7 @@ import {
 import { io } from "socket.io-client";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
+import { useFullScreenHandle, FullScreen } from "react-full-screen";
 
 const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
@@ -21,8 +22,8 @@ const PerformerView = () => {
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [seconds, setSeconds] = useState(0);
-
   const [timerRunning, setTimerRunning] = useState(false);
+  const handle = useFullScreenHandle();
 
   let screenName = "Player View";
 
@@ -137,94 +138,107 @@ const PerformerView = () => {
   };
 
   return (
-    <div
-      className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
-      ref={ref}
-    >
-      <div className="overflow-x-auto mx-auto p-10 ">
-        {loading ? (
-          <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
-        ) : (
-          <>
-            <div className=" float-right">
-              <button className="bg-transparent" onClick={() => {}}>
-                {!isFullScreen ? (
-                  <RiFullscreenFill
-                    size={30}
-                    color={themeMode ? "black" : "white"}
-                  />
-                ) : (
-                  <MdOutlineFullscreenExit
-                    size={40}
-                    color={themeMode ? "black" : "white"}
-                  />
-                )}
-              </button>
-            </div>
-            <div className="flex items-center justify-center m-5">
-              <Logo />
-            </div>
-            {performer.length === 0 && (
-              <div
-                className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
-                  themeMode ? "text-black" : "text-white"
-                }`}
-              >
-                The playlist is empty.
-              </div>
-            )}
-
-            <table className="table table-lg border-separate border-spacing-y-2 ">
-              {performer?.map((item, index) => (
-                <tbody
-                  className={`text-base rounded-tl-lg font-medium  
-              ${
-                index < 2
-                  ? "bg-yellow-400 text-black"
-                  : `
-                  ${
-                    themeMode
-                      ? "bg-[#F0F0F0] text-black"
-                      : "bg-[#303134] text-white"
-                  }
-                  `
-              }`}
+    <FullScreen handle={handle} className=" overflow-y-auto">
+      <div
+        className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
+        ref={ref}
+      >
+        <div className="overflow-x-auto mx-auto p-10 ">
+          {loading ? (
+            <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
+          ) : (
+            <>
+              <div className=" float-right">
+                <button
+                  className="bg-transparent"
+                  onClick={() => {
+                    if (!isFullScreen) {
+                      handle.enter();
+                    } else {
+                      handle.exit();
+                    }
+                    setIsFullScreen(!isFullScreen);
+                  }}
                 >
-                  <tr className="rounded-l-lg ">
-                    <td
+                  {!isFullScreen ? (
+                    <RiFullscreenFill
+                      size={30}
+                      color={themeMode ? "black" : "white"}
+                    />
+                  ) : (
+                    <MdOutlineFullscreenExit
+                      size={40}
+                      color={themeMode ? "black" : "white"}
+                    />
+                  )}
+                </button>
+              </div>
+              <div className="flex items-center justify-center m-5">
+                <Logo />
+              </div>
+              {performer.length === 0 && (
+                <div
+                  className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
+                    themeMode ? "text-black" : "text-white"
+                  }`}
+                >
+                  The playlist is empty.
+                </div>
+              )}
+
+              <table className="table table-lg border-separate border-spacing-y-4 ">
+                {performer?.map((item, index) => (
+                  <tbody className={`text-base rounded-tl-lg font-medium`}>
+                    <tr className="bg-[#1F1F1F]">
+                      <div
+                        className={`flex flex-row p-3 rounded-lg ${
+                          index < 2
+                            ? "bg-yellow-400 text-black"
+                            : `
+                          ${
+                            themeMode
+                              ? "bg-[#F0F0F0] text-black"
+                              : "bg-[#303134] text-white"
+                          }
+                          `
+                        }`}
+                      >
+                        {/* <td
                       className={`lg:text-[30px]  text-lg text-start rounded-l-lg `}
                     >
                       {index + 1}
-                    </td>
-                    <td
-                      className={`lg:text-[55px] leading-[55px] text-lg capitalize text-left `}
-                    >
-                      {item?.title}
-                    </td>
-                    <td
-                      className={`lg:text-[40px] leading-[50px] text-lg capitalize text-end `}
-                    >
-                      {item?.playerName}
-                    </td>
-                    <td className="text-black rounded-r-lg text-end w-1/12">
-                      <IntroCounter
-                        introSec={performer[0]?.introSec}
-                        index={index}
-                        performerList={performer}
-                        introTimer={parseInt(item.introSec)}
-                      />
-                    </td>
-                  </tr>
-                </tbody>
-              ))}
-            </table>
-            {seconds > 0 && (
-              <CountDown openModal={seconds > 0} timer={seconds} />
-            )}
-          </>
-        )}
+                    </td> */}
+                        <td
+                          className={`text-[50px] rounded-lg  flex-1  leading-[80px]  capitalize text-left  `}
+                        >
+                          {item?.title}
+                        </td>
+                        <td
+                          className={`text-[35px] leading-[50px]  capitalize text-end flex p-0 items-center `}
+                        >
+                          {item?.playerName}
+                        </td>
+                        <td className="text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
+                          <IntroCounter
+                            introSec={performer[0]?.introSec}
+                            index={index}
+                            performerList={performer}
+                            introTimer={parseInt(item.introSec)}
+                          />
+                        </td>
+                      </div>
+                    </tr>
+                  </tbody>
+                ))}
+              </table>
+              {seconds > 0 && (
+                <CountDown openModal={seconds > 0} timer={seconds} />
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </FullScreen>
   );
 };
 

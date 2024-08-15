@@ -49,7 +49,7 @@ export const IntroCounter = ({
   }, [introCountdown, isTimerOn]);
 
   return (
-    <div className=" h-12 w-12 text-2xl bg-white rounded-full justify-center items-center flex float-end ">
+    <div className=" h-12 w-12 text-2xl bg-white rounded-full justify-center items-center flex float-end">
       {introCountdown}
     </div>
   );
