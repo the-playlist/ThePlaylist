@@ -24,6 +24,7 @@ const songsSchema = new mongoose.Schema(
     },
     qualifiedPlayer: Boolean,
     isFav: { type: Boolean, default: false },
+    isDisabled: { type: Boolean, default: false },
   },
   {
     timestamps: true,

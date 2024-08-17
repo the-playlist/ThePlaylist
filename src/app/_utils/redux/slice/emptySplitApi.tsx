@@ -18,6 +18,7 @@ const endPoints = {
     "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
+  DISABLE_SONG: "api/songs/disableSongStatus",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
   DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
@@ -101,6 +102,13 @@ export const emptySplitApi = createApi({
     getTableViewSongs: builder.mutation({
       query: (body: any) => ({
         url: endPoints.GET_TABLE_VIEW_SONGS,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    disbaleSongFromSongBank: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.DISABLE_SONG,
         method: "POST",
         body: body,
       }),
@@ -304,4 +312,5 @@ export const {
   useLazyGetFavSongListQuery,
   useLazyGetIsPlaylistEmptyQuery,
   useLazyGetAddSongListForCustomerQuery,
+  useDisbaleSongFromSongBankMutation,
 } = emptySplitApi;

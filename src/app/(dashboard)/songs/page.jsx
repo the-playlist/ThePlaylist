@@ -8,6 +8,7 @@ import {
 } from "../../_components";
 import {
   useDeleteSongByIdMutation,
+  useDisbaleSongFromSongBankMutation,
   useLazyGetSongsListQuery,
   useMarkSongFavMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
@@ -16,6 +17,28 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { MdClear } from "react-icons/md";
 import { CustomLoader } from "../../_components/custom_loader";
+
+const ToggleButton = ({ isChecked, item }) => {
+  const [isEnable, setIsEnable] = useState(isChecked);
+  const [disableSongAPI] = useDisbaleSongFromSongBankMutation();
+  return (
+    <input
+      onClick={async () => {
+        setIsEnable(!isEnable);
+        let response = await disableSongAPI({
+          id: item._id,
+          status: isEnable,
+        });
+        if (response && response.data.success) {
+          toast.success(response?.data?.description);
+        }
+      }}
+      type="checkbox"
+      className="toggle toggle-success mr-2 "
+      checked={isEnable}
+    />
+  );
+};
 
 const SongsManagment = () => {
   const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
@@ -124,6 +147,7 @@ const SongsManagment = () => {
                     <th></th>
                     <th>Title</th>
                     <th>Artist</th>
+                    <th className=" text-center">Online</th>
                     <th className=" text-center">Qualified</th>
                     <th className=" text-center">Intro Sec</th>
                     <th className=" text-center">Category</th>
@@ -137,6 +161,12 @@ const SongsManagment = () => {
                       <th className="rounded-l-2xl">{index + 1}</th>
                       <td>{item?.title}</td>
                       <td>{item?.artist}</td>
+                      <td>
+                        <ToggleButton
+                          item={item}
+                          isChecked={!item?.isDisabled}
+                        />
+                      </td>
                       <td className=" text-center flex justify-center  items-center h-20">
                         <SongIcon
                           onClick={() => {
