@@ -76,6 +76,7 @@ export const getAllSongs = async (req, res, next) => {
           category: 1,
           introSec: 1,
           songDuration: 1,
+          isDisabled: { $ifNull: ["$isDisabled", false] },
           qualifiedPlayers: {
             $map: {
               input: "$qualifiedPlayers",
@@ -190,6 +191,11 @@ export const getOnDutyPlayerSongs = async (req, res, next) => {
         $unwind: "$player_info",
       },
       {
+        $match: {
+          $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
+        },
+      },
+      {
         $addFields: {
           duty: "$player_info.duty",
         },
@@ -258,6 +264,7 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
       {
         $match: {
           "assignedPlayers.duty.status": true,
+          $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
         },
       },
       {
@@ -325,6 +332,22 @@ export const deleteSongById = async (req, res, next) => {
   res.status(200).json(response);
 };
 
+export const disableSongById = async (req, res, next) => {
+  const id = req.body.id;
+  const status = req.body.status;
+  if (!id) {
+    return res.status(400).json({ message: "ID parameter is missing" });
+  }
+
+  await Songs.findByIdAndUpdate(id, { isDisabled: status });
+  const response = new ResponseModel(
+    true,
+    `Song ${status ? "disabled" : "activated"} successfully.`,
+    null
+  );
+  res.status(200).json(response);
+};
+
 export const getSongByPlayerId = async (req, res, next) => {
   const _id = req.query.id;
   if (!_id) {
@@ -380,6 +403,7 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
         {
           $match: {
             "duty.status": true,
+            $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
           },
         },
         // Group by song and count the total players
