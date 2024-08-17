@@ -205,12 +205,12 @@ const WallView = () => {
               `}
                         >
                           <div
-                            className={`lg:text-[80px] text-lg  capitalize  leading-[85px] `}
+                            className={`text-[80px]  capitalize  leading-[85px] `}
                           >
                             {item?.title}
                           </div>
                           <div
-                            className={`lg:text-[50px] text-lg  capitalize  flex-1 leading-[85px] text-right  `}
+                            className={`text-[50px]  capitalize  flex-1 leading-[85px] text-right  `}
                           >
                             {item?.artist}
                           </div>
