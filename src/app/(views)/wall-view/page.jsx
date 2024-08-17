@@ -192,7 +192,7 @@ const WallView = () => {
                         transition={{ duration: 0.5 }}
                       >
                         <div
-                          className={`p-6 rounded-lg flex items-center justify-between mb-5 font-medium
+                          className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
               ${
                 index < 2
                   ? "bg-yellow-400  text-black  "
@@ -205,12 +205,12 @@ const WallView = () => {
               `}
                         >
                           <div
-                            className={`text-[80px]  capitalize  leading-[85px] `}
+                            className={`text-[45px]  capitalize  leading-[85px] `}
                           >
                             {item?.title}
                           </div>
                           <div
-                            className={`text-[50px]  capitalize  flex-1 leading-[85px] text-right  `}
+                            className={`text-[35px]  capitalize  flex-1 leading-[85px] text-right  `}
                           >
                             {item?.artist}
                           </div>
