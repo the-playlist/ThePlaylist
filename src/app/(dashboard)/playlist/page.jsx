@@ -578,7 +578,7 @@ const page = () => {
                         return (
                           <Draggable
                             key={sortOrder}
-                            draggableId={sortOrder.toString()}
+                            draggableId={sortOrder?.toString() ?? 0}
                             index={index}
                             isDragDisabled={isLockedSongs}
                           >

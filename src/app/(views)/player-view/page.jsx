@@ -250,7 +250,7 @@ const PerformerView = () => {
                             introSec={performer[0]?.introSec}
                             index={index}
                             performerList={performer}
-                            introTimer={parseInt(item.introSec)}
+                            introTimer={parseInt(item?.introSec ?? 0)}
                           />
                         </td>
                       </div>
