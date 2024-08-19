@@ -31,7 +31,7 @@ const PerformerView = () => {
   let screenName = "Player View";
 
   useEffect(() => {
-    let timeoutId; // Store the timeout ID
+    let timeoutId;
     const interval = 30000; // 50 seconds in milliseconds
 
     const fetchWithInterval = async () => {
