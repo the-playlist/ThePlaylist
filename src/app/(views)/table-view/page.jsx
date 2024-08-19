@@ -4,7 +4,7 @@ import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-
+import { useOnlineStatus } from "@/app/_utils/helper";
 import {
   useAddUpdateVoteMutation,
   useLazyGetThemeByTitleQuery,
@@ -18,6 +18,17 @@ import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
 
 const TableView = () => {
+  const isOnline = useOnlineStatus();
+
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
   let screenName = "Table View";
   const router = useRouter();
   const searchParams = useSearchParams();

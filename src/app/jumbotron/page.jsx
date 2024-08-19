@@ -26,10 +26,6 @@ const JumboTron = () => {
         getLiveStreamHandler();
       }
     });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {
