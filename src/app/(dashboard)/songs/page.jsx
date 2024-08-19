@@ -91,7 +91,8 @@ const SongsManagment = () => {
                   type="text"
                   placeholder="Search song by title"
                   value={searchTerm}
-                  onChange={(e) => {
+                  onChange={async (e) => {
+                    debugger;
                     let selection = songsList.filter((song) =>
                       song.title
                         .toLowerCase()
@@ -99,7 +100,13 @@ const SongsManagment = () => {
                     );
 
                     setSearchTerm(e.target.value.toLowerCase());
+                    await setFilteredsongs([]);
                     setFilteredsongs(selection);
+                    if (e.target.value.length === 0) {
+                      await setFilteredsongs([]);
+                      await setSongsList([]);
+                      fetchSongsList();
+                    }
                   }}
                   className="block w-full py-3 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-primary"
                 />
@@ -118,9 +125,12 @@ const SongsManagment = () => {
                 {searchTerm?.length > 0 && (
                   <button
                     className="absolute right-0 top-2 hover:pointer rounded-r-lg px-4 py-2 "
-                    onClick={() => {
+                    onClick={async () => {
                       setSearchTerm("");
                       setFilteredsongs(songsList);
+                      await setFilteredsongs([]);
+                      await setSongsList([]);
+                      fetchSongsList();
                     }}
                   >
                     <MdClear size={20} className="text-gray-400" />
