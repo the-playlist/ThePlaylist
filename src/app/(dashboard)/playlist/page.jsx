@@ -30,6 +30,7 @@ import {
   setPlaylistSongList as setPlayListSongListLocalStoage,
   setCurrentSongSecond,
   setIsFirstTimeFetched,
+  setInitialSongPlaylist,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds } from "../../_utils/helper";
@@ -38,6 +39,7 @@ import CountDown from "./coutdown";
 import Ticker from "react-ticker";
 import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
+import { EllipsisText } from "@/app/_components/ellipsis-text";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -76,6 +78,10 @@ const page = () => {
   const isAdvanceTheQueeDisable = useSelector(
     (state) => state?.playlistReducer?.isAdvanceTheQueeDisable
   );
+  const initialSongPlaylist_ = useSelector(
+    (state) => state?.playlistReducer?.initialSongPlaylist
+  );
+  const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -257,6 +263,7 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
+    !isTrashPress && dispatch(setInitialSongPlaylist(false));
     await removeItemById(id, isTrashPress);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -274,8 +281,10 @@ const page = () => {
 
     if (playingState == true && !isTrashPress) {
       if (playlistSongList.length > 1) {
-        dispatch(setPlayingState(false));
-        setShowCountDown(true);
+        if (initialSongPlaylist) {
+          dispatch(setPlayingState(false));
+          setShowCountDown(true);
+        }
         socket.emit("bufferTimeReq", {
           time: 10,
         });
@@ -336,6 +345,7 @@ const page = () => {
   };
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
+    dispatch(setInitialSongPlaylist(false));
     try {
       await updateSortOrderApi({
         songsList: payload,
@@ -381,6 +391,7 @@ const page = () => {
   const deleteAllSongsHandler = async () => {
     dispatch(setPlayingState(false));
     localStorage.setItem("isFirstTimeFetched", true);
+    dispatch(setInitialSongPlaylist(true));
     dispatch(setCurrentSongSecond(0));
     dispatch(setSongsListUpdate());
     dispatch(setPlaylistLength(0));
@@ -590,19 +601,10 @@ const page = () => {
                                         )}
                                       </div>
                                       <div className="w-2/12 pr-10">
-                                        {title?.length > 12 ? (
-                                          <Ticker>
-                                            {({ index }) => (
-                                              <>
-                                                <h1 className=" px-1 ">
-                                                  {title}
-                                                </h1>
-                                              </>
-                                            )}
-                                          </Ticker>
-                                        ) : (
-                                          title
-                                        )}
+                                        <EllipsisText
+                                          text={title}
+                                          length={15}
+                                        />
                                       </div>
                                       <div className="w-1/12">
                                         {!isLockedSongs && (
@@ -653,9 +655,12 @@ const page = () => {
                                             <SongCountdownTimer
                                               socket={socket}
                                               orignalSongDuration={songDuration}
-                                              setShowCountDown={
-                                                setShowCountDown
-                                              }
+                                              setShowCountDown={(value) => {
+                                                if (initialSongPlaylist) {
+                                                  debugger;
+                                                  setShowCountDown(value);
+                                                }
+                                              }}
                                               duration={currentSongSecond}
                                               advanceTheQueue={() => {
                                                 deleteSongFromPlaylistHandler(
@@ -734,6 +739,13 @@ const page = () => {
               >
                 <IoArrowUndo />
                 <span className="ml-2">Undo Action</span>
+              </button>
+              <button
+                onClick={() => {
+                  console.log("Is First PRess", initialSongPlaylist);
+                }}
+              >
+                Click me{" "}
               </button>
               {selectSongModal && (
                 <SelectSongModal

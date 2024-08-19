@@ -21,6 +21,7 @@ const initialState = {
   isWallViewOrJumbotron: 1,
   isAdvanceTheQueeDisable: false,
   streamContent: [],
+  initialSongPlaylist: true,
 };
 
 const playlistSlice = createSlice({
@@ -63,6 +64,9 @@ const playlistSlice = createSlice({
     setStreamContent: (state, { payload }) => {
       state.streamContent = payload;
     },
+    setInitialSongPlaylist: (state, { payload }) => {
+      state.initialSongPlaylist = payload;
+    },
   },
 });
 
@@ -77,6 +81,7 @@ const persistConfig = {
     "playingState",
     "isFirstTimeFetched",
     "isWallViewOrJumbotron",
+    "initialSongPlaylist",
   ], // Only persist the 'playingState' slice
   blacklist: [
     "isStart",
@@ -100,6 +105,7 @@ export const {
   setIsWallViewOrJumbotron,
   setIsAdvanceTheQueeDisable,
   setStreamContent,
+  setInitialSongPlaylist,
 } = playlistSlice.actions;
 
 export const persistedReducer = persistReducer(

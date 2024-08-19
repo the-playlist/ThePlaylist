@@ -43,7 +43,10 @@ const SideBar = () => {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
   );
-
+  const initialSongPlaylist_ = useSelector(
+    (state) => state?.playlistReducer?.initialSongPlaylist
+  );
+  const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
 
   useEffect(() => {
@@ -135,19 +138,36 @@ const SideBar = () => {
     return () => clearInterval(intervalId); // Cleanup on unmount
   }, [currentSongSecond, playingState, pathname]); // Re-run useEffect when secondsRemaining changes
 
+  const changePlayingState = () => {
+    dispatch(setPlayingState(!playingState));
+    dispatch(setIsAdvanceTheQueeDisable(false));
+    socket.emit("startIntroSecondsRequest", {
+      time: 10,
+    });
+  };
+
   const startTimer = () => {
     if (currentSong?.duration == currentSongSecond) {
       socket.emit("bufferTimeReq", {
         time: 10,
       });
       dispatch(setIsAdvanceTheQueeDisable(true));
-      setTimeout(() => {
-        socket.emit("startIntroSecondsRequest", {
-          time: 10,
-        });
-        dispatch(setIsAdvanceTheQueeDisable(false));
-        dispatch(setPlayingState(!playingState));
-      }, 10000);
+
+      if (initialSongPlaylist) {
+        setTimeout(() => {
+          changePlayingState();
+        }, 10000);
+      } else {
+        changePlayingState();
+      }
+
+      // setTimeout(() => {
+      //   socket.emit("startIntroSecondsRequest", {
+      //     time: 10,
+      //   });
+      //   dispatch(setIsAdvanceTheQueeDisable(false));
+      //   dispatch(setPlayingState(!playingState));
+      // }, 10000);
     } else {
       dispatch(setPlayingState(!playingState));
     }
