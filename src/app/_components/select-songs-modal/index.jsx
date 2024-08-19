@@ -119,7 +119,7 @@ const SelectSongModal = ({
   function addSelectedPlayers(data) {
     return data?.map((item, index) => {
       const selectedPlayer =
-        item.assignedPlayers && item.assignedPlayers.length > 0
+        item.assignedPlayers && item.assignedPlayers?.length > 0
           ? getRandomSelectedPlayer(item.assignedPlayers)
           : {};
       return {
@@ -243,7 +243,7 @@ const SelectSongModal = ({
                 (item?.assignedPlayers[0]?.playerName
                   .toLowerCase()
                   .includes(searchTerm.toLowerCase()) &&
-                  item.assignedPlayers.length > 0);
+                  item.assignedPlayers?.length > 0);
               const trimmedTitle =
                 item?.title?.length > 15
                   ? `${item?.title?.slice(0, 12)}...`

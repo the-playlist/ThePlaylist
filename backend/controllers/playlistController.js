@@ -390,7 +390,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       // If the first and last players are the same, select the second player
       if (
         players?.length > 1 &&
-        players[0]._id.equals(players[players.length - 1]._id)
+        players[0]._id.equals(players[players?.length - 1]._id)
       ) {
         playerToAssign = players[1];
       } else {
