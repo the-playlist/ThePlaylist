@@ -68,6 +68,7 @@ const DutyScreen = () => {
       let response = await getAssignSongsApi(null);
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
+        console.log("playlistCount", playlistCount);
         setPlaylistCount(playlistCount);
         setAssignSongsList(list);
       }
@@ -277,6 +278,7 @@ const DutyScreen = () => {
               </div>
               {selectSongModal && (
                 <SelectSongModal
+                  isDuty={true}
                   playlistCount={playlistCount}
                   items={assignSongsList}
                   btnText={"Push to Queue"}

@@ -54,6 +54,7 @@ const SelectSongModal = ({
   btnText,
   items,
   fetchList,
+  isDuty,
 }) => {
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [songLimit, setSongLimit] = useState(0);
@@ -125,8 +126,7 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        // isChecked: songLimit - playlistCount > index,
-        // isChecked: index < 10,
+        isChecked: isDuty ? songLimit > index : false,
       };
     });
   }
