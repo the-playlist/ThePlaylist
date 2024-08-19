@@ -187,7 +187,7 @@ const page = () => {
   }, []);
 
   useEffect(() => {
-    if (playlistSongList.length > 0) {
+    if (playlistSongList?.length > 0) {
       const storedSeconds = parseInt(currentSongSecond);
       const initialSongDuration = convertTimeToSeconds(
         playlistSongList[0].songDuration
@@ -280,7 +280,7 @@ const page = () => {
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
     });
-    if (playlistSongList.length === 1) {
+    if (playlistSongList?.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
@@ -291,7 +291,7 @@ const page = () => {
     });
 
     if (playingState == true && !isTrashPress) {
-      if (playlistSongList.length > 1) {
+      if (playlistSongList?.length > 1) {
         if (initialSongPlaylist) {
           dispatch(setPlayingState(false));
           setShowCountDown(true);
@@ -316,7 +316,7 @@ const page = () => {
       setIsFavExist(currentArray?.filter((item) => item?.isFav));
     }
     let newSong;
-    if (playlistSongList.length > 1) {
+    if (playlistSongList?.length > 1) {
       newSong = playlistSongList[1];
     }
     setPlaylistSongList(currentArray);
@@ -503,7 +503,7 @@ const page = () => {
               {isFavExist?.length > 0 &&
                 (isFavSongs || playlistSongList?.length > 0) && (
                   <button
-                    disabled={playlistSongList.length == 0}
+                    disabled={playlistSongList?.length == 0}
                     onClick={toggleFavSongs}
                     className={`flex items-center hover:cursor-pointer border ${
                       !isFavSongs ? "border-black" : "border-top-queue-bg"
@@ -521,7 +521,7 @@ const page = () => {
                 )}
             </div>
           </div>
-          {playlistSongList.length > 0 && (
+          {playlistSongList?.length > 0 && (
             <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
               <div className="w-1/12"></div>
               <div className="w-2/12 ">Title</div>
@@ -534,11 +534,11 @@ const page = () => {
           )}
           <div
             className={`overflow-y-auto ${
-              playlistSongList.length > 0 ? "h-[700px]" : "h-[800px]"
+              playlistSongList?.length > 0 ? "h-[700px]" : "h-[800px]"
             } pb-10 `}
           >
             <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
-              {playlistSongList.length === 0 &&
+              {playlistSongList?.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
                   <div className="flex items-center justify-center mt-10">
                     <span className=" text-black font-semibold ">
