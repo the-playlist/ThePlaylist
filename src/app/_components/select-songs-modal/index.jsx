@@ -72,9 +72,6 @@ const SelectSongModal = ({
     });
     socket.connect();
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-    };
   }, []);
 
   useEffect(() => {

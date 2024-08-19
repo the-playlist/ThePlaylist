@@ -32,7 +32,7 @@ import {
   setIsFirstTimeFetched,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
-import { convertTimeToSeconds } from "../../_utils/helper";
+import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
 import Ticker from "react-ticker";
@@ -46,6 +46,7 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
+  const isOnline = useOnlineStatus();
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
@@ -76,6 +77,16 @@ const page = () => {
   const isAdvanceTheQueeDisable = useSelector(
     (state) => state?.playlistReducer?.isAdvanceTheQueeDisable
   );
+
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {

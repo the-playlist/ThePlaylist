@@ -12,13 +12,14 @@ import { io } from "socket.io-client";
 import { motion, AnimatePresence } from "framer-motion";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
+import { useOnlineStatus } from "@/app/_utils/helper";
 
 const WallView = () => {
   const handle = useFullScreenHandle();
 
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
-
+  const isOnline = useOnlineStatus();
   const [isLoading, setIsLoading] = useState(true);
   const [songList, setSongList] = useState([]);
   const elementRef = useRef(null);
@@ -26,6 +27,16 @@ const WallView = () => {
   const [themeMode, setThemeMode] = useState(false);
   const [currentActive, setCurrentActive] = useState(null);
   let screenName = "Wall View";
+
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -90,10 +101,6 @@ const WallView = () => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {

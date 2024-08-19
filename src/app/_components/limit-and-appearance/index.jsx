@@ -38,10 +38,6 @@ const LimitAndAppearence = () => {
     });
     socket.connect();
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   const changeModeStatus = (id, status, title) => {

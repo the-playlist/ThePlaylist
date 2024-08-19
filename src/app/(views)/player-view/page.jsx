@@ -12,8 +12,11 @@ import { io } from "socket.io-client";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
 import { useFullScreenHandle, FullScreen } from "react-full-screen";
+import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
+  const isOnline = useOnlineStatus();
+
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,16 @@ const PerformerView = () => {
   const handle = useFullScreenHandle();
 
   let screenName = "Player View";
+
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -82,11 +95,6 @@ const PerformerView = () => {
         getThemeByTitleHandler(title);
       }
     });
-
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {

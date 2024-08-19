@@ -27,9 +27,6 @@ export const IntroCounter = ({
         resetAndStartTimer();
       }
     });
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   const resetAndStartTimer = () => {

@@ -52,9 +52,6 @@ const SideBar = () => {
     });
     socket.connect();
     setSocket(socket);
-    return () => {
-      console.log("Disconnecting socket...");
-    };
   }, []);
 
   const deleteSongFromPlaylistHandler = async (id) => {

@@ -166,10 +166,6 @@ export const MyLivestreamUI = ({
         }
       }
     });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   const removeRecentLiveStream = async (data, socket, showMessage) => {

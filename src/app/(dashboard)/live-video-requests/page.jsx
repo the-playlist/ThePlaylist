@@ -56,10 +56,6 @@ const StreamResponse = () => {
     // socket.on("acceptedRejectStreamRes", (item) => {
     //   getStreamRequestHandler();
     // });
-    return () => {
-      console.log("Disconnecting socket...");
-      socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {
