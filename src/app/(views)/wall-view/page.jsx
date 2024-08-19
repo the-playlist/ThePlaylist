@@ -9,7 +9,6 @@ import {
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
-import { motion, AnimatePresence } from "framer-motion";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
@@ -209,17 +208,10 @@ const WallView = () => {
                   <Logo />
                 </div>
                 <ul>
-                  <AnimatePresence>
-                    {songList.map((item, index) => (
-                      <motion.li
-                        key={item?._id}
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 20 }}
-                        transition={{ duration: 0.5 }}
-                      >
-                        <div
-                          className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
+                  {songList.map((item, index) => (
+                    <div
+                      key={item?._id}
+                      className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
               ${
                 index < 2
                   ? "bg-yellow-400  text-black  "
@@ -230,21 +222,19 @@ const WallView = () => {
                     }`
               }
               `}
-                        >
-                          <div
-                            className={`text-[35px]  capitalize  leading-[85px] `}
-                          >
-                            {item?.title}
-                          </div>
-                          <div
-                            className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
-                          >
-                            {item?.artist}
-                          </div>
-                        </div>
-                      </motion.li>
-                    ))}
-                  </AnimatePresence>
+                    >
+                      <div
+                        className={`text-[35px]  capitalize  leading-[85px] `}
+                      >
+                        {item?.title}
+                      </div>
+                      <div
+                        className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
+                      >
+                        {item?.artist}
+                      </div>
+                    </div>
+                  ))}
                 </ul>
 
                 {songList?.length == 0 && (
