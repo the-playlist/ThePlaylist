@@ -319,7 +319,9 @@ const SelectSongModal = ({
               </div>
             )} */}
             <GenericButton
-              disabled={AddSongsToPlaylistResponse?.isLoading}
+              disabled={
+                AddSongsToPlaylistResponse?.isLoading || activeSongsCount == 0
+              }
               loading={AddSongsToPlaylistResponse?.isLoading}
               text={playersList?.length == 0 ? "Duty Screen" : btnText}
               onClick={() => {
