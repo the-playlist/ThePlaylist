@@ -107,7 +107,7 @@ const SelectSongModal = ({
   const getRandomSelectedPlayer = (playersList) => {
     let randomIndex = getRandomId(playersList?.length);
     const playerId = playersList[randomIndex]._id;
-    let occurance = assignedPlayers.filter((item) => item === playerId).length;
+    let occurance = assignedPlayers.filter((item) => item === playerId)?.length;
     if (occurance > 2) {
       randomIndex = getRandomId(playersList?.length);
     }

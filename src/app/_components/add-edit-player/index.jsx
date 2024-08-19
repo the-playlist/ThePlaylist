@@ -162,7 +162,7 @@ function AddEditPlayer({
               onChange={handleNumberChange}
             />
           </div>
-          <div className="font-semibold my-1 text-lg ">{`Assign Songs (${selectedSongsList.length})`}</div>
+          <div className="font-semibold my-1 text-lg ">{`Assign Songs (${selectedSongsList?.length})`}</div>
           <div className="border rounded mt-2 p-1">
             <div className="flex  flex-row items-center border-2 border-gray-300 shadow-md bg-white m-2 p-2 rounded">
               <IoSearchOutline />

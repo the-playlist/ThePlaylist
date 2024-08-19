@@ -72,8 +72,8 @@ const TableView = () => {
 
   function hash(str) {
     let hash = 0;
-    if (str.length === 0) return hash;
-    for (let i = 0; i < str.length; i++) {
+    if (str?.length === 0) return hash;
+    for (let i = 0; i < str?.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
       hash = hash & hash;
@@ -249,7 +249,7 @@ const TableView = () => {
     let randomId = "";
 
     for (let i = 0; i < length; i++) {
-      const randomIndex = Math.floor(Math.random() * characterPool.length);
+      const randomIndex = Math.floor(Math.random() * characterPool?.length);
 
       randomId += characterPool[randomIndex];
     }

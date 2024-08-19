@@ -51,7 +51,7 @@ const SongCountdownTimer = ({
   }, [isStart, duration, playlistSongList[0]?._id]);
 
   const handleTimeZero = () => {
-    if (playlistSongList.length > 1) {
+    if (playlistSongList?.length > 1) {
       const songDuration = convertTimeToSeconds(
         playlistSongList[1]?.songDuration
       );

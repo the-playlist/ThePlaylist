@@ -34,7 +34,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
 
   // Insert sortByMaster songs into a new final playlist based on their sortOrder
   const finalPlaylist = [];
-  for (let i = 0; i < flattenedPlaylist.length; i++) {
+  for (let i = 0; i < flattenedPlaylist?.length; i++) {
     if (sortByMasterMap.has(i)) {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
@@ -84,10 +84,10 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
 
   let nonBalladCountSinceLastBallad = 0;
 
-  while (remainingSongs.length > 0) {
+  while (remainingSongs?.length > 0) {
     let songAdded = false;
 
-    for (let i = 0; i < remainingSongs.length; i++) {
+    for (let i = 0; i < remainingSongs?.length; i++) {
       const song = remainingSongs[i];
 
       // Ensure the player is not among the last three unique players
@@ -102,7 +102,7 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
 
         // Update recent players list
         recentPlayers.push(song.playerName);
-        if (recentPlayers.length > 3) {
+        if (recentPlayers?.length > 3) {
           recentPlayers.shift(); // Remove the oldest entry to keep only the last three
         }
 
@@ -122,7 +122,7 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
 
     if (!songAdded) {
       // Relax player rule and try to find any non-ballad song
-      for (let i = 0; i < remainingSongs.length; i++) {
+      for (let i = 0; i < remainingSongs?.length; i++) {
         const song = remainingSongs[i];
         if (
           song.category !== "Ballad" &&
@@ -132,7 +132,7 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
 
           // Update recent players list
           recentPlayers.push(song.playerName);
-          if (recentPlayers.length > 3) {
+          if (recentPlayers?.length > 3) {
             recentPlayers.shift();
           }
 
@@ -152,7 +152,7 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
 
       // Update recent players list
       recentPlayers.push(song.playerName);
-      if (recentPlayers.length > 3) {
+      if (recentPlayers?.length > 3) {
         recentPlayers.shift();
       }
 

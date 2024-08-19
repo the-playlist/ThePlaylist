@@ -223,7 +223,7 @@ export const getSongsForTableView = async (req, res, next) => {
   }));
 
   const votList = await Vote.find({ customerId: deviceId }).lean();
-  if (votList.length > 0) {
+  if (votList?.length > 0) {
     flattenedPlaylist.forEach((playlistItem) => {
       const matchingVote = votList.find(
         (voteItem) =>
@@ -281,7 +281,7 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   }
   await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
   const activeSongs = await Playlist.find({ isDeleted: false });
-  if (activeSongs.length === 1) {
+  if (activeSongs?.length === 1) {
     await PlaylistType.updateOne(
       {
         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
@@ -381,7 +381,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
 
   let playerToAssign = null;
 
-  if (players.length > 0) {
+  if (players?.length > 0) {
     // Find a player who is not in the playlist
     playerToAssign = players.find((player) => !player.isInPlaylist);
 
@@ -389,7 +389,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
     if (!playerToAssign) {
       // If the first and last players are the same, select the second player
       if (
-        players.length > 1 &&
+        players?.length > 1 &&
         players[0]._id.equals(players[players.length - 1]._id)
       ) {
         playerToAssign = players[1];

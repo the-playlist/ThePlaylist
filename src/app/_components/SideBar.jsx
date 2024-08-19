@@ -75,7 +75,7 @@ const SideBar = () => {
           (i) => i._id == currentSong.id
         );
 
-        if (playlistSongList.length > 1) {
+        if (playlistSongList?.length > 1) {
           const { playerName, title, _id } = playlistSongList[index + 1];
           dispatch(setPlaylistSongList(playlistSongList));
           dispatch(
@@ -92,7 +92,7 @@ const SideBar = () => {
           const songDuration = convertTimeToSeconds(
             playlistSongList[index + 1].songDuration
           );
-          if (playlistSongList.length === index + 1) {
+          if (playlistSongList?.length === index + 1) {
           }
 
           dispatch(setCurrentSongSecond(songDuration));

@@ -76,7 +76,7 @@ export const sendStreamRequestToMaster = async (req, res) => {
   }).lean();
 
   const limit = await Limit.findOne({ heading });
-  if (limit && currentActiveStreams.length >= limit.value) {
+  if (limit && currentActiveStreams?.length >= limit.value) {
     let response = new ResponseModel(false, limit?.message);
     res.status(200).json(response);
     return;
