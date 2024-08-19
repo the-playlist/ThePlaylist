@@ -125,7 +125,7 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        isChecked: songLimit - playlistCount > index,
+        // isChecked: songLimit - playlistCount > index,
         // isChecked: index < 10,
       };
     });
@@ -221,11 +221,11 @@ const SelectSongModal = ({
                   </button>
                 )}
               </div>
-              {activeSongsCount > songLimit && (
+              {/* {activeSongsCount > songLimit && (
                 <div className="flex w-4/6 text-left text-red-600">
                   {`There is limit that playlist should have only ${songLimit} songs. Please Select only ${songLimit} songs`}
                 </div>
-              )}
+              )} */}
               <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
                 <div className="w-3/12 ">
                   <div className="flex items-center">Title</div>
@@ -309,7 +309,7 @@ const SelectSongModal = ({
             })}
           </div>
           <div className="sticky -bottom-5 w-full   px-4 pb-4  bg-[#fafafa]">
-            {activeSongsCount > songLimit - playlistCount && (
+            {/* {activeSongsCount > songLimit - playlistCount && (
               <div className="flex  text-sm items-center justify-center my-2">
                 <FaCircleInfo size={12} />
                 <span className="ml-2 text-black">
@@ -317,13 +317,9 @@ const SelectSongModal = ({
                   Playlist
                 </span>
               </div>
-            )}
+            )} */}
             <GenericButton
-              disabled={
-                AddSongsToPlaylistResponse?.isLoading ||
-                activeSongsCount > songLimit ||
-                activeSongsCount > songLimit - playlistCount
-              }
+              disabled={AddSongsToPlaylistResponse?.isLoading}
               loading={AddSongsToPlaylistResponse?.isLoading}
               text={playersList?.length == 0 ? "Duty Screen" : btnText}
               onClick={() => {

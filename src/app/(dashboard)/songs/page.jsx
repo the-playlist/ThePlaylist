@@ -44,7 +44,7 @@ const SongsManagment = () => {
   const [songsListApi, songsListResponse] = useLazyGetSongsListQuery();
   const [deleteSongModal, setDeleteSongModal] = useState(false);
   const [addNewSongModal, setAddNewSongModal] = useState(false);
-  const [deleteSongAPI, deleteSongResponse] = useDeleteSongByIdMutation();
+  const [deleteSongAPI] = useDeleteSongByIdMutation();
   const [currentSongInfo, setCurrentSongInfo] = useState(null);
   const [filteredsongs, setFilteredsongs] = useState([]);
   const [searchTerm, setSearchTerm] = useState();

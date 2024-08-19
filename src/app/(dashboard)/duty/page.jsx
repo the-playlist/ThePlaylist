@@ -220,59 +220,53 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className=" overflow-y-auto pb-12 h-[800px] ">
-                <table className="table table-auto w-full border-separate  border-spacing-y-3  pb-32 px-2">
-                  <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-                    <tr className="text-base font-medium text-black">
-                      <th>Players</th>
-                      <th>Status</th>
-                      <th className="text-center">On Duty Time</th>
-                      <th className=" float-right ">Change Status</th>
-                    </tr>
-                  </thead>
-                  {filteredPlayers?.map((item, index) => {
-                    return (
-                      <tbody className="bg-white drop-shadow rounded-2xl h-20 ">
-                        <tr className="">
-                          <td className="rounded-s-2xl capitalize">{`${item?.firstName} ${item?.lastName}`}</td>
-                          <td>
-                            <div className="flex items-center">
-                              <div
-                                className={`h-2 w-2 rounded-full mr-2 ${
-                                  item?.duty.status
-                                    ? "bg-green-700"
-                                    : "bg-gray-400"
-                                }`}
-                              ></div>
-                              {item?.duty.status ? "on Duty" : "Off Duty"}
-                            </div>
-                          </td>
-                          <td className="text-center">
-                            {item?.duty?.startTime || "-"}
-                          </td>
-                          <td className="rounded-e-2xl ">
-                            <div className="flex justify-end">
-                              <input
-                                onClick={() => {
-                                  changeStatus(item?._id, item?.duty.status);
-                                }}
-                                type="checkbox"
-                                className="toggle toggle-success mr-2 "
-                                checked={item.duty.status}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      </tbody>
-                    );
-                  })}
-                </table>
-                {filteredPlayers?.length == 0 && (
-                  <div className="flex justify-center text-base items-center h-56 text-black w-full">
-                    No Players Found
+              <div className="overflow-y-auto pb-12 ">
+                <div className="pb-32 px-2">
+                  <div className="sticky top-0 z-10 bg-[#FAFAFA] flex justify-between text-base font-medium text-black">
+                    <span>Players</span>
+                    <span>Status</span>
+                    <span className="text-center">On Duty Time</span>
+                    <span className="text-right">Change Status</span>
                   </div>
-                )}
+                  <div className="max-h-[500px]">
+                    {filteredPlayers?.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4 flex items-center justify-between"
+                      >
+                        <div className="capitalize">{`${item?.firstName} ${item?.lastName}`}</div>
+                        <div className="flex items-center">
+                          <div
+                            className={`h-2 w-2 rounded-full mr-2 ${
+                              item?.duty.status ? "bg-green-700" : "bg-gray-400"
+                            }`}
+                          ></div>
+                          {item?.duty.status ? "On Duty" : "Off Duty"}
+                        </div>
+                        <div className="text-center">
+                          {item?.duty?.startTime || "-"}
+                        </div>
+                        <div>
+                          <input
+                            onClick={() => {
+                              changeStatus(item?._id, item?.duty.status);
+                            }}
+                            type="checkbox"
+                            className="toggle toggle-success"
+                            checked={item.duty.status}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  {filteredPlayers?.length == 0 && (
+                    <div className="flex justify-center text-base items-center h-56 text-black w-full">
+                      No Players Found
+                    </div>
+                  )}
+                </div>
               </div>
+
               <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
                   text="Save Attendance"
