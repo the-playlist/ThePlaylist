@@ -751,13 +751,6 @@ const page = () => {
                 <IoArrowUndo />
                 <span className="ml-2">Undo Action</span>
               </button>
-              <button
-                onClick={() => {
-                  console.log("Is First PRess", initialSongPlaylist);
-                }}
-              >
-                Click me{" "}
-              </button>
               {selectSongModal && (
                 <SelectSongModal
                   playlistCount={playlistCount}
