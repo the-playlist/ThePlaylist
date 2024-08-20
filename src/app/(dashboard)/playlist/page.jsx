@@ -271,7 +271,6 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
-
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
@@ -325,6 +324,7 @@ const page = () => {
       id: id,
       isDeleted: true,
     });
+    console.log("response", response);
 
     if (playingState == true && !isTrashPress) {
       if (playlistSongList?.length > 1) {
@@ -395,11 +395,9 @@ const page = () => {
         newSortOrder: index,
         sortByMaster: item?.sortByMaster,
       }));
-
       updateSongsOrderHandler(updatedArr);
     }
   };
-
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
     // dispatch(setInitialSongPlaylist(false));
@@ -412,7 +410,6 @@ const page = () => {
       console.log(error);
     }
   };
-
   function updateObjectInArray(arr, updatedObject) {
     return arr.map((item) =>
       item._id === updatedObject._id ? { ...item, ...updatedObject } : item
@@ -611,7 +608,7 @@ const page = () => {
           )}
           <div
             className={`overflow-y-auto ${
-              playlistSongList?.length > 0 ? "h-[700px]" : "h-[800px]"
+              playlistSongList?.length > 0 ? "h-[650px]" : "h-[800px]"
             } pb-10 `}
           >
             <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
