@@ -220,7 +220,7 @@ const SideBar = () => {
                   <span className="font-normal">{currentSong.playerName}</span>
                 </div>
               </div>
-              <div className="p-2 mt-5 rounded-full bg-[#F7F7F7] flex justify-center items-center">
+              {/* <div className="p-2 mt-5 rounded-full bg-[#F7F7F7] flex justify-center items-center">
                 <button
                   onClick={() => startTimer()}
                   className="h-8 w-8 bg-white shadow-xl rounded-full flex items-center justify-center mr-2 "
@@ -228,7 +228,7 @@ const SideBar = () => {
                   {playingState ? <IoPause /> : <IoPlaySharp />}
                 </button>
                 <span>{formatTime(currentSongSecond)}</span>
-              </div>
+              </div> */}
             </div>
           </div>
         )}

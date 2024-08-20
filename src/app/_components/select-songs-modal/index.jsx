@@ -99,8 +99,8 @@ const SelectSongModal = ({
     useAddSongsToPlaylistMutation();
 
   useEffect(() => {
-    fetchAssignSongsList();
     getLimitByTitleHandler();
+    fetchAssignSongsList();
   }, [songLimit, playlistLength]);
 
   const fetchAssignSongsList = async () => {

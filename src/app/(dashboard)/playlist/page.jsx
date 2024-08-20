@@ -300,7 +300,6 @@ const page = () => {
       id: id,
       isDeleted: true,
     });
-    console.log("response", response);
 
     if (playingState == true && !isTrashPress) {
       if (playlistSongList?.length > 1) {
@@ -505,6 +504,29 @@ const page = () => {
         break;
     }
   };
+  useEffect(() => {
+    const handleScroll = (e) => {
+      const container = containerRef?.current;
+      const { top, bottom } = container?.getBoundingClientRect();
+      const { clientY } = e;
+
+      // Scroll upward
+      if (clientY < top + 50) {
+        container?.scrollBy(0, -10);
+      }
+      // Scroll downward
+      if (clientY > bottom - 50) {
+        container?.scrollBy(0, 10);
+      }
+    };
+
+    const container = containerRef?.current;
+    container?.addEventListener("mousemove", handleScroll);
+
+    return () => {
+      container?.removeEventListener("mousemove", handleScroll);
+    };
+  }, []);
 
   return (
     <div className="">
@@ -571,70 +593,74 @@ const page = () => {
                 )}
             </div>
           </div>
-          {playlistSongList?.length > 0 && (
-            <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-              <div className="w-1/12"></div>
-              <div className="w-2/12 ">Title</div>
-              <div className="w-1/12"></div>
-              <div className="w-3/12">Player</div>
-              <div className="w-2/12">Intro</div>
-              <div className="w-2/12">Category</div>
-              <div className="w-1/12"></div>
-            </div>
-          )}
-          <div
-            className={`overflow-y-auto ${
-              playlistSongList?.length > 0 ? "h-[700px]" : "h-[800px]"
-            } pb-10 `}
-          >
-            <div
-              // ref={containerRef}
-              className="border-separate border-spacing-y-5 mx-1 mb-10  "
-            >
-              {playlistSongList?.length === 0 &&
-                !getPlaylistSongListResponse.isFetching && (
-                  <div className="flex items-center justify-center mt-10">
-                    <span className=" text-black font-semibold ">
-                      Currently there are no songs available in the playlist
-                    </span>
-                  </div>
-                )}
-              <div style={{ touchAction: "pan-y", background: "#F9F9F9" }}>
-                <DraggableList
-                  itemKey="id"
-                  constrainDrag={true}
-                  template={({ item, itemSelected, dragHandleProps }) => {
-                    const { onMouseDown, onMouseUp, ...restProps } =
-                      dragHandleProps;
-
-                    return (
-                      <PlaylistSongItem
-                        item={item}
-                        itemSelected={itemSelected}
-                        dragHandleProps={dragHandleProps}
-                        playlistSongList={playlistSongList}
-                        revertCrownhandler={revertCrownhandler}
-                        deleteSongFromPlaylistHandler={
-                          deleteSongFromPlaylistHandler
-                        }
-                        socket={socket}
-                        setShowCountDown={setShowCountDown}
-                      />
-                    );
-                  }}
-                  list={playlistSongList}
-                  onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
-                    if (oldIndex != 0 && oldIndex != 1) {
-                      if (newIndex != 0 && newIndex != 1) {
-                        handleDragEnd(newList, oldIndex, newIndex, movedItem);
-                      }
-                    }
-                  }}
-                  container={() => containerRef.current}
-                />
+          {playlistSongList?.length === 0 &&
+            !getPlaylistSongListResponse.isFetching && (
+              <div className="flex items-center justify-center mt-10 md:h-[770px] sm:h-[560px]">
+                <span className=" text-black font-semibold ">
+                  Currently there are no songs available in the playlist
+                </span>
               </div>
-            </div>
-          </div>
+            )}
+          {playlistSongList?.length > 0 && (
+            <>
+              <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+                <div className="w-1/12"></div>
+                <div className="w-2/12 ">Title</div>
+                <div className="w-1/12"></div>
+                <div className="w-3/12">Player</div>
+                <div className="w-2/12">Intro</div>
+                <div className="w-2/12">Category</div>
+                <div className="w-1/12"></div>
+              </div>
+
+              {/* <div
+            className={`overflow-y-auto ${
+              playlistSongList?.length > 0 ? "h-[750px]" : "h-[800px]"
+            } pb-10 `}
+          > */}
+              <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
+                <div
+                  // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
+                  id="scrollableContainer"
+                  ref={containerRef}
+                  className=" overflow-y-auto md:h-[630px] sm:h-[560px]"
+                  // style={{ overflowY: "auto", height: "630px" }}
+                >
+                  <DraggableList
+                    unsetZIndex={true}
+                    itemKey="id"
+                    constrainDrag={true}
+                    template={({ item, itemSelected, dragHandleProps }) => {
+                      return (
+                        <PlaylistSongItem
+                          item={item}
+                          itemSelected={itemSelected}
+                          dragHandleProps={dragHandleProps}
+                          playlistSongList={playlistSongList}
+                          revertCrownhandler={revertCrownhandler}
+                          deleteSongFromPlaylistHandler={
+                            deleteSongFromPlaylistHandler
+                          }
+                          socket={socket}
+                          setShowCountDown={setShowCountDown}
+                        />
+                      );
+                    }}
+                    list={playlistSongList}
+                    onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
+                      if (oldIndex != 0 && oldIndex != 1) {
+                        if (newIndex != 0 && newIndex != 1) {
+                          handleDragEnd(newList, oldIndex, newIndex, movedItem);
+                        }
+                      }
+                    }}
+                    container={() => containerRef.current}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+          {/* </div> */}
           {!isFavSongs && (
             <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
               <button
