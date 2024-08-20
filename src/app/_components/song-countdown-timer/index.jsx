@@ -85,9 +85,6 @@ const SongCountdownTimer = ({
         }, 10000);
       } else {
         changePlayingState();
-        socket.emit("startPlayerViewTimeReq", {
-          time: 10,
-        });
       }
     } else {
     }
@@ -102,16 +99,14 @@ const SongCountdownTimer = ({
         time: 10,
       });
       if (initialSongPlaylist) {
-        debugger;
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
         setTimeout(() => {
           changePlayingState();
-          debugger;
-          socket.emit("startPlayerViewTimeReq", {
-            time: 10,
-          });
+          // socket.emit("startPlayerViewTimeReq", {
+          //   time: 10,
+          // });
         }, 10000);
       } else {
         changePlayingState();
