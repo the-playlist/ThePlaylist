@@ -64,12 +64,12 @@ const page = () => {
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [playlistCount, setPlaylistCount] = useState(0);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
   const [showCountDown, setShowCountDown] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
+
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
@@ -99,19 +99,19 @@ const page = () => {
       autoConnect: false,
     });
     socket.connect();
-    socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
-        item;
+    // socket.on("insertSongIntoPlaylistResponse", (item) => {
+    //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+    //     item;
 
-      if (isFavSongs != null) {
-        setIsFavSongs(isFavSongs);
-      }
-      if (currentSongSecond != null) {
-        dispatch(setCurrentSongSecond(currentSongSecond));
-      }
-      dispatch(setPlaylistLength(playlist?.length));
-      setPlaylistSongList([...playlist]);
-    });
+    //   if (isFavSongs != null) {
+    //     setIsFavSongs(isFavSongs);
+    //   }
+    //   if (currentSongSecond != null) {
+    //     dispatch(setCurrentSongSecond(currentSongSecond));
+    //   }
+    //   dispatch(setPlaylistLength(playlist?.length));
+    //   setPlaylistSongList([...playlist]);
+    // });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPlaylistSongList([...playlist]);
@@ -239,7 +239,6 @@ const page = () => {
 
     try {
       // setIsLoading(true);
-
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
@@ -258,24 +257,24 @@ const page = () => {
   };
 
   const [selectSongModal, setSelectSongModal] = useState(false);
-  const [assignSongsList, setAssignSongsList] = useState([]);
 
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        const { list, playlistCount } = response?.data?.content;
-        setPlaylistCount(playlistCount);
-        setAssignSongsList(list);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
+  const deleteSongFromPlaylistV2Handler = async (id, isTrashPress) => {
+    localStorage.setItem("isFirstTimeFetched", false);
+
+    let response = await deleteSongByIdApi({
+      id: id,
+      isDeleted: true,
+    });
+    fetchPlaylistSongList(playlistSongList?.length > 0 ? false : true);
+    if (response && !response.error) {
+      toast(response?.data?.description);
+    } else {
+      toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
     !isTrashPress && dispatch(setInitialSongPlaylist(false));
-    await removeItemById(id, isTrashPress);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
@@ -289,7 +288,7 @@ const page = () => {
       id: id,
       isDeleted: true,
     });
-    console.log("response", response);
+    await removeItemById(id, isTrashPress);
 
     if (playingState == true && !isTrashPress) {
       if (playlistSongList?.length > 1) {
@@ -762,7 +761,6 @@ const page = () => {
             <div className="sticky bottom-0 w-full flex  items-center justify-center py-4 bg-[#fafafa]">
               <button
                 onClick={async () => {
-                  await fetchAssignSongsList();
                   setSelectSongModal(true);
                 }}
                 className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
@@ -784,13 +782,13 @@ const page = () => {
               </button>
               {selectSongModal && (
                 <SelectSongModal
-                  playlistCount={playlistCount}
-                  items={assignSongsList}
+                  item={playlistSongList}
                   btnText={"Add"}
                   title={"Select songs"}
                   openModal={selectSongModal}
                   fetchList={fetchPlaylistSongList}
                   closeModal={() => {
+                    setIsLoading(true);
                     setSelectSongModal(false);
                   }}
                 />
