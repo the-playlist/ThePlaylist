@@ -12,6 +12,8 @@ import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import GenericButton from "../generic-button";
 import { Loader } from "../loader";
+import { useDispatch } from "react-redux";
+import { setInitialSongPlaylist } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
 
 const AssignedSongsDropdown = ({ item }) => {
@@ -76,6 +78,8 @@ const SelectSongModal = ({
   const [playlistCount, setPlaylistCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [btnLoader, setBtnLoader] = useState(false);
+
+  const dispatch = useDispatch();
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -375,6 +379,9 @@ const SelectSongModal = ({
                         (item) => item.isChecked == true
                       );
                       getDesiredOuptut(selectedPlayers);
+                      if (playlistLength < 1) {
+                        dispatch(setInitialSongPlaylist(true));
+                      }
                     }
                   }}
                 />

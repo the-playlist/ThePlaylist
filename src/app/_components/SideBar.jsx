@@ -138,9 +138,9 @@ const SideBar = () => {
   const changePlayingState = () => {
     dispatch(setPlayingState(!playingState));
     dispatch(setIsAdvanceTheQueeDisable(false));
-    socket.emit("startIntroSecondsRequest", {
-      time: 10,
-    });
+    // socket.emit("startIntroSecondsRequest", {
+    //   time: 10,
+    // });
   };
 
   const startTimer = () => {
@@ -179,10 +179,10 @@ const SideBar = () => {
               <img src="/assets/logo.png" className="h-10  my-5 " />
             </Link>
           </div>
-          {navlinks.map((i) => {
+          {navlinks.map((i, index) => {
             const isActive = pathname?.startsWith(i.href);
             return (
-              <Link href={i.href}>
+              <Link key={index} href={i.href}>
                 <li
                   className={`${
                     isActive

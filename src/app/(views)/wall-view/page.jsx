@@ -132,7 +132,6 @@ const WallView = () => {
   }, []);
 
   const fetchPlaylistSongList = async (firstFetch) => {
-    debugger;
     let isFirst = localStorage.getItem("isFirstTimeFetched");
 
     try {

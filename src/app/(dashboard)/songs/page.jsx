@@ -92,7 +92,6 @@ const SongsManagment = () => {
                   placeholder="Search song by title"
                   value={searchTerm}
                   onChange={async (e) => {
-                    debugger;
                     let selection = songsList.filter((song) =>
                       song.title
                         .toLowerCase()

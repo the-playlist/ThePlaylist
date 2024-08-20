@@ -24,6 +24,7 @@ const PerformerView = () => {
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [seconds, setSeconds] = useState(0);
+  const [showCountDown, setShowCountDown] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
   const handle = useFullScreenHandle();
 
@@ -79,6 +80,9 @@ const PerformerView = () => {
       setTimerRunning(true);
     });
 
+    socket.on("startIntroSecondsResponse", (item) => {
+      setShowCountDown(true);
+    });
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
@@ -117,10 +121,16 @@ const PerformerView = () => {
 
   useEffect(() => {
     let timer;
+    if (seconds == 0) {
+      setShowCountDown(false);
+      return;
+    }
     if (timerRunning && seconds > 0) {
       timer = setTimeout(() => {
         setSeconds(seconds - 1);
       }, 1000);
+    } else {
+      setShowCountDown(false);
     }
 
     return () => clearTimeout(timer);
@@ -246,10 +256,10 @@ const PerformerView = () => {
                         </td>
                         <td className="text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
                           <IntroCounter
-                            introSec={performer[0]?.introSec}
                             index={index}
                             performerList={performer}
                             introTimer={parseInt(item?.introSec ?? 0)}
+                            showCountDown={showCountDown}
                           />
                         </td>
                       </div>
@@ -257,8 +267,8 @@ const PerformerView = () => {
                   </tbody>
                 ))}
               </table>
-              {seconds > 0 && (
-                <CountDown openModal={seconds > 0} timer={seconds} />
+              {showCountDown && (
+                <CountDown openModal={showCountDown} timer={seconds} />
               )}
             </>
           )}
