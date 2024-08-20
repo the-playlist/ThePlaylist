@@ -58,7 +58,6 @@ const page = () => {
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
   const [revertMasterCheckApi] = useRevertMasterCheckMutation();
-  const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [undoDeletedSongsAPI] = useUndoDeletedSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
@@ -66,7 +65,6 @@ const page = () => {
   const [socket, setSocket] = useState();
   const [playlistSongList, setPlaylistSongList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [playlistCount, setPlaylistCount] = useState(0);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
   const [showCountDown, setShowCountDown] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
@@ -75,7 +73,6 @@ const page = () => {
   const data = Array(10)
     .fill(null)
     .map((item, index) => ({ id: index }));
-  const [testingArraySort, settestingArraySort] = useState(data);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -271,6 +268,10 @@ const page = () => {
     try {
       // setIsLoading(true);
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
+      const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      newConnection.connect();
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
@@ -285,6 +286,11 @@ const page = () => {
         if (songList?.length > 0) {
           setIsFavExist(songList?.filter((item) => item?.isFav));
         }
+        newConnection.emit("insertSongIntoPlaylistRequest", {
+          isFirst: firstFetch ?? isFirst,
+          playlist: playlistWithId,
+          isInsert: false,
+        });
       }
       setIsLoading(false);
     } catch (error) {
@@ -293,20 +299,7 @@ const page = () => {
   };
 
   const [selectSongModal, setSelectSongModal] = useState(false);
-  const [assignSongsList, setAssignSongsList] = useState([]);
 
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        const { list, playlistCount } = response?.data?.content;
-        setPlaylistCount(playlistCount);
-        setAssignSongsList(list);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
-    }
-  };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
     // !isTrashPress && dispatch(setInitialSongPlaylist(false));
@@ -606,11 +599,7 @@ const page = () => {
               <div className="w-1/12"></div>
             </div>
           )}
-          <div
-            className={`overflow-y-auto ${
-              playlistSongList?.length > 0 ? "h-[650px]" : "h-[800px]"
-            } pb-10 `}
-          >
+          <div className={`overflow-y-auto h-[600px] pb-10 `}>
             <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
               {playlistSongList?.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
@@ -656,10 +645,9 @@ const page = () => {
             </div>
           </div>
           {!isFavSongs && (
-            <div className="sticky bottom-0 w-full flex  items-center justify-center py-4 bg-[#fafafa]">
+            <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
               <button
                 onClick={async () => {
-                  await fetchAssignSongsList();
                   setSelectSongModal(true);
                 }}
                 className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
@@ -681,8 +669,6 @@ const page = () => {
               </button>
               {selectSongModal && (
                 <SelectSongModal
-                  playlistCount={playlistCount}
-                  items={assignSongsList}
                   btnText={"Add"}
                   title={"Select songs"}
                   openModal={selectSongModal}

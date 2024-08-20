@@ -58,14 +58,8 @@ const SelectSongModal = ({
   fetchList,
   isDuty,
 }) => {
-  const currentSongSecond = useSelector(
-    (state) => state?.playlistReducer?.currentSongSecond
-  );
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
-  );
-  const playingState = useSelector(
-    (state) => state?.playlistReducer?.playingState
   );
 
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
@@ -117,7 +111,6 @@ const SelectSongModal = ({
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
         setPlaylistCount(playlistCount);
-
         let tempArr = addSelectedPlayers(list);
         setPlayersList(tempArr);
       }
@@ -176,11 +169,11 @@ const SelectSongModal = ({
         closeModal();
         toast.success(response?.data?.description);
         await fetchList(isFirstTimeFetched);
-        socket.emit("insertSongIntoPlaylistRequest", {
-          isFirst: isFirstTimeFetched,
-          playlist: playlist,
-          isInsert: false,
-        });
+        // socket.emit("insertSongIntoPlaylistRequest", {
+        //   isFirst: isFirstTimeFetched,
+        //   playlist: playlist,
+        //   isInsert: false,
+        // });
         // socket.emit("addSongToPlaylistApi", {
         //   isFirst: isFirstTimeFetched,
         // });
