@@ -66,9 +66,6 @@ const SongCountdownTimer = ({
 
   const changePlayingState = () => {
     dispatch(setPlayingState(true));
-    socket.emit("startIntroSecondsRequest", {
-      time: 10,
-    });
   };
 
   useEffect(() => {
@@ -79,13 +76,18 @@ const SongCountdownTimer = ({
       socket.emit("bufferTimeReq", {
         time: 10,
       });
-      debugger;
       if (initialSongPlaylist) {
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
         setTimeout(() => {
           changePlayingState();
         }, 10000);
       } else {
         changePlayingState();
+        socket.emit("startPlayerViewTimeReq", {
+          time: 10,
+        });
       }
     } else {
     }
@@ -99,10 +101,17 @@ const SongCountdownTimer = ({
       socket.emit("bufferTimeReq", {
         time: 10,
       });
-      debugger;
       if (initialSongPlaylist) {
+        debugger;
+        socket.emit("startIntroSecondsRequest", {
+          time: 10,
+        });
         setTimeout(() => {
           changePlayingState();
+          debugger;
+          socket.emit("startPlayerViewTimeReq", {
+            time: 10,
+          });
         }, 10000);
       } else {
         changePlayingState();

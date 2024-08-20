@@ -9,7 +9,7 @@ interface EllipsisTextProps {
 export const EllipsisText: React.FC<EllipsisTextProps> = ({ text, length }) => {
   // Check if the text needs to be truncated
   const truncatedText =
-    text.length > length ? `${text.slice(0, length)}...` : text;
+    text?.length > length ? `${text.slice(0, length)}...` : text;
 
   return (
     <span

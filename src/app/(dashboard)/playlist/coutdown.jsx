@@ -28,9 +28,9 @@ const CountDown = ({ socket, openModal, timer, setShowCountDown }) => {
       reff.current?.close();
       setShowCountDown(false);
       dispatch(setPlayingState(true));
-      socket.emit("startIntroSecondsRequest", {
-        time: 10,
-      });
+      // socket.emit("startIntroSecondsRequest", {
+      //   time: 10,
+      // });
     }
 
     return () => clearTimeout(timer);

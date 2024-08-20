@@ -39,7 +39,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (isFirstTimeFetched == true) {
+      if (isFirstTimeFetched == true && modifiedRemainingSongs?.length > 0) {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(

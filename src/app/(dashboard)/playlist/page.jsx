@@ -240,7 +240,7 @@ const page = () => {
 
     try {
       // setIsLoading(true);
-
+      debugger;
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
 
       if (response && !response.isError) {
@@ -276,7 +276,7 @@ const page = () => {
   };
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    !isTrashPress && dispatch(setInitialSongPlaylist(false));
+    // !isTrashPress && dispatch(setInitialSongPlaylist(false));
     await removeItemById(id, isTrashPress);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
@@ -364,7 +364,7 @@ const page = () => {
 
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    dispatch(setInitialSongPlaylist(false));
+    // dispatch(setInitialSongPlaylist(false));
     try {
       await updateSortOrderApi({
         songsList: payload,
@@ -707,7 +707,6 @@ const page = () => {
                                               orignalSongDuration={songDuration}
                                               setShowCountDown={(value) => {
                                                 if (initialSongPlaylist) {
-                                                  debugger;
                                                   setShowCountDown(value);
                                                 }
                                               }}

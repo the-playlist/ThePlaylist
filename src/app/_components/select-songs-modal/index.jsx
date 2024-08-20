@@ -11,7 +11,8 @@ import {
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import GenericButton from "../generic-button";
-import { FaCircleInfo } from "react-icons/fa6";
+import { useDispatch } from "react-redux";
+import { setInitialSongPlaylist } from "@/app/_utils/redux/slice/playlist-list";
 
 const AssignedSongsDropdown = ({ item }) => {
   const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
@@ -62,6 +63,7 @@ const SelectSongModal = ({
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
+  const dispatch = useDispatch();
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -90,7 +92,7 @@ const SelectSongModal = ({
     let tempArr = addSelectedPlayers(items);
     getLimitByTitleHandler();
     setPlayersList(tempArr);
-  }, [songLimit]);
+  }, []);
 
   const getLimitByTitleHandler = async () => {
     let response = await getLimitByTitleApi("Queue Limit");
@@ -332,6 +334,7 @@ const SelectSongModal = ({
                     (item) => item.isChecked == true
                   );
                   getDesiredOuptut(selectedPlayers);
+                  dispatch(setInitialSongPlaylist(true));
                 }
               }}
             />
