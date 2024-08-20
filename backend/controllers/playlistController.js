@@ -17,11 +17,12 @@ export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
-
+  const playlistCount = result?.length;
   const expirationTime = new Date(Date.now() + 24 * 60 * 60 * 1000);
-  const songsWithExpiration = req.body.map((song) => ({
+  const songsWithExpiration = req.body.map((song, index) => ({
     ...song,
     expiresAt: expirationTime,
+    sortOrder: playlistCount + index,
   }));
 
   const playlist = await Playlist.insertMany(songsWithExpiration);
