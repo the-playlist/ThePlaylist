@@ -41,6 +41,7 @@ const endPoints = {
   GET_ALL_FAV_SONGS: `api/songs/getAllFavSongs`,
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
   GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
+  REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -165,6 +166,13 @@ export const emptySplitApi = createApi({
     updateSortOrderOfSongs: builder.mutation({
       query: (body: any) => ({
         url: `${endPoints.UPDATE_SORT_ORDER_SONGS}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    revertMasterCheck: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.REVERT_MASTER_CHECK}`,
         method: "POST",
         body: body,
       }),
@@ -313,4 +321,5 @@ export const {
   useLazyGetIsPlaylistEmptyQuery,
   useLazyGetAddSongListForCustomerQuery,
   useDisbaleSongFromSongBankMutation,
+  useRevertMasterCheckMutation,
 } = emptySplitApi;

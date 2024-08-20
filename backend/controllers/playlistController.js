@@ -273,14 +273,67 @@ export const updateSongsOrder = async (req, res, next) => {
   res.status(200).json(response);
 };
 
+export const revertMasterCheck = async (req, res, next) => {
+  const item = req?.body?.item;
+  const result = await Playlist.updateOne(
+    { _id: item._id },
+    {
+      $set: {
+        sortOrder: item.sortOrder,
+        sortByMaster: item.sortByMaster,
+      },
+    }
+  );
+
+  if (result.nModified === 0) {
+    return res
+      .status(404)
+      .json(new ResponseModel(false, "Item not found or no changes made"));
+  }
+
+  const response = new ResponseModel(
+    true,
+    "Master Check Updated Successfully",
+    null
+  );
+  res.status(200).json(response);
+};
+
+// export const deleteSongFromPlaylistById = async (req, res, next) => {
+//   const id = req.query.id;
+//   const isDeleted = req.query.isDeleted;
+//   if (!id) {
+//     return res.status(400).json({ message: "ID parameter is missing" });
+//   }
+//   await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
+//   const activeSongs = await Playlist.find({ isDeleted: false });
+//   if (activeSongs?.length === 1) {
+//     await PlaylistType.updateOne(
+//       {
+//         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+//       },
+//       {
+//         $set: { isFirst: true },
+//       }
+//     );
+//   }
+//   const response = new ResponseModel(true, "List Updated Successfully.", null);
+//   res.status(200).json(response);
+// };
+
 export const deleteSongFromPlaylistById = async (req, res, next) => {
   const id = req.query.id;
-  const isDeleted = req.query.isDeleted;
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
-  await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
+
+  // Delete the record by ID
+  await Playlist.findByIdAndDelete(id);
+
+  // Find active songs
   const activeSongs = await Playlist.find({ isDeleted: false });
+
+  // If there's only one active song, update PlaylistType
   if (activeSongs?.length === 1) {
     await PlaylistType.updateOne(
       {
@@ -291,23 +344,54 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
       }
     );
   }
+
+  // Respond with success
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
 
+// export const deleteAllSongsFromPlaylist = async (req, res, next) => {
+//   await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
+//   await PlaylistType.updateOne(
+//     {
+//       _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+//     },
+//     {
+//       $set: { isFirst: true },
+//     },
+//     { new: true }
+//   );
+//   const response = new ResponseModel(true, "List Updated Successfully.", null);
+//   res.status(200).json(response);
+// };
+
 export const deleteAllSongsFromPlaylist = async (req, res, next) => {
-  await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
-  await PlaylistType.updateOne(
-    {
-      _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
-    },
-    {
-      $set: { isFirst: true },
-    },
-    { new: true }
-  );
-  const response = new ResponseModel(true, "List Updated Successfully.", null);
-  res.status(200).json(response);
+  try {
+    // Delete all documents where isDeleted is false
+    await Playlist.deleteMany({ isDeleted: false });
+
+    // Optionally update PlaylistType if needed
+    await PlaylistType.updateOne(
+      {
+        _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+      },
+      {
+        $set: { isFirst: true },
+      },
+      { new: true }
+    );
+
+    // Respond with success
+    const response = new ResponseModel(
+      true,
+      "All songs deleted and list updated successfully.",
+      null
+    );
+    res.status(200).json(response);
+  } catch (error) {
+    // Handle errors
+    next(error);
+  }
 };
 
 export const undoDeleteSongsFromPlaylist = async (req, res, next) => {

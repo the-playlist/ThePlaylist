@@ -16,7 +16,6 @@ import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
-
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
@@ -203,7 +202,7 @@ const PerformerView = () => {
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>
-              {performer?.length === 0 && (
+              {performer.length === 0 && (
                 <div
                   className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
                     themeMode ? "text-black" : "text-white"

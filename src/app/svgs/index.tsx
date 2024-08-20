@@ -14,7 +14,7 @@ import SettingIcon from "./setting";
 import LiveRequestIcon from "./liveRequest";
 import AppearenceIcon from "./appearence";
 import SortByMasterIcon from "./sortByMasterIcon";
-
+import RevertMasterIcon from "./revertMasterIcon";
 export {
   Logo,
   DashboardLogo,
@@ -32,4 +32,5 @@ export {
   LiveRequestIcon,
   AppearenceIcon,
   SortByMasterIcon,
+  RevertMasterIcon,
 };

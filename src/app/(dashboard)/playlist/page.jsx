@@ -15,12 +15,13 @@ import {
   useUpdatePlaylistTypeMutation,
   useDeleteAllSongsFromPlaylistMutation,
   useUndoDeletedSongsFromPlaylistMutation,
+  useRevertMasterCheckMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
 import { IoArrowUndo } from "react-icons/io5";
-import { SortByMasterIcon } from "@/app/svgs";
+import { SortByMasterIcon, RevertMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
 import {
   setCurrentSong,
@@ -36,7 +37,6 @@ import { useSelector } from "react-redux";
 import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
 import CountDown from "./coutdown";
-import Ticker from "react-ticker";
 import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
@@ -55,6 +55,7 @@ const page = () => {
     useDeleteAllSongsFromPlaylistMutation();
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsMutation();
+  const [revertMasterCheckApi] = useRevertMasterCheckMutation();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
   const [undoDeletedSongsAPI] = useUndoDeletedSongsFromPlaylistMutation();
@@ -366,6 +367,28 @@ const page = () => {
       console.log(error);
     }
   };
+  function updateObjectInArray(arr, updatedObject) {
+    return arr.map((item) =>
+      item._id === updatedObject._id ? { ...item, ...updatedObject } : item
+    );
+  }
+
+  const revertCrownhandler = async (item) => {
+    let isFirst = localStorage.getItem("isFirstTimeFetched");
+    item = { ...item, sortByMaster: false };
+    await revertMasterCheckApi({
+      item: item,
+    });
+    let updatedPlaylist = [...playlistSongList];
+    const updatedList = updateObjectInArray(updatedPlaylist, item);
+    const newList = playlistAlgorithm(isFirst, updatedList);
+    setPlaylistSongList([...newList]);
+    socket.emit("handleDragReq", {
+      isFirst: false,
+      playlist: newList,
+    });
+  };
+
   const toggleFavSongs = async () => {
     if (!isFavSongs) {
       let isFirst = localStorage.getItem("isFirstTimeFetched");
@@ -600,13 +623,21 @@ const page = () => {
                                     >
                                       <div className="w-1/12 text-start font-extrabold text-lg">
                                         {!isLockedSongs ? (
-                                          <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
-                                            {sortByMaster ? (
-                                              <SortByMasterIcon />
-                                            ) : (
+                                          sortByMaster ? (
+                                            <button
+                                              onClick={() =>
+                                                revertCrownhandler(item)
+                                              }
+                                            >
+                                              <div className=" flex items-center justify-center  cursor-pointer">
+                                                <RevertMasterIcon />
+                                              </div>
+                                            </button>
+                                          ) : (
+                                            <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
                                               <HiOutlineArrowsUpDown />
-                                            )}
-                                          </div>
+                                            </div>
+                                          )
                                         ) : (
                                           index + 1
                                         )}
