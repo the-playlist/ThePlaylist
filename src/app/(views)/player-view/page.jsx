@@ -13,6 +13,7 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
 import { useFullScreenHandle, FullScreen } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
+import { EllipsisText } from "@/app/_components/ellipsis-text";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
@@ -247,12 +248,20 @@ const PerformerView = () => {
                         <td
                           className={`text-[50px] rounded-lg  flex-1  leading-[80px]  capitalize text-left  `}
                         >
-                          {item?.title}
+                          <EllipsisText
+                            className={" text-[50px]  capitalize text-left   "}
+                            text={item.title}
+                            length={20}
+                          />
                         </td>
                         <td
                           className={`text-[35px] leading-[50px]  capitalize text-end flex p-0 items-center `}
                         >
-                          {item?.playerName}
+                          <EllipsisText
+                            className={"text-[35px]  capitalize text-left   "}
+                            text={item.playerName}
+                            length={15}
+                          />
                         </td>
                         <td className="text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
                           <IntroCounter

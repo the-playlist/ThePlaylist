@@ -6,19 +6,24 @@ interface EllipsisTextProps {
   tooltip?: boolean; // Optional: Show full text in a tooltip on hover
 }
 
-export const EllipsisText: React.FC<EllipsisTextProps> = ({ text, length }) => {
+export const EllipsisText: React.FC<EllipsisTextProps> = ({
+  text,
+  length,
+  ...props
+}) => {
   // Check if the text needs to be truncated
   const truncatedText =
     text?.length > length ? `${text.slice(0, length)}...` : text;
 
   return (
     <span
-      className="text-stone-800 text-base font-normal"
+      className={"text-stone-800 text-base font-normal"}
       style={{
         whiteSpace: "nowrap",
         overflow: "hidden",
         textOverflow: "ellipsis",
       }}
+      {...props}
     >
       {truncatedText}
     </span>
