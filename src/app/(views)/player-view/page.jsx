@@ -276,9 +276,9 @@ const PerformerView = () => {
                   </tbody>
                 ))}
               </table>
-              {showCountDown && (
+              {/* {showCountDown && (
                 <CountDown openModal={showCountDown} timer={seconds} />
-              )}
+              )} */}
             </>
           )}
         </div>

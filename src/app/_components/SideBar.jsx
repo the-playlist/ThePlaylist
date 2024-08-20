@@ -151,9 +151,9 @@ const SideBar = () => {
       dispatch(setIsAdvanceTheQueeDisable(true));
 
       if (initialSongPlaylist) {
-        setTimeout(() => {
-          changePlayingState();
-        }, 10000);
+        // setTimeout(() => {
+        changePlayingState();
+        // }, 10000);
       } else {
         changePlayingState();
       }

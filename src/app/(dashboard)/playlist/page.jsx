@@ -726,14 +726,14 @@ const page = () => {
               )}
             </div>
           )}
-          {showCountDown && (
+          {/* {showCountDown && (
             <CountDown
               setShowCountDown={setShowCountDown}
               openModal={showCountDown}
               timer={10}
               socket={socket}
             />
-          )}
+          )} */}
         </>
       )}
     </div>

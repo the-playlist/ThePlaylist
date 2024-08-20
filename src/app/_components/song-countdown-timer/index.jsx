@@ -80,9 +80,9 @@ const SongCountdownTimer = ({
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
-        setTimeout(() => {
-          changePlayingState();
-        }, 10000);
+        // setTimeout(() => {
+        changePlayingState();
+        // }, 10000);
       } else {
         changePlayingState();
       }
@@ -102,12 +102,12 @@ const SongCountdownTimer = ({
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
-        setTimeout(() => {
-          changePlayingState();
-          // socket.emit("startPlayerViewTimeReq", {
-          //   time: 10,
-          // });
-        }, 10000);
+        // setTimeout(() => {
+        changePlayingState();
+        // socket.emit("startPlayerViewTimeReq", {
+        //   time: 10,
+        // });
+        // }, 10000);
       } else {
         changePlayingState();
       }
