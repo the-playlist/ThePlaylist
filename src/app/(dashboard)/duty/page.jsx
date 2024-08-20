@@ -259,6 +259,9 @@ const DutyScreen = () => {
               </div>
               {selectSongModal && (
                 <SelectSongModal
+                  onReload={() => {
+                    console.log("called");
+                  }}
                   isDuty={true}
                   btnText={"Push to Queue"}
                   title={"Push to Queue"}

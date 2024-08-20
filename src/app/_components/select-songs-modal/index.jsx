@@ -57,6 +57,7 @@ const SelectSongModal = ({
   btnText,
   fetchList,
   isDuty,
+  onReload,
 }) => {
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
@@ -168,6 +169,7 @@ const SelectSongModal = ({
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         closeModal();
         toast.success(response?.data?.description);
+        onReload();
         await fetchList(isFirstTimeFetched);
         // socket.emit("insertSongIntoPlaylistRequest", {
         //   isFirst: isFirstTimeFetched,

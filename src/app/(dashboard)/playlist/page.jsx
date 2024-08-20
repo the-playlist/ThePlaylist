@@ -70,7 +70,6 @@ const page = () => {
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
-
   const data = Array(10)
     .fill(null)
     .map((item, index) => ({ id: index }));
@@ -107,6 +106,24 @@ const page = () => {
     });
     socket.connect();
 
+    //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
+    // socket.on("insertSongIntoPlaylistResponse", (item) => {
+    //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+    //     item;
+
+    //   if (isFavSongs != null) {
+    //     setIsFavSongs(isFavSongs);
+    //   }
+    //   if (currentSongSecond != null) {
+    //     dispatch(setCurrentSongSecond(currentSongSecond));
+    //   }
+    //   dispatch(setPlaylistLength(playlist?.length));
+    //   const playlistWithId = playlist?.map((item, index) => ({
+    //     ...item,
+    //     id: index, // Add a unique id if it doesn't exist
+    //   }));
+    //   setPlaylistSongList([...playlistWithId]);
+    // });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       const playlistWithId = playlist?.map((item, index) => ({
@@ -629,7 +646,6 @@ const page = () => {
                   <DraggableList
                     unsetZIndex={true}
                     itemKey="id"
-                    constrainDrag={true}
                     template={({ item, itemSelected, dragHandleProps }) => {
                       return (
                         <PlaylistSongItem
@@ -686,6 +702,9 @@ const page = () => {
               </button>
               {selectSongModal && (
                 <SelectSongModal
+                  onReload={() => {
+                    setIsLoading(true);
+                  }}
                   btnText={"Add"}
                   title={"Select songs"}
                   openModal={selectSongModal}
