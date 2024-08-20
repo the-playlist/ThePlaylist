@@ -13,6 +13,7 @@ import { io } from "socket.io-client";
 import GenericButton from "../generic-button";
 import { useDispatch } from "react-redux";
 import { setInitialSongPlaylist } from "@/app/_utils/redux/slice/playlist-list";
+import { useSelector } from "react-redux";
 
 const AssignedSongsDropdown = ({ item }) => {
   const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
@@ -64,7 +65,9 @@ const SelectSongModal = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [playersList, setPlayersList] = useState([]);
   const dispatch = useDispatch();
-
+  const playlistLength = useSelector(
+    (state) => state?.playlistReducer?.playlistLength
+  );
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -334,7 +337,9 @@ const SelectSongModal = ({
                     (item) => item.isChecked == true
                   );
                   getDesiredOuptut(selectedPlayers);
-                  dispatch(setInitialSongPlaylist(true));
+                  if (playlistLength < 1) {
+                    dispatch(setInitialSongPlaylist(true));
+                  }
                 }
               }}
             />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
@@ -40,6 +40,8 @@ import CountDown from "./coutdown";
 import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
+import DraggableList from "react-draggable-list";
+import { PlaylistSongItem } from "./songItem";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -70,6 +72,10 @@ const page = () => {
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
+  const data = Array(10)
+    .fill(null)
+    .map((item, index) => ({ id: index }));
+  const [testingArraySort, settestingArraySort] = useState(data);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -84,6 +90,8 @@ const page = () => {
     (state) => state?.playlistReducer?.initialSongPlaylist
   );
   const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
+
+  const containerRef = useRef();
 
   useEffect(() => {
     if (isOnline) {
@@ -100,22 +108,32 @@ const page = () => {
       autoConnect: false,
     });
     socket.connect();
-    socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
-        item;
 
-      if (isFavSongs != null) {
-        setIsFavSongs(isFavSongs);
-      }
-      if (currentSongSecond != null) {
-        dispatch(setCurrentSongSecond(currentSongSecond));
-      }
-      dispatch(setPlaylistLength(playlist?.length));
-      setPlaylistSongList([...playlist]);
-    });
+    //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
+    // socket.on("insertSongIntoPlaylistResponse", (item) => {
+    //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
+    //     item;
+
+    //   if (isFavSongs != null) {
+    //     setIsFavSongs(isFavSongs);
+    //   }
+    //   if (currentSongSecond != null) {
+    //     dispatch(setCurrentSongSecond(currentSongSecond));
+    //   }
+    //   dispatch(setPlaylistLength(playlist?.length));
+    //   const playlistWithId = playlist?.map((item, index) => ({
+    //     ...item,
+    //     id: index, // Add a unique id if it doesn't exist
+    //   }));
+    //   setPlaylistSongList([...playlistWithId]);
+    // });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
-      setPlaylistSongList([...playlist]);
+      const playlistWithId = playlist?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setPlaylistSongList([...playlistWithId]);
       dispatch(setPlaylistLength(0));
       dispatch(setCurrentSongSecond(0));
       dispatch(setPlayingState(false));
@@ -127,7 +145,11 @@ const page = () => {
     });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
-      setPlaylistSongList([...playlist]);
+      const playlistWithId = playlist?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setPlaylistSongList([...playlistWithId]);
     });
     socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
@@ -136,7 +158,11 @@ const page = () => {
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst, duration } = item;
       // dispatch(setCurrentSongSecond(duration));
-      setPlaylistSongList([...playlist]);
+      const playlistWithId = playlist?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setPlaylistSongList([...playlistWithId]);
     });
 
     setSocket(socket);
@@ -178,7 +204,11 @@ const page = () => {
         isFirst: votingList?.isFirst,
         playlist: finalPlaylist,
       });
-      setPlaylistSongList([...finalPlaylist]);
+      const playlistWithId = finalPlaylist?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setPlaylistSongList([...playlistWithId]);
     }
   }, [votingList]);
 
@@ -240,14 +270,18 @@ const page = () => {
 
     try {
       // setIsLoading(true);
-      debugger;
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
 
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
         dispatch(setPlaylistLength(songList?.length));
-        setPlaylistSongList(songList);
+        const playlistWithId = songList?.map((item, index) => ({
+          ...item,
+          id: index, // Add a unique id if it doesn't exist
+        }));
+
+        setPlaylistSongList(playlistWithId);
         setIsFavSongs(isFav);
         if (songList?.length > 0) {
           setIsFavExist(songList?.filter((item) => item?.isFav));
@@ -321,7 +355,12 @@ const page = () => {
     if (playlistSongList?.length > 1) {
       newSong = playlistSongList[1];
     }
-    setPlaylistSongList(currentArray);
+    const playlistWithId = currentArray?.map((item, index) => ({
+      ...item,
+      id: index, // Add a unique id if it doesn't exist
+    }));
+
+    setPlaylistSongList(playlistWithId);
     if (!isTrashPress && currentArray?.length > 0) {
       dispatch(
         setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
@@ -334,24 +373,23 @@ const page = () => {
     });
   };
 
-  const handleDragEnd = (result, index) => {
-    if (!result.destination) return;
+  const handleDragEnd = (result, source, destination, movedItem) => {
     dispatch(setIsFirstTimeFetched(false));
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
+    const sourceIndex = source;
+    const destinationIndex = destination;
     if (sourceIndex != destinationIndex) {
-      const updatedPlaylist = [...playlistSongList];
-      const [reorderedItem] = updatedPlaylist.splice(sourceIndex, 1);
-      const updatedReorderItem = { ...reorderedItem, sortByMaster: true };
-      updatedPlaylist.splice(destinationIndex, 0, updatedReorderItem);
+      const index = result.findIndex((item) => item._id === movedItem._id);
+      const updatedPlaylist = [
+        ...result.slice(0, index),
+        { ...movedItem, sortByMaster: true },
+        ...result.slice(index + 1),
+      ];
       socket.emit("handleDragReq", {
         isFirst: false,
         playlist: updatedPlaylist,
       });
       const newList = playlistAlgorithm(false, updatedPlaylist);
-
-      setPlaylistSongList(newList);
-
+      setPlaylistSongList([...newList]);
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
         newSortOrder: index,
@@ -390,7 +428,11 @@ const page = () => {
     let updatedPlaylist = [...playlistSongList];
     const updatedList = updateObjectInArray(updatedPlaylist, item);
     const newList = playlistAlgorithm(isFirst, updatedList);
-    setPlaylistSongList([...newList]);
+    const playlistWithId = newList?.map((item, index) => ({
+      ...item,
+      id: index, // Add a unique id if it doesn't exist
+    }));
+    setPlaylistSongList([...playlistWithId]);
     socket.emit("handleDragReq", {
       isFirst: false,
       playlist: newList,
@@ -403,7 +445,11 @@ const page = () => {
       const updatedPlaylist = [...playlistSongList];
       let favSongsList = updatedPlaylist.filter((item) => item.isFav);
       favSongsList = playlistAlgorithm(isFirst, favSongsList);
-      setPlaylistSongList(favSongsList);
+      const playlistWithId = favSongsList?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setPlaylistSongList(playlistWithId);
       const initialSongDuration = convertTimeToSeconds(
         favSongsList[0].songDuration
       );
@@ -577,192 +623,39 @@ const page = () => {
                     </span>
                   </div>
                 )}
-
-              <DragDropContext
-                onDragEnd={(result, index) => {
-                  if (result?.destination?.index > 1) {
-                    handleDragEnd(result);
-                  }
-                }}
+              <div
+                ref={containerRef}
+                style={{ touchAction: "pan-y", background: "#F9F9F9" }}
               >
-                <Droppable droppableId="list">
-                  {(provided, snapshot) => (
-                    <div {...provided?.droppableProps} ref={provided?.innerRef}>
-                      {playlistSongList.map((item, index) => {
-                        const {
-                          title,
-                          upVote,
-                          downVote,
-                          playerName,
-                          introSec,
-                          category,
-                          isFav,
-                          sortOrder,
-                          sortByMaster,
-                          songDuration,
-                        } = item || {};
-                        const trimmedTitle =
-                          title?.length > 16
-                            ? `${title?.slice(0, 16)}...`
-                            : title;
-                        const isLockedSongs = index == 0 || index == 1;
-                        return (
-                          <Draggable
-                            key={sortOrder}
-                            draggableId={sortOrder?.toString() ?? 0}
-                            index={index}
-                            isDragDisabled={isLockedSongs}
-                          >
-                            {(provided, snapshot) => {
-                              return (
-                                <>
-                                  <div
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    ref={provided.innerRef}
-                                  >
-                                    <div
-                                      key={index}
-                                      className={` text-center ${
-                                        isLockedSongs
-                                          ? "bg-top-queue-bg"
-                                          : "bg-white"
-                                      }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
-                                    >
-                                      <div className="w-1/12 text-start font-extrabold text-lg">
-                                        {!isLockedSongs ? (
-                                          sortByMaster ? (
-                                            <button
-                                              onClick={() =>
-                                                revertCrownhandler(item)
-                                              }
-                                            >
-                                              <div className=" flex items-center justify-center  cursor-pointer">
-                                                <RevertMasterIcon />
-                                              </div>
-                                            </button>
-                                          ) : (
-                                            <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
-                                              <HiOutlineArrowsUpDown />
-                                            </div>
-                                          )
-                                        ) : (
-                                          index + 1
-                                        )}
-                                      </div>
-                                      <div className="w-2/12 pr-10">
-                                        <EllipsisText
-                                          text={title}
-                                          length={15}
-                                        />
-                                      </div>
-                                      <div className="w-1/12">
-                                        {!isLockedSongs && (
-                                          <div className="flex items-center justify-center">
-                                            <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-                                              <div className="flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2">
-                                                <IoIosArrowUp
-                                                  size={18}
-                                                  color={"white"}
-                                                />
-                                              </div>
-                                              {upVote}
-                                            </div>
-                                            <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
-                                              <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
-                                                <IoIosArrowDown
-                                                  size={18}
-                                                  color={"white"}
-                                                />
-                                              </div>
-                                              {downVote}
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="w-3/12">{playerName}</div>
-                                      <div className="w-2/12 flex items-center justify-center">
-                                        <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                                          {introSec || 0}
-                                        </div>
-                                      </div>
-                                      <div
-                                        className={`w-2/12 flex items-center justify-center `}
-                                      >
-                                        <div
-                                          className={` ${
-                                            index > 1
-                                              ? "bg-[#F7F7F7]"
-                                              : "bg-white"
-                                          } rounded-3xl px-5 py-2`}
-                                        >
-                                          {category}
-                                        </div>
-                                      </div>
-                                      <div className="w-1/12">
-                                        <div className="flex items-center justify-end ">
-                                          {index === 0 && (
-                                            <SongCountdownTimer
-                                              socket={socket}
-                                              orignalSongDuration={songDuration}
-                                              setShowCountDown={(value) => {
-                                                if (initialSongPlaylist) {
-                                                  setShowCountDown(value);
-                                                }
-                                              }}
-                                              duration={currentSongSecond}
-                                              advanceTheQueue={() => {
-                                                deleteSongFromPlaylistHandler(
-                                                  playlistSongList[0]?._id
-                                                );
-                                              }}
-                                              playlistSongList={
-                                                playlistSongList
-                                              }
-                                              isStart={playingState}
-                                            />
-                                          )}
-                                          {isFav && (
-                                            <FaHeart
-                                              className={`${
-                                                isLockedSongs
-                                                  ? "text-white"
-                                                  : "text-primary"
-                                              }`}
-                                              size={20}
-                                            />
-                                          )}
-                                          {!isLockedSongs && (
-                                            <button
-                                              onClick={() => {
-                                                deleteSongFromPlaylistHandler(
-                                                  item?._id,
-                                                  true
-                                                );
-                                              }}
-                                              className=" hover:cursor-pointer ml-5"
-                                            >
-                                              <FaTrashAlt
-                                                className="text-red-500"
-                                                size={20}
-                                              />
-                                            </button>
-                                          )}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </>
-                              );
-                            }}
-                          </Draggable>
-                        );
-                      })}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+                <DraggableList
+                  itemKey="id"
+                  template={({ item, itemSelected, dragHandleProps }) => {
+                    return (
+                      <PlaylistSongItem
+                        item={item}
+                        itemSelected={itemSelected}
+                        dragHandleProps={dragHandleProps}
+                        playlistSongList={playlistSongList}
+                        revertCrownhandler={revertCrownhandler}
+                        deleteSongFromPlaylistHandler={
+                          deleteSongFromPlaylistHandler
+                        }
+                        socket={socket}
+                        setShowCountDown={setShowCountDown}
+                      />
+                    );
+                  }}
+                  list={playlistSongList}
+                  onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
+                    if (oldIndex != 0 && oldIndex != 1) {
+                      if (newIndex != 0 && newIndex != 1) {
+                        handleDragEnd(newList, oldIndex, newIndex, movedItem);
+                      }
+                    }
+                  }}
+                  container={() => containerRef.current}
+                />
+              </div>
             </div>
           </div>
           {!isFavSongs && (
