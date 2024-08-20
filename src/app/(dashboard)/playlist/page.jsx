@@ -242,6 +242,7 @@ const page = () => {
       // setIsLoading(true);
 
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
+
       if (response && !response.isError) {
         let isFav = response?.data?.content?.isFavortiteListType;
         let songList = response?.data?.content?.playlist;
@@ -332,6 +333,7 @@ const page = () => {
       time: 10,
     });
   };
+
   const handleDragEnd = (result, index) => {
     if (!result.destination) return;
     dispatch(setIsFirstTimeFetched(false));
@@ -346,15 +348,20 @@ const page = () => {
         isFirst: false,
         playlist: updatedPlaylist,
       });
-      setPlaylistSongList([...updatedPlaylist]);
+      const newList = playlistAlgorithm(false, updatedPlaylist);
+
+      setPlaylistSongList(newList);
+
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
         newSortOrder: index,
         sortByMaster: item?.sortByMaster,
       }));
+
       updateSongsOrderHandler(updatedArr);
     }
   };
+
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
     dispatch(setInitialSongPlaylist(false));
@@ -367,6 +374,7 @@ const page = () => {
       console.log(error);
     }
   };
+
   function updateObjectInArray(arr, updatedObject) {
     return arr.map((item) =>
       item._id === updatedObject._id ? { ...item, ...updatedObject } : item
