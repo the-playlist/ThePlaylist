@@ -166,6 +166,7 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
       lastCategory = song.category;
     }
   }
+
   const finalPlaylist = [
     ...modifiedSongs,
     ...comedySongs,

@@ -15,14 +15,9 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
-  const [getAssignSongsApi, getAssignSongsResponse] =
-    useLazyGetAssignSongsWithPlayersQuery();
-
   const [showModal, setShowModal] = useState(false);
   const popUpRef = useRef(null);
   const [staffList, setStaffList] = useState([]);
-  const [assignSongsList, setAssignSongsList] = useState([]);
-  const [playlistCount, setPlaylistCount] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
@@ -63,25 +58,11 @@ const DutyScreen = () => {
       console.error("Fetch failed:", error);
     }
   };
-  const fetchAssignSongsList = async () => {
-    try {
-      let response = await getAssignSongsApi(null);
-      if (response && !response.isError) {
-        const { list, playlistCount } = response?.data?.content;
-        console.log("playlistCount", playlistCount);
-        setPlaylistCount(playlistCount);
-        setAssignSongsList(list);
-      }
-    } catch (error) {
-      console.error("Fetch failed:", error);
-    }
-  };
 
   const onUpdateStatusHandler = async (payload) => {
     let response = await updateStatusAPI(payload);
     if (response && !response.error) {
       toast(response?.data?.description);
-      await fetchAssignSongsList();
       setShowModal(false);
       staffList.some((player) => {
         if (player.duty.status === true) {
@@ -279,8 +260,6 @@ const DutyScreen = () => {
               {selectSongModal && (
                 <SelectSongModal
                   isDuty={true}
-                  playlistCount={playlistCount}
-                  items={assignSongsList}
                   btnText={"Push to Queue"}
                   title={"Push to Queue"}
                   openModal={selectSongModal}
