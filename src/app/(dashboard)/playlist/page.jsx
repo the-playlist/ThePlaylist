@@ -70,6 +70,7 @@ const page = () => {
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
+
   const data = Array(10)
     .fill(null)
     .map((item, index) => ({ id: index }));
@@ -106,24 +107,6 @@ const page = () => {
     });
     socket.connect();
 
-    //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
-    // socket.on("insertSongIntoPlaylistResponse", (item) => {
-    //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
-    //     item;
-
-    //   if (isFavSongs != null) {
-    //     setIsFavSongs(isFavSongs);
-    //   }
-    //   if (currentSongSecond != null) {
-    //     dispatch(setCurrentSongSecond(currentSongSecond));
-    //   }
-    //   dispatch(setPlaylistLength(playlist?.length));
-    //   const playlistWithId = playlist?.map((item, index) => ({
-    //     ...item,
-    //     id: index, // Add a unique id if it doesn't exist
-    //   }));
-    //   setPlaylistSongList([...playlistWithId]);
-    // });
     socket.on("emptyPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       const playlistWithId = playlist?.map((item, index) => ({
@@ -599,8 +582,15 @@ const page = () => {
               <div className="w-1/12"></div>
             </div>
           )}
-          <div className={`overflow-y-auto h-[600px] pb-10 `}>
-            <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
+          <div
+            className={`overflow-y-auto ${
+              playlistSongList?.length > 0 ? "h-[700px]" : "h-[800px]"
+            } pb-10 `}
+          >
+            <div
+              // ref={containerRef}
+              className="border-separate border-spacing-y-5 mx-1 mb-10  "
+            >
               {playlistSongList?.length === 0 &&
                 !getPlaylistSongListResponse.isFetching && (
                   <div className="flex items-center justify-center mt-10">
@@ -609,13 +599,14 @@ const page = () => {
                     </span>
                   </div>
                 )}
-              <div
-                ref={containerRef}
-                style={{ touchAction: "pan-y", background: "#F9F9F9" }}
-              >
+              <div style={{ touchAction: "pan-y", background: "#F9F9F9" }}>
                 <DraggableList
                   itemKey="id"
+                  constrainDrag={true}
                   template={({ item, itemSelected, dragHandleProps }) => {
+                    const { onMouseDown, onMouseUp, ...restProps } =
+                      dragHandleProps;
+
                     return (
                       <PlaylistSongItem
                         item={item}

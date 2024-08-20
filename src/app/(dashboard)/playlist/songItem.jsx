@@ -51,37 +51,64 @@ export function PlaylistSongItem({
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
         }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
       >
-        <div
-          className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle"
-          onTouchStart={(e) => {
-            e.preventDefault();
-            console.log("touchStart");
-            e.target.style.backgroundColor = "blue";
-            document.body.style.overflow = "hidden";
-            onTouchStart(e);
-          }}
-          onMouseDown={(e) => {
-            console.log("mouseDown");
-            document.body.style.overflow = "hidden";
-            onMouseDown(e);
-          }}
-          onTouchEnd={(e) => {
-            e.target.style.backgroundColor = "black";
-            document.body.style.overflow = "visible";
-          }}
-          onMouseUp={() => {
-            document.body.style.overflow = "visible";
-          }}
-        >
+        <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
           {!isLockedSongs ? (
             sortByMaster ? (
               <button onClick={() => revertCrownhandler(item)}>
-                <div className=" flex items-center justify-center  cursor-pointer">
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    console.log("touchStart");
+                    e.target.style.backgroundColor = "blue";
+                    document.body.style.overflow = "scroll";
+                    onTouchStart(e);
+                  }}
+                  onMouseDown={(e) => {
+                    console.log("mouseDown");
+                    document.body.style.overflow = "scroll";
+                    onMouseDown(e);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.target.style.backgroundColor = "black";
+                    document.body.style.overflow = "scroll";
+                  }}
+                  onMouseUp={() => {
+                    document.body.style.overflow = "scroll";
+                  }}
+                  className=" flex items-center justify-center  cursor-pointer"
+                >
                   <RevertMasterIcon />
                 </div>
               </button>
             ) : (
-              <div className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer">
+              <div
+                onClick={(e) => {
+                  e.preventDefault();
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  console.log("touchStart");
+                  e.target.style.backgroundColor = "blue";
+                  document.body.style.overflow = "scroll";
+                  onTouchStart(e);
+                }}
+                onMouseDown={(e) => {
+                  console.log("mouseDown");
+                  document.body.style.overflow = "scroll";
+                  onMouseDown(e);
+                }}
+                onTouchEnd={(e) => {
+                  e.target.style.backgroundColor = "black";
+                  document.body.style.overflow = "scroll";
+                }}
+                onMouseUp={() => {
+                  document.body.style.overflow = "scroll";
+                }}
+                className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer"
+              >
                 <HiOutlineArrowsUpDown />
               </div>
             )
@@ -197,20 +224,20 @@ export const PlaylistSongItem_ = ({ item, itemSelected, dragHandleProps }) => {
           e.preventDefault();
           console.log("touchStart");
           e.target.style.backgroundColor = "blue";
-          document.body.style.overflow = "hidden";
+          document.body.style.overflow = "scroll";
           onTouchStart(e);
         }}
         onMouseDown={(e) => {
           console.log("mouseDown");
-          document.body.style.overflow = "hidden";
+          document.body.style.overflow = "scroll";
           onMouseDown(e);
         }}
         onTouchEnd={(e) => {
           e.target.style.backgroundColor = "black";
-          document.body.style.overflow = "visible";
+          document.body.style.overflow = "scroll";
         }}
         onMouseUp={() => {
-          document.body.style.overflow = "visible";
+          document.body.style.overflow = "scroll";
         }}
       ></div>
     </div>
