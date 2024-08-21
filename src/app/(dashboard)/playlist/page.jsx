@@ -524,13 +524,29 @@ const page = () => {
         break;
     }
   };
+  const [height, setHeight] = useState("h-[67vh]");
+
+  useEffect(() => {
+    const updateHeight = () => {
+      if (window.innerHeight <= 650) {
+        setHeight("h-[50vh]");
+      } else {
+        setHeight("h-[67vh]");
+      }
+    };
+
+    updateHeight(); // Set initial height
+    window.addEventListener("resize", updateHeight); // Update on resize
+
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
 
   return (
     <div className="">
       {isLoading ? (
         <CustomLoader />
       ) : (
-        <div className=" h-[89vh]">
+        <div className="">
           <div
             className={`flex items-center ${
               playlistSongList?.length > 0 ? "justify-between" : "justify-end"
@@ -614,7 +630,7 @@ const page = () => {
                 // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                 id="scrollableContainer"
                 ref={containerRef}
-                className=" overflow-y-auto h-[67vh]"
+                className={`overflow-y-auto ${height}`}
                 // style={{ overflowY: "auto", height: "630px" }}
               >
                 <DraggableList
