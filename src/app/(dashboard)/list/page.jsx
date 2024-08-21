@@ -454,7 +454,7 @@ const Item = ({ item, itemSelected, dragHandleProps }) => {
       onTouchStart={(e) => {
         e.preventDefault();
         console.log("touchStart");
-        setShowBorder(true);
+
         // e.target.style.backgroundColor = "blue";
         document.body.style.overflow = "hidden";
         onTouchStart(e);
@@ -468,7 +468,6 @@ const Item = ({ item, itemSelected, dragHandleProps }) => {
         // e.target.style.backgroundColor = "black";
         document.body.style.overflow = "visible";
         console.log("touchEnd");
-        setShowBorder(false);
       }}
       onMouseUp={() => {
         document.body.style.overflow = "visible";
@@ -525,6 +524,7 @@ const Item = ({ item, itemSelected, dragHandleProps }) => {
 const List = () => {
   const [list, setList] = useState(data);
   const [showBorder, setShowBorder] = useState(false);
+
   const containerRef = useRef();
 
   const _onListChange = (newList) => {
