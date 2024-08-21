@@ -528,7 +528,7 @@ const page = () => {
 
   useEffect(() => {
     const updateHeight = () => {
-      if (window.innerHeight <= 650) {
+      if (window.innerHeight <= 750) {
         setHeight("h-[50vh]");
       } else {
         setHeight("h-[67vh]");
