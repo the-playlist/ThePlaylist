@@ -1,11 +1,10 @@
 import React from "react";
-import { SortByMasterIcon, RevertMasterIcon } from "@/app/svgs";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
 import { SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
+import { DragHandle } from "./dragable";
 
 export function PlaylistSongItem({
   revertCrownhandler,
@@ -44,78 +43,22 @@ export function PlaylistSongItem({
   const { onMouseDown, onTouchStart } = dragHandleProps;
 
   return (
-    <div>
+    <div className="disable-select">
       <div
         key={index}
         className={` text-center ${
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
-        }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
+        }  shadow rounded-2xl h-20 flex items-center  px-5 `}
       >
-        <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
-          {!isLockedSongs ? (
-            sortByMaster ? (
-              <button onClick={() => revertCrownhandler(item)}>
-                <div
-                  onClick={(e) => {
-                    e.preventDefault();
-                  }}
-                  onTouchStart={(e) => {
-                    e.preventDefault();
-                    console.log("touchStart");
-                    e.target.style.backgroundColor = "blue";
-                    document.body.style.overflow = "scroll";
-                    onTouchStart(e);
-                  }}
-                  onMouseDown={(e) => {
-                    console.log("mouseDown");
-                    document.body.style.overflow = "scroll";
-                    onMouseDown(e);
-                  }}
-                  onTouchEnd={(e) => {
-                    e.target.style.backgroundColor = "black";
-                    document.body.style.overflow = "scroll";
-                  }}
-                  onMouseUp={() => {
-                    document.body.style.overflow = "scroll";
-                  }}
-                  className=" flex items-center justify-center  cursor-pointer"
-                >
-                  <RevertMasterIcon />
-                </div>
-              </button>
-            ) : (
-              <div
-                onClick={(e) => {
-                  e.preventDefault();
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  console.log("touchStart");
-                  e.target.style.backgroundColor = "blue";
-                  document.body.style.overflow = "scroll";
-                  onTouchStart(e);
-                }}
-                onMouseDown={(e) => {
-                  console.log("mouseDown");
-                  document.body.style.overflow = "scroll";
-                  onMouseDown(e);
-                }}
-                onTouchEnd={(e) => {
-                  e.target.style.backgroundColor = "black";
-                  document.body.style.overflow = "scroll";
-                }}
-                onMouseUp={() => {
-                  document.body.style.overflow = "scroll";
-                }}
-                className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer"
-              >
-                <HiOutlineArrowsUpDown />
-              </div>
-            )
-          ) : (
-            index + 1
-          )}
-        </div>
+        {DragHandle(
+          isLockedSongs,
+          sortByMaster,
+          revertCrownhandler,
+          onTouchStart,
+          onMouseDown,
+          index + 1,
+          item
+        )}
         <div className="w-2/12 pr-10">
           <EllipsisText text={title} length={15} />
         </div>

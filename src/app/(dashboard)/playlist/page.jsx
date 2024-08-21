@@ -70,9 +70,10 @@ const page = () => {
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
-  const data = Array(10)
+  const data = Array(100)
     .fill(null)
     .map((item, index) => ({ id: index }));
+  const [testingArr, setTestingArr] = useState(data);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -107,6 +108,7 @@ const page = () => {
     socket.connect();
 
     //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
+
     // socket.on("insertSongIntoPlaylistResponse", (item) => {
     //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
     //     item;
@@ -380,7 +382,7 @@ const page = () => {
         isFirst: false,
         playlist: updatedPlaylist,
       });
-      const newList = playlistAlgorithm(false, updatedPlaylist);
+      const newList = updatedPlaylist;
       setPlaylistSongList([...newList]);
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
@@ -546,7 +548,7 @@ const page = () => {
   }, []);
 
   return (
-    <div className="">
+    <div className="  h-[90vh] overflow-hidden">
       {isLoading ? (
         <CustomLoader />
       ) : (
@@ -554,7 +556,7 @@ const page = () => {
           <div
             className={`flex items-center ${
               playlistSongList?.length > 0 ? "justify-between" : "justify-end"
-            } items-center mx-1 mt-5`}
+            } items-center mx-1 mt-5 h-[10vh] `}
           >
             {playlistSongList?.length > 0 && (
               <button
@@ -619,7 +621,7 @@ const page = () => {
               </div>
             )}
           {playlistSongList?.length > 0 && (
-            <>
+            <div className="h-[70vh]  overflow-hidden">
               <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
                 <div className="w-1/12"></div>
                 <div className="w-2/12 ">Title</div>
@@ -629,19 +631,11 @@ const page = () => {
                 <div className="w-2/12">Category</div>
                 <div className="w-1/12"></div>
               </div>
-
-              {/* <div
-            className={`overflow-y-auto ${
-              playlistSongList?.length > 0 ? "h-[750px]" : "h-[800px]"
-            } pb-10 `}
-          > */}
-              <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
+              <div className="flex border-separate border-spacing-y-5 mx-1  w-full ">
                 <div
-                  // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                   id="scrollableContainer"
                   ref={containerRef}
-                  className=" overflow-y-auto md:h-[630px] sm:h-[560px]"
-                  // style={{ overflowY: "auto", height: "630px" }}
+                  className=" bg-[#F9F9F9] h-[60vh] overflow-auto w-full m-2 "
                 >
                   <DraggableList
                     unsetZIndex={true}
@@ -663,22 +657,21 @@ const page = () => {
                       );
                     }}
                     list={playlistSongList}
+                    // list={testingArr}
                     onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
-                      if (oldIndex != 0 && oldIndex != 1) {
-                        if (newIndex != 0 && newIndex != 1) {
-                          handleDragEnd(newList, oldIndex, newIndex, movedItem);
-                        }
+                      if (oldIndex > 1 && newIndex > 1) {
+                        handleDragEnd(newList, oldIndex, newIndex, movedItem);
+                        // setTestingArr(newList);
                       }
                     }}
                     container={() => containerRef.current}
                   />
                 </div>
               </div>
-            </>
+            </div>
           )}
-          {/* </div> */}
           {!isFavSongs && (
-            <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
+            <div className="sticky h-[7vh] bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
               <button
                 onClick={async () => {
                   setSelectSongModal(true);
