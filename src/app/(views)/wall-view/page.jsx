@@ -12,6 +12,7 @@ import { io } from "socket.io-client";
 import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
+import { EllipsisText } from "@/app/_components/ellipsis-text";
 
 const WallView = () => {
   const handle = useFullScreenHandle();
@@ -209,16 +210,17 @@ const WallView = () => {
               }
               `}
                     >
-                      <div
+                      <EllipsisText
+                        text={item?.title}
+                        length={20}
                         className={`text-[35px]  capitalize  leading-[85px] `}
-                      >
-                        {item?.title}
-                      </div>
-                      <div
+                      />
+
+                      <EllipsisText
+                        text={item?.artist}
+                        length={15}
                         className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
-                      >
-                        {item?.artist}
-                      </div>
+                      />
                     </div>
                   ))}
                 </ul>
