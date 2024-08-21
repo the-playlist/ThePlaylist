@@ -380,8 +380,8 @@ const page = () => {
         isFirst: false,
         playlist: updatedPlaylist,
       });
-      const newList = playlistAlgorithm(false, updatedPlaylist);
-      setPlaylistSongList([...newList]);
+      // const newList = playlistAlgorithm(false, updatedPlaylist);
+      setPlaylistSongList([...updatedPlaylist]);
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
         newSortOrder: index,
