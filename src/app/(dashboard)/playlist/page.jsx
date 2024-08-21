@@ -91,21 +91,22 @@ const page = () => {
 
   const containerRef = useRef();
 
-  useEffect(() => {
-    if (isOnline) {
-      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-        autoConnect: false,
-      });
-      socket.connect();
-      fetchPlaylistSongList(null);
-    }
-  }, [isOnline]);
+  // useEffect(() => {
+  //   if (isOnline) {
+  //     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+  //       autoConnect: false,
+  //     });
+  //     socket.connect();
+  //     fetchPlaylistSongList(null);
+  //   }
+  // }, [isOnline]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
     });
     socket.connect();
+    setSocket(socket);
 
     //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
     // socket.on("insertSongIntoPlaylistResponse", (item) => {
@@ -162,8 +163,12 @@ const page = () => {
       }));
       setPlaylistSongList([...playlistWithId]);
     });
-
-    setSocket(socket);
+    socket.on("disconnect", async (reason) => {
+      socket.disconnect();
+      console.log(`Socket disconnected socket connection test: ${reason}`);
+      socket.connect();
+      await fetchPlaylistSongList(null);
+    });
   }, []);
 
   useEffect(() => {

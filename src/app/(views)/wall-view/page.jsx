@@ -27,34 +27,34 @@ const WallView = () => {
   const [currentActive, setCurrentActive] = useState(null);
   let screenName = "Wall View";
 
-  useEffect(() => {
-    let timeoutId; // Store the timeout ID
-    const interval = 30000; // 50 seconds in milliseconds
+  // useEffect(() => {
+  //   let timeoutId; // Store the timeout ID
+  //   const interval = 30000; // 50 seconds in milliseconds
 
-    const fetchWithInterval = async () => {
-      await fetchPlaylistSongList(null); // Fetch data once
-      timeoutId = setTimeout(fetchWithInterval, interval); // Schedule the next fetch
-    };
+  //   const fetchWithInterval = async () => {
+  //     // await fetchPlaylistSongList(null); // Fetch data once
+  //     timeoutId = setTimeout(fetchWithInterval, interval); // Schedule the next fetch
+  //   };
 
-    if (isOnline) {
-      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-        autoConnect: false,
-      });
-      socket.connect();
+  //   if (isOnline) {
+  //     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+  //       autoConnect: false,
+  //     });
+  //     socket.connect();
 
-      fetchWithInterval(); // Start the fetching process
+  //     fetchWithInterval(); // Start the fetching process
 
-      // Cleanup function to clear the timeout and disconnect the socket
-      return () => {
-        clearTimeout(timeoutId); // Clear the timeout
-      };
-    }
+  //     // Cleanup function to clear the timeout and disconnect the socket
+  //     return () => {
+  //       clearTimeout(timeoutId); // Clear the timeout
+  //     };
+  //   }
 
-    // If not online, ensure to clear any existing timeout
-    return () => {
-      clearTimeout(timeoutId);
-    };
-  }, [isOnline]);
+  //   // If not online, ensure to clear any existing timeout
+  //   return () => {
+  //     clearTimeout(timeoutId);
+  //   };
+  // }, [isOnline]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -118,6 +118,12 @@ const WallView = () => {
     socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
+    });
+    socket.on("disconnect", async (reason) => {
+      socket.disconnect();
+      console.log(`Socket disconnected socket connection test: ${reason}`);
+      socket.connect();
+      await fetchPlaylistSongList(null);
     });
   }, []);
 
