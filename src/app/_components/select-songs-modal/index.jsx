@@ -171,14 +171,7 @@ const SelectSongModal = ({
         toast.success(response?.data?.description);
         onReload();
         await fetchList(isFirstTimeFetched);
-        // socket.emit("insertSongIntoPlaylistRequest", {
-        //   isFirst: isFirstTimeFetched,
-        //   playlist: playlist,
-        //   isInsert: false,
-        // });
-        // socket.emit("addSongToPlaylistApi", {
-        //   isFirst: isFirstTimeFetched,
-        // });
+
         setBtnLoader(false);
       }
     } catch (error) {
@@ -261,11 +254,7 @@ const SelectSongModal = ({
                       </button>
                     )}
                   </div>
-                  {/* {activeSongsCount > songLimit && (
-                <div className="flex w-4/6 text-left text-red-600">
-                  {`There is limit that playlist should have only ${songLimit} songs. Please Select only ${songLimit} songs`}
-                </div>
-              )} */}
+
                   <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
                     <div className="w-3/12 ">
                       <div className="flex items-center">Title</div>
@@ -277,91 +266,102 @@ const SelectSongModal = ({
                 </div>
               )}
               <div className="overflow-y-auto px-4">
-                {playersList?.map((item, index) => {
-                  const matchesSearch =
+                {playersList?.filter((item) => {
+                  return (
                     item.title
                       .toLowerCase()
                       .includes(searchTerm.toLowerCase()) ||
                     (item?.assignedPlayers[0]?.playerName
                       .toLowerCase()
                       .includes(searchTerm.toLowerCase()) &&
-                      item.assignedPlayers?.length > 0);
-                  const trimmedTitle =
-                    item?.title?.length > 15
-                      ? `${item?.title?.slice(0, 12)}...`
-                      : item?.title;
+                      item.assignedPlayers?.length > 0)
+                  );
+                }).length === 0 ? (
+                  <div className="text-center text-black h-52 flex items-center justify-center ">
+                    No records found
+                  </div>
+                ) : (
+                  playersList?.map((item, index) => {
+                    const matchesSearch =
+                      item.title
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) ||
+                      (item?.assignedPlayers[0]?.playerName
+                        .toLowerCase()
+                        .includes(searchTerm.toLowerCase()) &&
+                        item.assignedPlayers?.length > 0);
+                    const trimmedTitle =
+                      item?.title?.length > 15
+                        ? `${item?.title?.slice(0, 12)}...`
+                        : item?.title;
 
-                  if (matchesSearch) {
-                    return (
-                      <div className="text-base bg-white  font-medium text-black  items-center flex  mb-2  p-5 rounded-lg ">
-                        <div className="w-3/12 text-center ">
-                          <div className="flex items-start ">
-                            <input
-                              type="checkbox"
-                              onClick={() => {
-                                setPlayersList((prevPlayerList) =>
-                                  prevPlayerList.map((player) => {
-                                    if (player?._id === item?._id) {
-                                      return {
-                                        ...player,
-                                        isChecked: !player.isChecked,
-                                      };
-                                    }
-                                    return player;
-                                  })
-                                );
-                              }}
-                              checked={item.isChecked}
-                              className="checkbox mr-3 checkbox-success"
-                            />
-                            <div className=" text-start">
-                              {item?.title?.length > 12 ? (
-                                <div className="group relative flex justify-center">
-                                  {trimmedTitle}
-                                  <span className="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
-                                    {item?.title}
-                                  </span>
-                                </div>
-                              ) : (
-                                item?.title
-                              )}
+                    if (matchesSearch) {
+                      return (
+                        <div
+                          key={index}
+                          className="text-base bg-white font-medium text-black items-center flex mb-2 p-5 rounded-lg"
+                        >
+                          <div className="w-3/12 text-center">
+                            <div className="flex items-start">
+                              <input
+                                type="checkbox"
+                                onClick={() => {
+                                  setPlayersList((prevPlayerList) =>
+                                    prevPlayerList.map((player) => {
+                                      if (player?._id === item?._id) {
+                                        return {
+                                          ...player,
+                                          isChecked: !player.isChecked,
+                                        };
+                                      }
+                                      return player;
+                                    })
+                                  );
+                                }}
+                                checked={item.isChecked}
+                                className="checkbox mr-3 checkbox-success"
+                              />
+                              <div className="text-start">
+                                {item?.title?.length > 12 ? (
+                                  <div className="group relative flex justify-center">
+                                    {trimmedTitle}
+                                    <span className="absolute top-8 scale-0 rounded bg-gray-800 p-2 text-xs text-white group-hover:scale-100">
+                                      {item?.title}
+                                    </span>
+                                  </div>
+                                ) : (
+                                  item?.title
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="w-3/12 text-center">
-                          {item?.assignedPlayers?.length > 1 ? (
-                            <AssignedSongsDropdown item={item} />
-                          ) : (
-                            <div>{`${item?.assignedPlayers[0].playerName}`}</div>
-                          )}
-                        </div>
-                        <div className="w-3/12">
-                          <div className="flex items-center justify-center">
-                            <div className=" px-7 py-2 rounded-3xl bg-[#F7F7F7]">
-                              {item.category}
+                          <div className="w-3/12 text-center">
+                            {item?.assignedPlayers?.length > 1 ? (
+                              <AssignedSongsDropdown item={item} />
+                            ) : (
+                              <div>{`${item?.assignedPlayers[0].playerName}`}</div>
+                            )}
+                          </div>
+                          <div className="w-3/12">
+                            <div className="flex items-center justify-center">
+                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                                {item.category}
+                              </div>
                             </div>
                           </div>
+                          <div className="w-3/12 text-center">
+                            {item.introSec}
+                          </div>
                         </div>
-                        <div className="w-3/12 text-center">
-                          {item.introSec}
-                        </div>
-                      </div>
-                    );
-                  } else {
-                    return null;
-                  }
-                })}
+                      );
+                    } else {
+                      return null;
+                    }
+                  })
+                )}
               </div>
+
               <div className="sticky -bottom-5 w-full   px-4 pb-4  bg-[#fafafa]">
-                {/* {activeSongsCount > songLimit - playlistCount && (
-              <div className="flex  text-sm items-center justify-center my-2">
-                <FaCircleInfo size={12} />
-                <span className="ml-2 text-black">
-                  Please Increase Limit of Playlist to add More Songs into
-                  Playlist
-                </span>
-              </div>
-            )} */}
                 <GenericButton
                   disabled={btnLoader || activeSongsCount == 0}
                   loading={btnLoader}
