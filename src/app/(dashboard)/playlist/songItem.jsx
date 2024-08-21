@@ -1,5 +1,7 @@
 import React from "react";
 import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
+import { RevertMasterIcon } from "@/app/svgs";
+import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
 import { SongCountdownTimer } from "../../_components";
@@ -14,6 +16,8 @@ export function PlaylistSongItem({
   playlistSongList,
   item,
   dragHandleProps,
+  loading,
+  setLoader,
 }) {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
@@ -40,7 +44,7 @@ export function PlaylistSongItem({
     id: index,
   } = item || {};
   const isLockedSongs = index == 0 || index == 1;
-  const { onMouseDown, onTouchStart } = dragHandleProps;
+  const { onMouseDown, onTouchStart } = dragHandleProps || {};
 
   return (
     <div className="disable-select">
@@ -48,17 +52,80 @@ export function PlaylistSongItem({
         key={index}
         className={` text-center ${
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
-        }  shadow rounded-2xl h-20 flex items-center  px-5 `}
+        }  shadow rounded-2xl h-20 flex items-center  px-5`}
+        onClick={(e) => {
+          e.preventDefault();
+        }}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          console.log("touchStart");
+          // e.target.style.backgroundColor = "blue";
+          document.body.style.overflow = "scroll";
+          onTouchStart(e);
+        }}
+        onMouseDown={(e) => {
+          console.log("mouseDown");
+          document.body.style.overflow = "scroll";
+          onMouseDown(e);
+        }}
+        onTouchEnd={(e) => {
+          // e.target.style.backgroundColor = "black";
+          document.body.style.overflow = "scroll";
+        }}
+        onMouseUp={() => {
+          document.body.style.overflow = "scroll";
+        }}
       >
-        {DragHandle(
-          isLockedSongs,
-          sortByMaster,
-          revertCrownhandler,
-          onTouchStart,
-          onMouseDown,
-          index + 1,
-          item
-        )}
+        <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
+          <div className=" flex items-center justify-center  cursor-pointer">
+            {!isLockedSongs ? (
+              sortByMaster ? (
+                loading == item?._id ? (
+                  <span className="loading loading-spinner loading-md"></span>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setLoader(item?._id);
+                      revertCrownhandler(item);
+                    }}
+                  >
+                    <RevertMasterIcon />
+                  </button>
+                )
+              ) : (
+                <div
+                  onClick={(e) => {
+                    e.preventDefault();
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    console.log("touchStart");
+                    e.target.style.backgroundColor = "blue";
+                    document.body.style.overflow = "scroll";
+                    onTouchStart(e);
+                  }}
+                  onMouseDown={(e) => {
+                    console.log("mouseDown");
+                    document.body.style.overflow = "scroll";
+                    onMouseDown(e);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.target.style.backgroundColor = "black";
+                    document.body.style.overflow = "scroll";
+                  }}
+                  onMouseUp={() => {
+                    document.body.style.overflow = "scroll";
+                  }}
+                  className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer"
+                >
+                  <HiOutlineArrowsUpDown />
+                </div>
+              )
+            ) : (
+              index + 1
+            )}
+          </div>
+        </div>
         <div className="w-2/12 pr-10">
           <EllipsisText text={title} length={15} />
         </div>
