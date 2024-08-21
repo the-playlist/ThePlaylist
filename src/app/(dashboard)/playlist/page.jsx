@@ -70,6 +70,7 @@ const page = () => {
   const [isFavExist, setIsFavExist] = useState([]);
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
+  const [crownLoader, setCrownLoader] = useState(false);
   const data = Array(10)
     .fill(null)
     .map((item, index) => ({ id: index }));
@@ -409,11 +410,13 @@ const page = () => {
   }
 
   const revertCrownhandler = async (item) => {
+    setCrownLoader(true);
     let isFirst = localStorage.getItem("isFirstTimeFetched");
     item = { ...item, sortByMaster: false };
-    await revertMasterCheckApi({
+    const response = await revertMasterCheckApi({
       item: item,
     });
+    setCrownLoader(false);
     let updatedPlaylist = [...playlistSongList];
     const updatedList = updateObjectInArray(updatedPlaylist, item);
     const newList = playlistAlgorithm(isFirst, updatedList);
@@ -426,6 +429,7 @@ const page = () => {
       isFirst: false,
       playlist: newList,
     });
+    toast.success(response?.data?.description);
   };
 
   const toggleFavSongs = async () => {
@@ -636,6 +640,7 @@ const page = () => {
                           }
                           socket={socket}
                           setShowCountDown={setShowCountDown}
+                          loading={crownLoader}
                         />
                       );
                     }}
