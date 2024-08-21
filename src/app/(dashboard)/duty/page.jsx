@@ -204,7 +204,7 @@ const DutyScreen = () => {
               </div>
               <div className="overflow-y-auto pb-12 ">
                 <div className="pb-32 px-2">
-                  <div className="sticky top-0 z-10 bg-[#FAFAFA] flex justify-between text-base font-medium text-black">
+                  <div className="sticky top-0 z-10 bg-[#FAFAFA] grid grid-cols-4 text-base font-medium text-black">
                     <span>Players</span>
                     <span>Status</span>
                     <span className="text-center">On Duty Time</span>
@@ -214,7 +214,7 @@ const DutyScreen = () => {
                     {filteredPlayers?.map((item, index) => (
                       <div
                         key={index}
-                        className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4 flex items-center justify-between"
+                        className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4  grid grid-cols-4"
                       >
                         <div className="capitalize">{`${item?.firstName} ${item?.lastName}`}</div>
                         <div className="flex items-center">
