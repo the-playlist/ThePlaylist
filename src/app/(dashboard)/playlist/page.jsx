@@ -521,29 +521,6 @@ const page = () => {
         break;
     }
   };
-  useEffect(() => {
-    const handleScroll = (e) => {
-      const container = containerRef?.current;
-      const { top, bottom } = container?.getBoundingClientRect();
-      const { clientY } = e;
-
-      // Scroll upward
-      if (clientY < top + 50) {
-        container?.scrollBy(0, -10);
-      }
-      // Scroll downward
-      if (clientY > bottom - 50) {
-        container?.scrollBy(0, 10);
-      }
-    };
-
-    const container = containerRef?.current;
-    container?.addEventListener("mousemove", handleScroll);
-
-    return () => {
-      container?.removeEventListener("mousemove", handleScroll);
-    };
-  }, []);
 
   return (
     <div className="">
