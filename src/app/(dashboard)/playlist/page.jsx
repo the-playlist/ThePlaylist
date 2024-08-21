@@ -530,7 +530,7 @@ const page = () => {
       {isLoading ? (
         <CustomLoader />
       ) : (
-        <>
+        <div className=" h-[89vh]">
           <div
             className={`flex items-center ${
               playlistSongList?.length > 0 ? "justify-between" : "justify-end"
@@ -609,56 +609,49 @@ const page = () => {
                 <div className="w-2/12">Category</div>
                 <div className="w-1/12"></div>
               </div>
-
-              {/* <div
-            className={`overflow-y-auto ${
-              playlistSongList?.length > 0 ? "h-[750px]" : "h-[800px]"
-            } pb-10 `}
-          > */}
-              <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
-                <div
-                  // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
-                  id="scrollableContainer"
-                  ref={containerRef}
-                  className=" overflow-y-auto xl:h-[630px] lg:h-[560px]"
-                  // style={{ overflowY: "auto", height: "630px" }}
-                >
-                  <DraggableList
-                    unsetZIndex={true}
-                    itemKey="id"
-                    template={({ item, itemSelected, dragHandleProps }) => {
-                      return (
-                        <PlaylistSongItem
-                          item={item}
-                          itemSelected={itemSelected}
-                          dragHandleProps={dragHandleProps}
-                          playlistSongList={playlistSongList}
-                          revertCrownhandler={revertCrownhandler}
-                          deleteSongFromPlaylistHandler={
-                            deleteSongFromPlaylistHandler
-                          }
-                          socket={socket}
-                          setShowCountDown={setShowCountDown}
-                          loading={crownLoader}
-                          setLoader={setCrownLoader}
-                        />
-                      );
-                    }}
-                    list={playlistSongList}
-                    onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
-                      if (oldIndex != 0 && oldIndex != 1) {
-                        if (newIndex != 0 && newIndex != 1) {
-                          handleDragEnd(newList, oldIndex, newIndex, movedItem);
+              {/* <div className="border-separate border-spacing-y-5 mx-1 mb-10  "> */}
+              <div
+                // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
+                id="scrollableContainer"
+                ref={containerRef}
+                className=" overflow-y-auto h-[64vh]"
+                // style={{ overflowY: "auto", height: "630px" }}
+              >
+                <DraggableList
+                  unsetZIndex={true}
+                  itemKey="id"
+                  template={({ item, itemSelected, dragHandleProps }) => {
+                    return (
+                      <PlaylistSongItem
+                        item={item}
+                        itemSelected={itemSelected}
+                        dragHandleProps={dragHandleProps}
+                        playlistSongList={playlistSongList}
+                        revertCrownhandler={revertCrownhandler}
+                        deleteSongFromPlaylistHandler={
+                          deleteSongFromPlaylistHandler
                         }
+                        socket={socket}
+                        setShowCountDown={setShowCountDown}
+                        loading={crownLoader}
+                        setLoader={setCrownLoader}
+                      />
+                    );
+                  }}
+                  list={playlistSongList}
+                  onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
+                    if (oldIndex != 0 && oldIndex != 1) {
+                      if (newIndex != 0 && newIndex != 1) {
+                        handleDragEnd(newList, oldIndex, newIndex, movedItem);
                       }
-                    }}
-                    container={() => containerRef.current}
-                  />
-                </div>
+                    }
+                  }}
+                  container={() => containerRef.current}
+                />
               </div>
+              {/* </div> */}
             </>
           )}
-          {/* </div> */}
           {!isFavSongs && (
             <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
               <button
@@ -708,18 +701,198 @@ const page = () => {
               )}
             </div>
           )}
-          {/* {showCountDown && (
-            <CountDown
-              setShowCountDown={setShowCountDown}
-              openModal={showCountDown}
-              timer={10}
-              socket={socket}
-            />
-          )} */}
-        </>
+        </div>
       )}
     </div>
   );
 };
+
+// <>
+// <div
+//   className={`flex items-center ${
+//     playlistSongList?.length > 0 ? "justify-between" : "justify-end"
+//   } items-center mx-1 mt-5`}
+// >
+//   {playlistSongList?.length > 0 && (
+//     <button
+//       disabled={isAdvanceTheQueeDisable}
+//       onClick={async () => {
+//         await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+//         if (playlistSongList?.length > 0) {
+//           const songDuration = convertTimeToSeconds(
+//             playlistSongList[1]?.songDuration
+//           );
+//           dispatch(setCurrentSongSecond(songDuration));
+//         } else {
+//           dispatch(setCurrentSongSecond(0));
+//         }
+//         dispatch(setSongsListUpdate());
+//       }}
+//       className="flex items-center hover:cursor-pointer bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4  lg:text-lg justify-center rounded-lg"
+//     >
+//       <span className="mr-2">Advance the Queue</span>
+//       <FaForward />
+//     </button>
+//   )}
+//   <div className="flex flex-row  ">
+//     {!isFavSongs && playlistSongList?.length > 0 && (
+//       <button
+//         className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
+//         onClick={() => setIsConfirmationPopup(true)}
+//       >
+//         <span className="flex flex-row items-center">
+//           <TbMusicX className="mr-2" />
+//           Clear Songs
+//         </span>
+//       </button>
+//     )}
+//     {isFavExist?.length > 0 &&
+//       (isFavSongs || playlistSongList?.length > 0) && (
+//         <button
+//           disabled={playlistSongList?.length == 0}
+//           onClick={toggleFavSongs}
+//           className={`flex items-center hover:cursor-pointer border ${
+//             !isFavSongs ? "border-black" : "border-top-queue-bg"
+//           }  ${
+//             !isFavSongs
+//               ? "hover:bg-black hover:text-white text-black"
+//               : "text-top-queue-bg"
+//           }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+//         >
+//           {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+//           <span className="ml-2">
+//             {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+//           </span>
+//         </button>
+//       )}
+//   </div>
+// </div>
+// {playlistSongList?.length === 0 &&
+//   !getPlaylistSongListResponse.isFetching && (
+//     <div className="flex items-center justify-center mt-10 md:h-[770px] sm:h-[560px]">
+//       <span className=" text-black font-semibold ">
+//         Currently there are no songs available in the playlist
+//       </span>
+//     </div>
+//   )}
+// {playlistSongList?.length > 0 && (
+//   <>
+//     <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+//       <div className="w-1/12"></div>
+//       <div className="w-2/12 ">Title</div>
+//       <div className="w-1/12"></div>
+//       <div className="w-3/12">Player</div>
+//       <div className="w-2/12">Intro</div>
+//       <div className="w-2/12">Category</div>
+//       <div className="w-1/12"></div>
+//     </div>
+
+//     {/* <div
+//   className={`overflow-y-auto ${
+//     playlistSongList?.length > 0 ? "h-[750px]" : "h-[800px]"
+//   } pb-10 `}
+// > */}
+//     <div className="border-separate border-spacing-y-5 mx-1 mb-10  ">
+//       <div
+//         // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
+//         id="scrollableContainer"
+//         ref={containerRef}
+//         className=" overflow-y-auto xl:h-[630px] lg:h-[560px]"
+//         // style={{ overflowY: "auto", height: "630px" }}
+//       >
+//         <DraggableList
+//           unsetZIndex={true}
+//           itemKey="id"
+//           template={({ item, itemSelected, dragHandleProps }) => {
+//             return (
+//               <PlaylistSongItem
+//                 item={item}
+//                 itemSelected={itemSelected}
+//                 dragHandleProps={dragHandleProps}
+//                 playlistSongList={playlistSongList}
+//                 revertCrownhandler={revertCrownhandler}
+//                 deleteSongFromPlaylistHandler={
+//                   deleteSongFromPlaylistHandler
+//                 }
+//                 socket={socket}
+//                 setShowCountDown={setShowCountDown}
+//                 loading={crownLoader}
+//                 setLoader={setCrownLoader}
+//               />
+//             );
+//           }}
+//           list={playlistSongList}
+//           onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
+//             if (oldIndex != 0 && oldIndex != 1) {
+//               if (newIndex != 0 && newIndex != 1) {
+//                 handleDragEnd(newList, oldIndex, newIndex, movedItem);
+//               }
+//             }
+//           }}
+//           container={() => containerRef.current}
+//         />
+//       </div>
+//     </div>
+//   </>
+// )}
+// {/* </div> */}
+// {!isFavSongs && (
+//   <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center py-4 bg-[#fafafa]">
+//     <button
+//       onClick={async () => {
+//         setSelectSongModal(true);
+//       }}
+//       className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
+//     >
+//       + Add a Song
+//     </button>
+//     <button
+//       disabled={isUndoDisable}
+//       onClick={onUndoPressHandler}
+//       className={`ml-4  w-full shadow-md text-base flex items-center bg-white ${
+//         isUndoDisable &&
+//         "bg-slate-200 cursor-not-allowed text-slate-400"
+//       }   text-black font-bold py-3 px-4 rounded-md justify-center ${
+//         !isUndoDisable && "hover:bg-active-tab"
+//       }`}
+//     >
+//       <IoArrowUndo />
+//       <span className="ml-2">Undo Action</span>
+//     </button>
+//     {selectSongModal && (
+//       <SelectSongModal
+//         onReload={() => {
+//           setIsLoading(true);
+//         }}
+//         btnText={"Add"}
+//         title={"Select songs"}
+//         openModal={selectSongModal}
+//         fetchList={fetchPlaylistSongList}
+//         closeModal={() => {
+//           setSelectSongModal(false);
+//         }}
+//       />
+//     )}
+
+//     {isConfirmationPopup && (
+//       <ConfirmationPopup
+//         isLoading={deleteAllSongsResponse?.isLoading}
+//         title={"Are you sure to remove all songs from playlist?"}
+//         onYesPress={deleteAllSongsHandler}
+//         closeModal={() => setIsConfirmationPopup(false)}
+//         openModal={isConfirmationPopup}
+//       />
+//     )}
+//   </div>
+// )}
+// {/* {showCountDown && (
+//   <CountDown
+//     setShowCountDown={setShowCountDown}
+//     openModal={showCountDown}
+//     timer={10}
+//     socket={socket}
+//   />
+// )} */}
+// </>
 
 export default page;

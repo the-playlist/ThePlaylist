@@ -1,6 +1,6 @@
 import React from "react";
-import { SortByMasterIcon, RevertMasterIcon } from "@/app/svgs";
-import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
+import { RevertMasterIcon } from "@/app/svgs";
+import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
