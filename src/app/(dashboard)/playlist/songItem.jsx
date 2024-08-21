@@ -16,6 +16,7 @@ export function PlaylistSongItem({
   item,
   dragHandleProps,
   loading,
+  setLoader,
 }) {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
@@ -78,10 +79,15 @@ export function PlaylistSongItem({
           <div className=" flex items-center justify-center  cursor-pointer">
             {!isLockedSongs ? (
               sortByMaster ? (
-                loading ? (
+                loading == item?._id ? (
                   <span className="loading loading-spinner loading-md"></span>
                 ) : (
-                  <button onClick={() => revertCrownhandler(item)}>
+                  <button
+                    onClick={() => {
+                      setLoader(item?._id);
+                      revertCrownhandler(item);
+                    }}
+                  >
                     <RevertMasterIcon />
                   </button>
                 )
