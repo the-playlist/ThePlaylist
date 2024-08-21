@@ -89,7 +89,8 @@ const TableView = () => {
     setSocket(socket);
     socket.on("insertSongIntoPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
+      // setPerformers([...playlist]);
+      fetchPlaylistSongList(isFirst);
     });
     socket.on("voteCastingResponse", (item) => {
       const { isFirst } = item;
