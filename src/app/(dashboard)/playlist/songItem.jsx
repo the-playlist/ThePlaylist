@@ -51,7 +51,9 @@ export function PlaylistSongItem({
         key={index}
         className={` text-center ${
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
-        }  shadow rounded-2xl h-20 flex items-center  px-5 cursor-pointer`}
+        }  shadow rounded-2xl h-20 flex items-center  px-5 ${
+          !isLockedSongs && "cursor-pointer"
+        }`}
         onClick={(e) => {
           e.preventDefault();
         }}
