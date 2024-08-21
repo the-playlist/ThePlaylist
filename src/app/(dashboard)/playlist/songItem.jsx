@@ -43,7 +43,7 @@ export function PlaylistSongItem({
     id: index,
   } = item || {};
   const isLockedSongs = index == 0 || index == 1;
-  const { onMouseDown, onTouchStart } = dragHandleProps;
+  const { onMouseDown, onTouchStart } = dragHandleProps || {};
 
   return (
     <div>

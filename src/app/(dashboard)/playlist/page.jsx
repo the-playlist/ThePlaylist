@@ -614,7 +614,7 @@ const page = () => {
                 // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                 id="scrollableContainer"
                 ref={containerRef}
-                className=" overflow-y-auto h-[64vh]"
+                className=" overflow-y-auto h-[67vh]"
                 // style={{ overflowY: "auto", height: "630px" }}
               >
                 <DraggableList
@@ -625,7 +625,7 @@ const page = () => {
                       <PlaylistSongItem
                         item={item}
                         itemSelected={itemSelected}
-                        dragHandleProps={dragHandleProps}
+                        dragHandleProps={item.id >= 2 ? dragHandleProps : null}
                         playlistSongList={playlistSongList}
                         revertCrownhandler={revertCrownhandler}
                         deleteSongFromPlaylistHandler={
