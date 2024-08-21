@@ -389,7 +389,7 @@ const TableView = () => {
     <div
       className={`overflow-x-auto ${
         themeMode ? "bg-white" : "bg-[#1F1F1F]"
-      } h-screen overflow-y-scroll mx-auto   px-5 pt-5`}
+      } h-screen overflow-y-scroll mx-auto   px-5 pt-5 pb-10`}
     >
       {loading ? (
         <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
