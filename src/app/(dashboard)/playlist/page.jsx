@@ -535,10 +535,10 @@ const page = () => {
     const updateHeight = () => {
       if (window.innerHeight <= 750) {
         setHeight("h-[54vh]");
-        setEmptyListHeight("h-[67vh]");
+        setEmptyListHeight("h-[73vh]");
       } else if (window.innerHeight > 750 && window.innerHeight <= 920) {
         setHeight("h-[64vh]");
-        setEmptyListHeight("h-[75vh]");
+        setEmptyListHeight("h-[79vh]");
       } else {
         setHeight("h-[67vh]");
         setEmptyListHeight("h-[80vh]");
