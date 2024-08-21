@@ -30,35 +30,15 @@ const PerformerView = () => {
   const handle = useFullScreenHandle();
 
   let screenName = "Player View";
-
-  // useEffect(() => {
-  //   let timeoutId;
-  //   const interval = 30000; // 50 seconds in milliseconds
-
-  //   const fetchWithInterval = async () => {
-  //     // await fetchPlaylistSongList(null); // Fetch data once
-  //     timeoutId = setTimeout(fetchWithInterval, interval); // Schedule the next fetch
-  //   };
-
-  //   if (isOnline) {
-  //     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //       autoConnect: false,
-  //     });
-  //     socket.connect();
-
-  //     fetchWithInterval(); // Start the fetching process
-
-  //     // Cleanup function to clear the timeout and disconnect the socket
-  //     return () => {
-  //       clearTimeout(timeoutId); // Clear the timeout
-  //     };
-  //   }
-
-  //   // If not online, ensure to clear any existing timeout
-  //   return () => {
-  //     clearTimeout(timeoutId);
-  //   };
-  // }, [isOnline]);
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -166,7 +146,6 @@ const PerformerView = () => {
   }, [seconds, timerRunning]);
 
   useEffect(() => {
-    fetchPlaylistSongList(null);
     getThemeByTitleHandler(screenName);
   }, []);
 

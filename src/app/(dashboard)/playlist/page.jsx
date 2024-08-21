@@ -91,15 +91,15 @@ const page = () => {
 
   const containerRef = useRef();
 
-  // useEffect(() => {
-  //   if (isOnline) {
-  //     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //       autoConnect: false,
-  //     });
-  //     socket.connect();
-  //     fetchPlaylistSongList(null);
-  //   }
-  // }, [isOnline]);
+  useEffect(() => {
+    if (isOnline) {
+      const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      socket.connect();
+      fetchPlaylistSongList(null);
+    }
+  }, [isOnline]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
