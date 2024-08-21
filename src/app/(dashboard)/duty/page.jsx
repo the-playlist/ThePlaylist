@@ -242,14 +242,14 @@ const DutyScreen = () => {
                     ))}
                   </div>
                   {filteredPlayers?.length == 0 && (
-                    <div className="flex justify-center text-base items-center h-56 text-black w-full">
+                    <div className="flex justify-center text-base items-center h-[90vh] text-black w-full">
                       No Players Found
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="sticky bottom-0 w-full flex justify-end py-4 bg-[#fafafa]">
+              <div className=" absolute bottom-0 w-[80%] flex justify-end py-4 bg-[#fafafa]">
                 <GenericButton
                   text="Save Attendance"
                   onClick={() => {
