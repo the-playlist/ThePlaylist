@@ -49,12 +49,38 @@ export function PlaylistSongItem({
         key={index}
         className={` text-center ${
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
-        }  shadow rounded-2xl h-20 flex items-center mb-4 px-5`}
+        }  shadow rounded-2xl h-20 flex items-center  px-5`}
+        onClick={(e) => {
+          e.preventDefault();
+        }}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          console.log("touchStart");
+          // e.target.style.backgroundColor = "blue";
+          document.body.style.overflow = "scroll";
+          onTouchStart(e);
+        }}
+        onMouseDown={(e) => {
+          console.log("mouseDown");
+          document.body.style.overflow = "scroll";
+          onMouseDown(e);
+        }}
+        onTouchEnd={(e) => {
+          // e.target.style.backgroundColor = "black";
+          document.body.style.overflow = "scroll";
+        }}
+        onMouseUp={() => {
+          document.body.style.overflow = "scroll";
+        }}
       >
         <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
-          {!isLockedSongs ? (
-            sortByMaster ? (
-              <button onClick={() => revertCrownhandler(item)}>
+          <div className=" flex items-center justify-center  cursor-pointer">
+            {!isLockedSongs ? (
+              sortByMaster ? (
+                <button onClick={() => revertCrownhandler(item)}>
+                  <RevertMasterIcon />
+                </button>
+              ) : (
                 <div
                   onClick={(e) => {
                     e.preventDefault();
@@ -78,43 +104,15 @@ export function PlaylistSongItem({
                   onMouseUp={() => {
                     document.body.style.overflow = "scroll";
                   }}
-                  className=" flex items-center justify-center  cursor-pointer"
+                  className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer"
                 >
-                  <RevertMasterIcon />
+                  <HiOutlineArrowsUpDown />
                 </div>
-              </button>
+              )
             ) : (
-              <div
-                onClick={(e) => {
-                  e.preventDefault();
-                }}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  console.log("touchStart");
-                  e.target.style.backgroundColor = "blue";
-                  document.body.style.overflow = "scroll";
-                  onTouchStart(e);
-                }}
-                onMouseDown={(e) => {
-                  console.log("mouseDown");
-                  document.body.style.overflow = "scroll";
-                  onMouseDown(e);
-                }}
-                onTouchEnd={(e) => {
-                  e.target.style.backgroundColor = "black";
-                  document.body.style.overflow = "scroll";
-                }}
-                onMouseUp={() => {
-                  document.body.style.overflow = "scroll";
-                }}
-                className="border flex items-center justify-center text-top-queue-bg border-gray-300 rounded-full h-10 w-10 cursor-pointer"
-              >
-                <HiOutlineArrowsUpDown />
-              </div>
-            )
-          ) : (
-            index + 1
-          )}
+              index + 1
+            )}
+          </div>
         </div>
         <div className="w-2/12 pr-10">
           <EllipsisText text={title} length={15} />
