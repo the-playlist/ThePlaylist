@@ -620,7 +620,7 @@ const page = () => {
                   // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                   id="scrollableContainer"
                   ref={containerRef}
-                  className=" overflow-y-auto md:h-[630px] sm:h-[560px]"
+                  className=" overflow-y-auto lg:h-[630px] md:h-[550px]"
                   // style={{ overflowY: "auto", height: "630px" }}
                 >
                   <DraggableList
