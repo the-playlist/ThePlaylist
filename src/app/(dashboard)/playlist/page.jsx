@@ -68,8 +68,6 @@ const page = () => {
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
   const [showCountDown, setShowCountDown] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
-  const [showBorder, setShowBorder] = useState(false);
-
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
   const data = Array(10)
@@ -619,9 +617,7 @@ const page = () => {
                   // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                   id="scrollableContainer"
                   ref={containerRef}
-                  className={` overflow-y-auto md:h-[630px] sm:h-[560px] ${
-                    showBorder && " border-2 border-primary"
-                  }`}
+                  className=" overflow-y-auto md:h-[630px] sm:h-[560px]"
                   // style={{ overflowY: "auto", height: "630px" }}
                 >
                   <DraggableList
@@ -652,12 +648,6 @@ const page = () => {
                       }
                     }}
                     container={() => containerRef.current}
-                    onDragStart={() => {
-                      setShowBorder(true);
-                    }}
-                    onDragEnd={() => {
-                      setShowBorder(false);
-                    }}
                   />
                 </div>
               </div>
