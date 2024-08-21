@@ -294,7 +294,7 @@ export const revertMasterCheck = async (req, res, next) => {
 
   const response = new ResponseModel(
     true,
-    "Master Check Updated Successfully",
+    "Playlist item updated successfully",
     null
   );
   res.status(200).json(response);
