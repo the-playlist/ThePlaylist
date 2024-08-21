@@ -14,6 +14,7 @@ import { IntroCounter } from "./intro-counter";
 import { useFullScreenHandle, FullScreen } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
+import { useSocketListeners } from "./_socketHook";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
@@ -118,28 +119,7 @@ const PerformerView = () => {
         getThemeByTitleHandler(title);
       }
     });
-
-    socket.on('disconnect', (reason) => {
-      console.log(`Socket disconnected socket connection test: ${reason}`);
-    });
-  
-    socket.on('connect_error', (error) => {
-        console.error('Connection error socket connection test:', error);
-    });
-    
-    socket.on('reconnect_error', (error) => {
-        console.error('Reconnection error socket connection test:', error);
-    });
-
-    socket.on("reconnect_attempt", (attempt) => {
-      console.error('Reconnection Attempt error socket connection test:', attempt);
-    });
-
-    socket.on('connect_timeout', () => {
-      console.warn('Connection timed out socket connection test, possibly due to Wi-Fi disconnection.');
-    });
-
-
+    useSocketListeners(socket, fetchPlaylistSongList);
   }, []);
 
   useEffect(() => {
