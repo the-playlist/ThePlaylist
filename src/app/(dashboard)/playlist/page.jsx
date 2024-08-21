@@ -530,15 +530,18 @@ const page = () => {
     }
   };
   const [height, setHeight] = useState("h-[67vh]");
-
+  const [emptyListHeight, setEmptyListHeight] = useState("h-[80vh]");
   useEffect(() => {
     const updateHeight = () => {
       if (window.innerHeight <= 750) {
         setHeight("h-[54vh]");
+        setEmptyListHeight("h-[67vh]");
       } else if (window.innerHeight > 750 && window.innerHeight <= 920) {
         setHeight("h-[64vh]");
+        setEmptyListHeight("h-[75vh]");
       } else {
         setHeight("h-[67vh]");
+        setEmptyListHeight("h-[80vh]");
       }
     };
 
@@ -613,9 +616,12 @@ const page = () => {
                 )}
             </div>
           </div>
+
           {playlistSongList?.length === 0 &&
             !getPlaylistSongListResponse.isFetching && (
-              <div className="flex items-center justify-center mt-10 md:h-[770px] sm:h-[560px]">
+              <div
+                className={`flex items-center justify-center ${emptyListHeight}`}
+              >
                 <span className=" text-black font-semibold ">
                   Currently there are no songs available in the playlist
                 </span>
