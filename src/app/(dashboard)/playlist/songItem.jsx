@@ -1,12 +1,11 @@
 import React from "react";
-import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
+import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { RevertMasterIcon } from "@/app/svgs";
 import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
 import { SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
-import { DragHandle } from "./dragable";
 
 export function PlaylistSongItem({
   revertCrownhandler,
