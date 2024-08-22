@@ -35,7 +35,6 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                   isAccepted: true,
                   isActive: true,
                 };
-
                 await changeStatusHandler(payload);
               }}
               className="btn btn-primary bg-primary border-0 hover:bg-primary  text-black w-full"

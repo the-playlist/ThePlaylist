@@ -84,6 +84,7 @@ export const MyLivestreamUI = ({
   const [content, setContent] = useState({});
   const [socket, setSocket] = useState();
   const [currentLive, setCurrentLive] = useState(null);
+  const [cancelButtonLoading, setCancelButtonLoading] = useState(false);
 
   // This method below will be decline any on the requests by the Use if he kill or go back from the Application
   useEffect(() => {
@@ -94,7 +95,10 @@ export const MyLivestreamUI = ({
           stopByUser: true,
           isActive: false,
         };
-        await changeStatusHandler(payload, false);
+        if (!cancelButtonLoading) {
+          // TODO: TESTING CHANGE
+          await changeStatusHandler(payload, false);
+        }
       }
     };
     const handleFocus = () => handleBrowserState(true);
@@ -112,11 +116,14 @@ export const MyLivestreamUI = ({
   useEffect(() => {
     const handleBrowserStateChange = async () => {
       let payload = {
-        id: content?._id,
+        id: localStorage.getItem(CALL_ID),
         isActive: false,
         stopByUser: true,
       };
-      changeStatusHandler(payload);
+      if (!cancelButtonLoading) {
+        // TODO: TESTING CHANGE
+        changeStatusHandler(payload);
+      }
       window.removeEventListener("popstate", handleBrowserStateChange);
     };
 
@@ -138,7 +145,6 @@ export const MyLivestreamUI = ({
     socket.on("acceptedRejectStreamRes", (item) => {
       const { id, isActive, recentActive, isHideToast } = item || {};
       if (id == streamPayload?.callId) {
-        debugger;
         setCurrentLive(id);
         if (!isHideToast) {
           toast(
@@ -190,8 +196,10 @@ export const MyLivestreamUI = ({
   };
 
   const changeStatusHandler = async (data, isTimeOut) => {
+    setCancelButtonLoading(true);
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      setCancelButtonLoading(false);
       const { activeStream } = response?.data?.content;
       toast(
         isTimeOut
@@ -317,11 +325,13 @@ export const MyLivestreamUI = ({
                   setStreamPayload(null);
                   router.replace(`/table-view?tableno=${tableno}`);
                 } else {
-                  let payload = {
-                    id: content?._id,
-                    isActive: false,
-                  };
-                  changeStatusHandler(payload, false);
+                  if (!cancelButtonLoading) {
+                    let payload = {
+                      id: content?._id,
+                      isActive: false,
+                    };
+                    changeStatusHandler(payload, false);
+                  }
                 }
               }}
             >
@@ -339,7 +349,9 @@ export const MyLivestreamUI = ({
                   isActive: false,
                   stopByUser: true,
                 };
-                changeStatusHandler(payload);
+                if (!cancelButtonLoading) {
+                  changeStatusHandler(payload);
+                }
               }}
             >
               Stop Livestream
