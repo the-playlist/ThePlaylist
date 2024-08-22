@@ -88,6 +88,7 @@ const StreamResponse = () => {
         isActive: data?.isActive ? true : false,
         recentActive: recentActive,
         activeStream: activeStream,
+        isHideToast: data?.isHideToast,
       });
     }
   };

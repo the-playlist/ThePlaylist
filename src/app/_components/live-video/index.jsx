@@ -110,20 +110,17 @@ export const MyLivestreamUI = ({
   }, []);
 
   useEffect(() => {
-    var btn = document.getElementById("btn");
-    btn?.addEventListener("click", function () {
-      window?.history?.pushState({}, null, null);
-    });
-    let count = 0;
-    window?.addEventListener("popstate", async function () {
-      count += 1; // handle this case to only trigger changeStatusHandler function at once
+    const handleBrowserStateChange = async () => {
       let payload = {
-        id: localStorage.getItem(CALL_ID),
-        stopByUser: true,
+        id: content?._id,
         isActive: false,
+        stopByUser: true,
       };
-      count === 1 && (await changeStatusHandler(payload, false));
-    });
+      changeStatusHandler(payload);
+      window.removeEventListener("popstate", handleBrowserStateChange);
+    };
+
+    window?.addEventListener("popstate", handleBrowserStateChange);
   }, []);
 
   useEffect(() => {
@@ -139,14 +136,17 @@ export const MyLivestreamUI = ({
     socket.connect();
     setSocket(socket);
     socket.on("acceptedRejectStreamRes", (item) => {
-      const { id, isActive, recentActive } = item;
+      const { id, isActive, recentActive, isHideToast } = item || {};
       if (id == streamPayload?.callId) {
+        debugger;
         setCurrentLive(id);
-        toast(
-          isActive
-            ? "Now You are live"
-            : "Your request has been declined by the master"
-        );
+        if (!isHideToast) {
+          toast(
+            isActive
+              ? "Now You are live"
+              : "Your request has been declined by the master"
+          );
+        }
         if (isActive == false) {
           call?.stopLive();
           call?.endCall();

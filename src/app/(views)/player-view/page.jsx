@@ -13,7 +13,6 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
 import { useFullScreenHandle, FullScreen } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
-import { EllipsisText } from "@/app/_components/ellipsis-text";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
@@ -181,8 +180,14 @@ const PerformerView = () => {
     removed: { opacity: 0, y: 20 },
   };
 
+  const getElipsisText = (text, length) => {
+    const truncatedText =
+      text?.length > length ? `${text.slice(0, length)}...` : text;
+    return truncatedText;
+  };
+
   return (
-    <FullScreen handle={handle} className=" overflow-y-auto">
+    <FullScreen handle={handle} className=" overflow-y-auto ">
       <div
         className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
         ref={ref}
@@ -247,28 +252,23 @@ const PerformerView = () => {
                           `
                         }`}
                       >
-                        {/* <td
-                      className={`lg:text-[30px]  text-lg text-start rounded-l-lg `}
-                    >
-                      {index + 1}
-                    </td> */}
                         <td
                           className={`text-[50px] rounded-lg  flex-1  leading-[80px]  capitalize text-left  `}
                         >
-                          <EllipsisText
+                          <span
                             className={" text-[50px]  capitalize text-left   "}
-                            text={item.title}
-                            length={20}
-                          />
+                          >
+                            {getElipsisText(item.title, 17)}
+                          </span>
                         </td>
                         <td
                           className={`text-[35px] leading-[50px]  capitalize text-end flex p-0 items-center `}
                         >
-                          <EllipsisText
+                          <span
                             className={"text-[35px]  capitalize text-left   "}
-                            text={item.playerName}
-                            length={15}
-                          />
+                          >
+                            {getElipsisText(item.playerName, 10)}
+                          </span>
                         </td>
                         <td className="text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
                           <IntroCounter

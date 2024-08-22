@@ -15,6 +15,7 @@ export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
                 callId: item?.callId,
                 id: item?._id,
                 isActive: false,
+                isHideToast: true,
               };
               await changeStatusHandler(payload);
             }}
