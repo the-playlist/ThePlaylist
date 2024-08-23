@@ -190,7 +190,7 @@ const PerformerView = () => {
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
-              <div className=" float-right">
+              {/* <div className=" float-right">
                 {!isFullScreen && (
                   <button
                     className="bg-transparent hidden md:block"
@@ -211,7 +211,7 @@ const PerformerView = () => {
                     )}
                   </button>
                 )}
-              </div>
+              </div> */}
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>
