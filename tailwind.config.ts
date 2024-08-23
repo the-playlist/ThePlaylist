@@ -38,6 +38,10 @@ const config: Config = {
       borderColor: {
         red: "#DC143C",
       },
+      screens: {
+        'tablet': '768px', // Custom breakpoint for tablets
+        'mobile': '640px', // Custom breakpoint for mobile
+      },
     },
   },
   plugins: [require("daisyui"),nextui() ],

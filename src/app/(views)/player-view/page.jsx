@@ -172,12 +172,6 @@ const PerformerView = () => {
     }
   };
 
-  const listItemVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0 },
-    removed: { opacity: 0, y: 20 },
-  };
-
   const getElipsisText = (text, length) => {
     const truncatedText =
       text?.length > length ? `${text.slice(0, length)}...` : text;
@@ -191,15 +185,15 @@ const PerformerView = () => {
           themeMode ? "bg-white" : "bg-[#1F1F1F]"
         } h-[100vh]  overflow-y-scroll`}
       >
-        <div className="overflow-x-auto mx-auto p-10  ">
+        <div className="overflow-x-auto mx-auto md:p-10 p-3  ">
           {loading ? (
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
-              <div className=" float-right">
+              {/* <div className=" float-right">
                 {!isFullScreen && (
                   <button
-                    className="bg-transparent"
+                    className="bg-transparent hidden md:block"
                     onClick={() => {
                       setIsFullScreen(!isFullScreen);
                     }}
@@ -217,13 +211,13 @@ const PerformerView = () => {
                     )}
                   </button>
                 )}
-              </div>
+              </div> */}
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>
               {performer.length === 0 && (
                 <div
-                  className={`flex items-center justify-center flex-1 min-h-52 font-semibold text-lg ${
+                  className={`flex items-center justify-center flex-1 min-h-52 font-semibold sm:text-sm text-lg ${
                     themeMode ? "text-black" : "text-white"
                   }`}
                 >
@@ -234,9 +228,9 @@ const PerformerView = () => {
               <table className="table table-lg border-separate border-spacing-y-4  ">
                 {performer?.map((item, index) => (
                   <tbody className={`text-base rounded-tl-lg font-medium`}>
-                    <tr className="bg-[#1F1F1F]">
+                    <tr className="bg-[#4d4b4b]">
                       <div
-                        className={`flex flex-row p-3 rounded-lg ${
+                        className={`flex items-center justify-center flex-row md:p-3  rounded-lg ${
                           index < 2
                             ? "bg-yellow-400 text-black"
                             : `
@@ -249,19 +243,23 @@ const PerformerView = () => {
                         }`}
                       >
                         <td
-                          className={`text-[50px] rounded-lg  flex-1  leading-[80px]  capitalize text-left  `}
+                          className={`text-[50px] rounded-lg  flex-1 leading-3  md:leading-[80px]  capitalize text-left  `}
                         >
                           <span
-                            className={" text-[50px]  capitalize text-left   "}
+                            className={
+                              "text-base  md:text-[50px]  capitalize text-left   "
+                            }
                           >
-                            {getElipsisText(item.title, 17)}
+                            {getElipsisText(item.title, 15)}
                           </span>
                         </td>
                         <td
-                          className={`text-[35px] leading-[50px]  capitalize text-end flex p-0 items-center `}
+                          className={`  text-[35px] leading-[50px]  capitalize text-end flex p-0 items-center `}
                         >
                           <span
-                            className={"text-[35px]  capitalize text-left   "}
+                            className={
+                              "text-base md:text-[35px]  capitalize text-left   "
+                            }
                           >
                             {getElipsisText(item.playerName, 10)}
                           </span>
