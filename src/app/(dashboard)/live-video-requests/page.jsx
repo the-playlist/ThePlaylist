@@ -72,6 +72,8 @@ const StreamResponse = () => {
       setStreamAcceptedContent(isAcceptedRequests[0]);
       if (isAcceptedRequests[0]?.isAccepted) {
         setRecentActive(isAcceptedRequests[0]);
+      } else {
+        setRecentActive(null);
       }
     }
     setLoading(false);
