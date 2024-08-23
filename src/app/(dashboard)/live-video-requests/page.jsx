@@ -34,6 +34,7 @@ const StreamResponse = () => {
     useChangeStreamRequestStatusMutation();
   // const [streamContent, setStreamContent] = useState([]);
   const [streamAcceptedContent, setStreamAcceptedContent] = useState([]);
+  const [statusChangeLoader, setStatusChangeLoader] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [recentActive, setRecentActive] = useState(null);
@@ -46,7 +47,8 @@ const StreamResponse = () => {
     socket.on("sendReqToMasterRes", (item) => {
       const { stopByUser, streamPayload } = item;
       if (stopByUser) {
-        toast("Stream has been stopped by user");
+        // NOTE: as per umer request this toaster is blocked
+        // toast("Stream has been stopped by user");
         getStreamRequestHandler();
       } else if (streamPayload) {
         getStreamRequestHandler();
@@ -81,8 +83,11 @@ const StreamResponse = () => {
 
   const changeStatusHandler = async (data) => {
     dispatch(setStreamContent(streamContent.filter((i) => i._id != data.id)));
+    setStatusChangeLoader(true);
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      setStatusChangeLoader(false);
+
       const { activeStream } = response?.data?.content;
       getStreamRequestHandler();
       socket.emit("acceptedRejectStreamReq", {
@@ -132,7 +137,9 @@ const StreamResponse = () => {
                     id: streamAcceptedContent?._id,
                     isActive: false,
                   };
-                  changeStatusHandler(payload);
+                  if (!statusChangeLoader) {
+                    changeStatusHandler(payload);
+                  }
                 }}
               />
             </div>
@@ -147,15 +154,30 @@ const StreamResponse = () => {
                       key={item._id}
                       item={item}
                       socket={socket}
-                      changeStatusHandler={changeStatusHandler}
+                      changeStatusHandler={(payload) => {
+                        if (!statusChangeLoader) {
+                          changeStatusHandler(payload);
+                        }
+                      }}
                     />
                   );
                 })}
               </div>
             </>
           ) : (
-            <div className="text-black text-lg flex h-[90vh] items-center justify-center font-semibold">
-              {"No stream requests yet"}
+            <div
+              className={`flex flex-col  ${
+                streamAcceptedContent ? "h-[30%]" : "h-full"
+              }`}
+            >
+              {streamAcceptedContent && (
+                <span className=" text-lg font-semibold mb-4 mt-2">
+                  Requests
+                </span>
+              )}
+              <div className="text-black text-lg flex flex-1 items-center justify-center font-semibold">
+                {"No stream requests yet"}
+              </div>
             </div>
           )}
         </div>

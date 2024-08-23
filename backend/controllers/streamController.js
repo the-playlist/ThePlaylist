@@ -127,7 +127,7 @@ export const changeStreamStatus = async (req, res) => {
 
   let response = new ResponseModel(
     true,
-    `${isActive == false && "Request Declined"}`,
+    `${isActive == false && "Stream stopped"}`,
     {
       activeStream: activeStream?.length || 0,
     }

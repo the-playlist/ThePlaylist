@@ -149,8 +149,8 @@ export const MyLivestreamUI = ({
         if (!isHideToast) {
           toast(
             isActive
-              ? "Now You are live"
-              : "Your request has been declined by the master"
+              ? "You are live now!"
+              : "Your stream has been stopped by the master"
           );
         }
         if (isActive == false) {
@@ -168,15 +168,23 @@ export const MyLivestreamUI = ({
             id: recentActive?._id,
             isActive: false,
           };
-          removeRecentLiveStream(payload, socket, id == streamPayload?.callId);
+          if (!cancelButtonLoading) {
+            removeRecentLiveStream(
+              payload,
+              socket,
+              id == streamPayload?.callId
+            );
+          }
         }
       }
     });
   }, []);
 
   const removeRecentLiveStream = async (data, socket, showMessage) => {
+    setCancelButtonLoading(true);
     let response = await changeStatusApi(data);
     if (response?.data.success) {
+      setCancelButtonLoading(false);
       const { activeStream } = response?.data?.content;
 
       if (!showMessage) {
@@ -195,19 +203,21 @@ export const MyLivestreamUI = ({
     }
   };
 
-  const changeStatusHandler = async (data, isTimeOut) => {
+  const changeStatusHandler = async (data, isTimeOut, showToaster = true) => {
     setCancelButtonLoading(true);
     let response = await changeStatusApi(data);
     if (response?.data.success) {
       setCancelButtonLoading(false);
       const { activeStream } = response?.data?.content;
-      toast(
-        isTimeOut
-          ? "Stream request time out"
-          : isTimeOut == false
-          ? "Stream request cancelled"
-          : response?.data?.description
-      );
+      if (showToaster) {
+        toast(
+          isTimeOut
+            ? "Stream request time out"
+            : isTimeOut == false
+            ? "Stream request cancelled"
+            : response?.data?.description
+        );
+      }
       let socketConnection = socket;
 
       if (!socketConnection) {
@@ -350,7 +360,7 @@ export const MyLivestreamUI = ({
                   stopByUser: true,
                 };
                 if (!cancelButtonLoading) {
-                  changeStatusHandler(payload);
+                  changeStatusHandler(payload, _, false);
                 }
               }}
             >
