@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
-import { CountDown } from "@/app/_components/count-down";
+
 import {
   useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
@@ -11,7 +11,7 @@ import {
 import { io } from "socket.io-client";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
-import { useFullScreenHandle, FullScreen } from "react-full-screen";
+import Fullscreen from "react-fullscreen-crossbrowser";
 import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
@@ -19,14 +19,12 @@ const PerformerView = () => {
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
-  const ref = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [showCountDown, setShowCountDown] = useState(false);
   const [timerRunning, setTimerRunning] = useState(false);
-  const handle = useFullScreenHandle();
 
   let screenName = "Player View";
   useEffect(() => {
@@ -187,40 +185,38 @@ const PerformerView = () => {
   };
 
   return (
-    <FullScreen handle={handle} className=" overflow-y-auto ">
+    <Fullscreen enabled={isFullScreen} onChange={setIsFullScreen}>
       <div
-        className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
-        ref={ref}
+        className={`${
+          themeMode ? "bg-white" : "bg-[#1F1F1F]"
+        } h-[100vh]  overflow-y-scroll`}
       >
-        <div className="overflow-x-auto mx-auto p-10 ">
+        <div className="overflow-x-auto mx-auto p-10  ">
           {loading ? (
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
               <div className=" float-right">
-                <button
-                  className="bg-transparent"
-                  onClick={() => {
-                    if (!isFullScreen) {
-                      handle.enter();
-                    } else {
-                      handle.exit();
-                    }
-                    setIsFullScreen(!isFullScreen);
-                  }}
-                >
-                  {!isFullScreen ? (
-                    <RiFullscreenFill
-                      size={30}
-                      color={themeMode ? "black" : "white"}
-                    />
-                  ) : (
-                    <MdOutlineFullscreenExit
-                      size={40}
-                      color={themeMode ? "black" : "white"}
-                    />
-                  )}
-                </button>
+                {!isFullScreen && (
+                  <button
+                    className="bg-transparent"
+                    onClick={() => {
+                      setIsFullScreen(!isFullScreen);
+                    }}
+                  >
+                    {!isFullScreen ? (
+                      <RiFullscreenFill
+                        size={30}
+                        color={themeMode ? "black" : "white"}
+                      />
+                    ) : (
+                      <MdOutlineFullscreenExit
+                        size={40}
+                        color={themeMode ? "black" : "white"}
+                      />
+                    )}
+                  </button>
+                )}
               </div>
               <div className="flex items-center justify-center m-5">
                 <Logo />
@@ -235,7 +231,7 @@ const PerformerView = () => {
                 </div>
               )}
 
-              <table className="table table-lg border-separate border-spacing-y-4 ">
+              <table className="table table-lg border-separate border-spacing-y-4  ">
                 {performer?.map((item, index) => (
                   <tbody className={`text-base rounded-tl-lg font-medium`}>
                     <tr className="bg-[#1F1F1F]">
@@ -290,7 +286,7 @@ const PerformerView = () => {
           )}
         </div>
       </div>
-    </FullScreen>
+    </Fullscreen>
   );
 };
 
