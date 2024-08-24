@@ -165,19 +165,20 @@ function getMonday(date) {
 
 export const getSongsReportList = async (req, res, next) => {
   const { reportType } = req?.query;
+
   let filterByDate = {};
   if (reportType == 0) {
     const startOfDay = new Date(today);
     startOfDay.setHours(0, 0, 0, 0);
     filterByDate = {
-      createdAt: {
+      "votesDetails.createdAt": {
         $gte: startOfDay,
       },
     };
   } else if (reportType == 1) {
-    filterByDate = { createdAt: { $gte: startOfWeek } }; // Filter for songs created this week
+    filterByDate = { "votesDetails.createdAt": { $gte: startOfWeek } }; // Filter for songs created this week
   } else if (reportType == 2) {
-    filterByDate = { createdAt: { $gte: startOfMonth } }; // Filter for songs created this month
+    filterByDate = { "votesDetails.createdAt": { $gte: startOfMonth } }; // Filter for songs created this month
   }
 
   const songsList = await Song.aggregate(songReports(filterByDate));

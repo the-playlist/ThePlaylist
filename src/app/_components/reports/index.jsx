@@ -21,7 +21,7 @@ const Reports = () => {
   ];
 
   const [reportsList, setReportsList] = useState([]);
-  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState(0);
   const [reportsSongsApi, reportsSongsApiResponse] =
     useLazyGetSongsReportListQuery();
 
