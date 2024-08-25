@@ -228,7 +228,7 @@ const DutyScreen = () => {
                         <div className="text-center">
                           {item?.duty?.startTime || "-"}
                         </div>
-                        <div>
+                        <div className=" text-end">
                           <input
                             onClick={() => {
                               changeStatus(item?._id, item?.duty.status);
