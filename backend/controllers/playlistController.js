@@ -92,62 +92,85 @@ export const addSongsToPlaylist = async (req, res, next) => {
 };
 
 export const getSongsFromPlaylist = async (req, res, next) => {
-  let firstFetch = req?.query?.isFirstTimeFetched;
+  const firstFetch = req?.query?.isFirstTimeFetched;
 
-  const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
-    _id: SETTING_ID,
-  }).lean();
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
 
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
 
-  const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: SETTING_ID,
-  }).lean();
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => {
+      const duration = convertTimeToSeconds(item?.songData?.songDuration);
+      const introSec = item?.songData?.introSec || 0;
+      const totalDuration = formatTime(duration + parseInt(introSec));
 
-  // After populating, flatten the objects and rename properties
-  let flattenedPlaylist = playlist.map((item) => {
-    const duration = convertTimeToSeconds(item?.songData?.songDuration);
-    const introSec =
-      item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
-    const totalDuration = formatTime(duration + introSec);
-    return {
-      _id: item._id,
-      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-      assignedPlayerId: item.assignedPlayer?._id,
-      songId: item.songData._id,
-      title: item.songData.title,
-      artist: item.songData.artist,
-      introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
-      songDuration: totalDuration,
-      isFav: item.songData.isFav,
-      dutyStatus: item?.assignedPlayer?.duty?.status,
-      category: item.songData.category,
-      tableUpVote: item.upVote,
-      tableDownVote: item.downVote,
-      upVote: item.upVoteCount,
-      downVote: item.downVoteCount,
-      sortOrder: item.sortOrder,
-      sortByMaster: item?.sortByMaster,
-      addByCustomer: item.addByCustomer,
-    };
-  });
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec,
+        songDuration: totalDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: item.upVote,
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item?.sortByMaster,
+        addByCustomer: item.addByCustomer,
+      };
+    });
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
+
   const finalPlaylist = playlistAlgorithm(
-    firstFetch != null ? firstFetch : isFirstTimeFetched,
+    firstFetch ?? isFirstTimeFetched,
     flattenedPlaylist
   );
 
-  const response = new ResponseModel(true, "Songs fetched successfully.", {
-    playlist: finalPlaylist,
-    isFavortiteListType: isFavortiteListType,
-    playlistCount, // Add playlistCount to the response object
-    isFirstTimeFetched: isFirstTimeFetched,
-  });
-  res.status(200).json(response);
+  const updatedSongs = finalPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+
+  await Promise.all(
+    updatedSongs.map((song) =>
+      Playlist.updateOne(
+        { _id: song._id },
+        { $set: { sortOrder: song.sortOrder } }
+      )
+    )
+  );
+
+  const newFlattenedPlaylist = flattenPlaylist(
+    await Playlist.aggregate(songFromPlaylist)
+  );
+
+  const filteredPlaylist = isFavortiteListType
+    ? newFlattenedPlaylist.filter((item) => item.isFav)
+    : newFlattenedPlaylist;
+
+  res.status(200).json(
+    new ResponseModel(true, "Songs fetched successfully.", {
+      playlist: filteredPlaylist,
+      isFavortiteListType,
+      playlistCount,
+      isFirstTimeFetched,
+    })
+  );
 };
 
 const today = new Date();
@@ -190,67 +213,81 @@ export const getSongsReportList = async (req, res, next) => {
 };
 
 export const getSongsForTableView = async (req, res, next) => {
-  const deviceId = req?.body?.id;
-  const firstFetch = req?.body?.firstFetch;
+  const { id: deviceId, firstFetch } = req?.body;
 
-  const { isFirst: isFirstTimeFetched } = await PlaylistType.findOne({
-    _id: SETTING_ID,
-  }).lean();
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
 
   const playlist = await Playlist.aggregate(songsForTableView);
-  const { isFavortiteListType } = await PlaylistType.findOne({
-    _id: SETTING_ID,
-  }).lean();
-  // After populating, flatten the objects and rename properties
-  let flattenedPlaylist = playlist.map((item) => ({
-    _id: item._id,
-    playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-    assignedPlayerId: item.assignedPlayer?._id,
-    songId: item.songData._id,
-    title: item.songData.title,
-    artist: item.songData.artist,
-    introSec: item.songData.introSec,
-    songDuration: item.songData.songDuration,
-    isFav: item.songData.isFav,
-    dutyStatus: item?.assignedPlayer?.duty?.status,
-    category: item.songData.category,
-    tableUpVote: item.upVote,
-    tableDownVote: item.downVote,
-    upVote: item.upVoteCount,
-    downVote: item.downVoteCount,
-    sortOrder: item.sortOrder,
-    sortByMaster: item.sortByMaster,
-    addByCustomer: item.addByCustomer,
-  }));
-
   const votList = await Vote.find({ customerId: deviceId }).lean();
-  if (votList?.length > 0) {
-    flattenedPlaylist.forEach((playlistItem) => {
-      const matchingVote = votList.find(
-        (voteItem) =>
-          voteItem.playlistItemId?.toString() === playlistItem._id?.toString()
-      );
-      if (matchingVote) {
-        playlistItem.tableUpVote = matchingVote.isUpVote;
-      }
-    });
-  }
+
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => ({
+      _id: item._id,
+      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+      assignedPlayerId: item.assignedPlayer?._id,
+      songId: item.songData._id,
+      title: item.songData.title,
+      artist: item.songData.artist,
+      introSec: item.songData.introSec,
+      songDuration: item.songData.songDuration,
+      isFav: item.songData.isFav,
+      dutyStatus: item?.assignedPlayer?.duty?.status,
+      category: item.songData.category,
+      tableUpVote:
+        votList.find(
+          (vote) => vote.playlistItemId?.toString() === item._id?.toString()
+        )?.isUpVote || item.upVote,
+      tableDownVote: item.downVote,
+      upVote: item.upVoteCount,
+      downVote: item.downVoteCount,
+      sortOrder: item.sortOrder,
+      sortByMaster: item.sortByMaster,
+      addByCustomer: item.addByCustomer,
+    }));
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
 
   const finalPlaylist = playlistAlgorithm(
-    firstFetch != null ? firstFetch : isFirstTimeFetched,
+    firstFetch ?? isFirstTimeFetched,
     flattenedPlaylist
   );
 
-  const response = new ResponseModel(true, "Songs fetched successfully.", {
-    list: finalPlaylist,
-    isFavortiteListType: isFavortiteListType,
-    isFirstTimeFetched: isFirstTimeFetched,
-  });
-  res.status(200).json(response);
+  const updatedSongs = finalPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+
+  await Promise.all(
+    updatedSongs.map((song) =>
+      Playlist.updateOne(
+        { _id: song._id },
+        { $set: { sortOrder: song.sortOrder } }
+      )
+    )
+  );
+
+  let newFlattenedPlaylist = flattenPlaylist(
+    await Playlist.aggregate(songsForTableView)
+  );
+
+  if (isFavortiteListType) {
+    newFlattenedPlaylist = newFlattenedPlaylist.filter((item) => item.isFav);
+  }
+
+  res.status(200).json(
+    new ResponseModel(true, "Songs fetched successfully.", {
+      list: newFlattenedPlaylist,
+      isFavortiteListType,
+      isFirstTimeFetched,
+    })
+  );
 };
 
 export const updateSongsOrder = async (req, res, next) => {

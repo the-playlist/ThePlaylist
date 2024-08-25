@@ -326,11 +326,8 @@ const TableView = () => {
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
-
       updatedItem.tableUpVote = isTrue;
-
       updatedPerformer[index] = updatedItem;
-
       setPerformers(updatedPerformer);
       setVotingLoader(true);
       await addUpdateVoteAPI({
