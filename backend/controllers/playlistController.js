@@ -223,31 +223,36 @@ export const getSongsForTableView = async (req, res, next) => {
 
   const playlist = await Playlist.aggregate(songsForTableView);
   const votList = await Vote.find({ customerId: deviceId }).lean();
+  const voteLookup = votList.reduce((acc, vote) => {
+    acc[vote.playlistItemId?.toString()] = vote.isUpVote;
+    return acc;
+  }, {});
 
   const flattenPlaylist = (playlist) =>
-    playlist.map((item) => ({
-      _id: item._id,
-      playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-      assignedPlayerId: item.assignedPlayer?._id,
-      songId: item.songData._id,
-      title: item.songData.title,
-      artist: item.songData.artist,
-      introSec: item.songData.introSec,
-      songDuration: item.songData.songDuration,
-      isFav: item.songData.isFav,
-      dutyStatus: item?.assignedPlayer?.duty?.status,
-      category: item.songData.category,
-      tableUpVote:
-        votList.find(
-          (vote) => vote.playlistItemId?.toString() === item._id?.toString()
-        )?.isUpVote || item.upVote,
-      tableDownVote: item.downVote,
-      upVote: item.upVoteCount,
-      downVote: item.downVoteCount,
-      sortOrder: item.sortOrder,
-      sortByMaster: item.sortByMaster,
-      addByCustomer: item.addByCustomer,
-    }));
+    playlist.map((item) => {
+      const vote = voteLookup[item._id?.toString()];
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec: item.songData.introSec,
+        songDuration: item.songData.songDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: vote !== undefined ? vote : item.upVote,
+
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item.sortByMaster,
+        addByCustomer: item.addByCustomer,
+      };
+    });
 
   let flattenedPlaylist = flattenPlaylist(playlist);
 
