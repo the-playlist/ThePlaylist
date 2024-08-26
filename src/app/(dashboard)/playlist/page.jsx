@@ -620,7 +620,7 @@ const page = () => {
           {playlistSongList?.length === 0 &&
             !getPlaylistSongListResponse.isFetching && (
               <div
-                className={`flex items-center justify-center ${emptyListHeight}`}
+                className={`flex items-center justify-center h-[80vh] ${emptyListHeight}`}
               >
                 <span className=" text-black font-semibold ">
                   Currently there are no songs available in the playlist
