@@ -664,6 +664,9 @@ const page = () => {
                         setShowCountDown={setShowCountDown}
                         loading={crownLoader}
                         setLoader={setCrownLoader}
+                        fetchSongsList={async () => {
+                          await fetchPlaylistSongList();
+                        }}
                       />
                     );
                   }}

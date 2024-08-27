@@ -4,12 +4,13 @@ import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
-import { SongCountdownTimer } from "../../_components";
+import { Loader, SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
 import { useUpdatePlayerNamePlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 
-const QualifiedPlayersDropdown = ({ item, socket }) => {
+const QualifiedPlayersDropdown = ({ item, socket, onUpdateSongsList }) => {
   const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
+  const [isLoading, setIsLoading] = useState(false);
   const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistMutation();
   function generateObjectByPlayerId(record, playerId) {
     const assignedPlayer = record?.qualifiedPlayers.find(
@@ -24,17 +25,25 @@ const QualifiedPlayersDropdown = ({ item, socket }) => {
     };
   }
 
-  return (
+  return isLoading ? (
+    <Loader />
+  ) : (
     <select
       value={selectedId}
       onChange={async (e) => {
         e.preventDefault();
+        setIsLoading(true);
         const value = generateObjectByPlayerId(item, e.target.value);
         setSelectedId(value._id);
         await updatePlayerNameAPI({
           playlistItemId: item._id,
           assignedPlayerID: value._id,
         });
+        debugger;
+        await onUpdateSongsList();
+        debugger;
+        setIsLoading(false);
+
         socket.emit("undoActionRequest", {
           lastAction: null,
           isFirst: false,
@@ -61,6 +70,7 @@ export function PlaylistSongItem({
   dragHandleProps,
   loading,
   setLoader,
+  fetchSongsList,
 }) {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
@@ -89,9 +99,9 @@ export function PlaylistSongItem({
   const isLockedSongs = index == 0 || index == 1;
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
   const isMoreThanOneQualifiedPlayers =
-    item?.qualifiedPlayers.length > 1 &&
-    index > 1 &&
-    (upVote > 0 || downVote > 0);
+    item?.qualifiedPlayers.length > 1 && index > 1;
+
+  const isUpvoteOrDownVote = upVote > 0 || downVote > 0;
 
   return (
     <div>
@@ -193,7 +203,15 @@ export function PlaylistSongItem({
         </div>
         <div className="w-3/12 disable-select  " style={{ userSelect: "none" }}>
           {isMoreThanOneQualifiedPlayers ? (
-            <QualifiedPlayersDropdown socket={socket} item={item} />
+            <QualifiedPlayersDropdown
+              onUpdateSongsList={async () => {
+                if (!isUpvoteOrDownVote) {
+                  await fetchSongsList();
+                }
+              }}
+              socket={socket}
+              item={item}
+            />
           ) : (
             playerName
           )}
@@ -253,53 +271,3 @@ export function PlaylistSongItem({
     </div>
   );
 }
-
-export const PlaylistSongItem_ = ({ item, itemSelected, dragHandleProps }) => {
-  const { onMouseDown, onTouchStart } = dragHandleProps;
-
-  return (
-    <div
-      className="disable-select"
-      style={{
-        border: "1px solid black",
-        margin: "4px",
-        padding: "10px",
-        display: "flex",
-        justifyContent: "space-around",
-        background: "#fff",
-        userSelect: "none",
-      }}
-    >
-      {item.id}
-      <div
-        className="disable-select dragHandle"
-        style={{
-          fontWeight: "600",
-          transform: "rotate(90deg)",
-          width: "20px",
-          height: "20px",
-          backgroundColor: "black",
-        }}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          console.log("touchStart");
-          e.target.style.backgroundColor = "blue";
-          document.body.style.overflow = "scroll";
-          onTouchStart(e);
-        }}
-        onMouseDown={(e) => {
-          console.log("mouseDown");
-          document.body.style.overflow = "scroll";
-          onMouseDown(e);
-        }}
-        onTouchEnd={(e) => {
-          e.target.style.backgroundColor = "black";
-          document.body.style.overflow = "scroll";
-        }}
-        onMouseUp={() => {
-          document.body.style.overflow = "scroll";
-        }}
-      ></div>
-    </div>
-  );
-};
