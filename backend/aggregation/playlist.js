@@ -143,6 +143,7 @@ export const songFromPlaylist = [
       sortOrder: 1,
       sortByMaster: 1,
       addByCustomer: 1,
+      qualifiedPlayers: 1,
     },
   },
   {

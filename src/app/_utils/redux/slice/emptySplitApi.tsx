@@ -17,6 +17,7 @@ const endPoints = {
   GET_SONGS_FROM_PLAYLIST:
     "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
+  UPDATE_PLAYERNAME_PLAYLIST: "api/playlist/updatePlayerName",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   DISABLE_SONG: "api/songs/disableSongStatus",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
@@ -212,6 +213,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    updatePlayerNamePlaylist: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.UPDATE_PLAYERNAME_PLAYLIST}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
     deletePlayerById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_PLAYER}${body}`,
@@ -322,4 +330,5 @@ export const {
   useLazyGetAddSongListForCustomerQuery,
   useDisbaleSongFromSongBankMutation,
   useRevertMasterCheckMutation,
+  useUpdatePlayerNamePlaylistMutation
 } = emptySplitApi;

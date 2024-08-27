@@ -7,6 +7,18 @@ const playlistSchema = new mongoose.Schema(
       ref: "Players",
       required: [true, "Assigned Player Info is necessory"],
     },
+    qualifiedPlayers: [
+      {
+        id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Players",
+          required: [true, "Qulified Player Info is necessory"],
+        },
+        name: {
+          type: String,
+        },
+      },
+    ],
     songData: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Songs",

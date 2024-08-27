@@ -185,9 +185,9 @@ const SelectSongModal = ({
         songData: record?._id,
         assignedPlayer: record?.selectedPlayers?._id,
         sortOrder: playlistCount + index,
+        qualifiedPlayers: record?.assignedPlayers,
       };
     });
-
     addSongsHandler(transformedRecords);
 
     return transformedRecords;

@@ -15,6 +15,19 @@ import { playlistAlgorithm } from "../algorithm/playlistAlgo";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 
+export const updatePlayerName = async (req, res, next) => {
+  const playlistItemId = req.body.playlistItemId;
+  const assignedPlayerId = req.body.assignedPlayerID;
+  await Playlist.findByIdAndUpdate(playlistItemId, {
+    assignedPlayer: assignedPlayerId,
+  });
+  const response = new ResponseModel(
+    true,
+    "Player Name updated  playlist successfully.",
+    null
+  );
+  res.status(200).json(response);
+};
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
   const playlistCount = result?.length;
@@ -23,6 +36,10 @@ export const addSongsToPlaylist = async (req, res, next) => {
     ...song,
     expiresAt: expirationTime,
     sortOrder: playlistCount + index,
+    qualifiedPlayers: song.qualifiedPlayers.map((player) => ({
+      id: player?._id,
+      name: player?.playerName,
+    })),
   }));
 
   const playlist = await Playlist.insertMany(songsWithExpiration);
@@ -112,6 +129,7 @@ export const getSongsFromPlaylist = async (req, res, next) => {
         _id: item._id,
         playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
         assignedPlayerId: item.assignedPlayer?._id,
+        qualifiedPlayers: item?.qualifiedPlayers,
         songId: item.songData._id,
         title: item.songData.title,
         artist: item.songData.artist,

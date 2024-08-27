@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { RevertMasterIcon } from "@/app/svgs";
 import { FaHeart, FaTrashAlt } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -6,6 +6,50 @@ import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
 import { SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
+import { useUpdatePlayerNamePlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
+
+const QualifiedPlayersDropdown = ({ item, socket }) => {
+  const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
+  const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistMutation();
+  function generateObjectByPlayerId(record, playerId) {
+    const assignedPlayer = record?.qualifiedPlayers.find(
+      (player) => player.id == playerId
+    );
+    if (!assignedPlayer) {
+      return null;
+    }
+    return {
+      _id: assignedPlayer?.id,
+      playerName: assignedPlayer?.name,
+    };
+  }
+
+  return (
+    <select
+      value={selectedId}
+      onChange={async (e) => {
+        e.preventDefault();
+        const value = generateObjectByPlayerId(item, e.target.value);
+        setSelectedId(value._id);
+        await updatePlayerNameAPI({
+          playlistItemId: item._id,
+          assignedPlayerID: value._id,
+        });
+        socket.emit("undoActionRequest", {
+          lastAction: null,
+          isFirst: false,
+        });
+      }}
+      className="select select-bordered w-auto max-w-xs focus:outline-none "
+    >
+      {item?.qualifiedPlayers?.map((item) => {
+        return (
+          <option key={item?.id} value={item?.id}>{`${item.name}`}</option>
+        );
+      })}
+    </select>
+  );
+};
 
 export function PlaylistSongItem({
   revertCrownhandler,
@@ -44,6 +88,8 @@ export function PlaylistSongItem({
   } = item || {};
   const isLockedSongs = index == 0 || index == 1;
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
+  const isMoreThanOneQualifiedPlayers =
+    item?.qualifiedPlayers.length > 1 && index > 1;
 
   return (
     <div>
@@ -51,31 +97,7 @@ export function PlaylistSongItem({
         key={index}
         className={` text-center ${
           isLockedSongs ? "bg-top-queue-bg" : "bg-white"
-        }  shadow rounded-2xl h-20 flex items-center  px-5 ${
-          !isLockedSongs && "cursor-pointer"
-        }`}
-        onClick={(e) => {
-          e.preventDefault();
-        }}
-        onTouchStart={(e) => {
-          e.preventDefault();
-          console.log("touchStart");
-          // e.target.style.backgroundColor = "blue";
-          document.body.style.overflow = "scroll";
-          onTouchStart(e);
-        }}
-        onMouseDown={(e) => {
-          console.log("mouseDown");
-          document.body.style.overflow = "scroll";
-          onMouseDown(e);
-        }}
-        onTouchEnd={(e) => {
-          // e.target.style.backgroundColor = "black";
-          document.body.style.overflow = "scroll";
-        }}
-        onMouseUp={() => {
-          document.body.style.overflow = "scroll";
-        }}
+        }  shadow rounded-2xl h-20 flex items-center  px-5`}
       >
         <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
           <div className=" flex items-center justify-center  cursor-pointer">
@@ -85,6 +107,25 @@ export function PlaylistSongItem({
                   <span className="loading loading-spinner loading-md"></span>
                 ) : (
                   <button
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      console.log("touchStart");
+                      e.target.style.backgroundColor = "blue";
+                      document.body.style.overflow = "scroll";
+                      onTouchStart(e);
+                    }}
+                    onMouseDown={(e) => {
+                      console.log("mouseDown");
+                      document.body.style.overflow = "scroll";
+                      onMouseDown(e);
+                    }}
+                    onTouchEnd={(e) => {
+                      e.target.style.backgroundColor = "black";
+                      document.body.style.overflow = "scroll";
+                    }}
+                    onMouseUp={() => {
+                      document.body.style.overflow = "scroll";
+                    }}
                     onClick={() => {
                       setLoader(item?._id);
                       revertCrownhandler(item);
@@ -148,7 +189,13 @@ export function PlaylistSongItem({
             </div>
           )}
         </div>
-        <div className="w-3/12">{playerName}</div>
+        <div className="w-3/12 disable-select  " style={{ userSelect: "none" }}>
+          {isMoreThanOneQualifiedPlayers ? (
+            <QualifiedPlayersDropdown socket={socket} item={item} />
+          ) : (
+            playerName
+          )}
+        </div>
         <div className="w-2/12 flex items-center justify-center">
           <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
             {introSec || 0}
