@@ -89,7 +89,9 @@ export function PlaylistSongItem({
   const isLockedSongs = index == 0 || index == 1;
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
   const isMoreThanOneQualifiedPlayers =
-    item?.qualifiedPlayers.length > 1 && index > 1;
+    item?.qualifiedPlayers.length > 1 &&
+    index > 1 &&
+    (upVote > 0 || downVote > 0);
 
   return (
     <div>
