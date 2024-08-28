@@ -108,7 +108,7 @@ const page = () => {
     socket.connect();
     setSocket(socket);
 
-    //  comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
+    // NOTE: comenting this out to avoid singnal response on the playlist, its done before to sync if more than master exists
     // socket.on("insertSongIntoPlaylistResponse", (item) => {
     //   const { playlist, isFirst, isFavSongs, currentSongSecond, isInsert } =
     //     item;
@@ -550,6 +550,14 @@ const page = () => {
 
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
+  const handleUpdateItem = (updatedItem) => {
+    // Update the state with the new item data
+    setPlaylistSongList((prevItems) =>
+      prevItems.map((item) =>
+        item._id === updatedItem._id ? updatedItem : item
+      )
+    );
+  };
 
   return (
     <div className="">
@@ -667,6 +675,7 @@ const page = () => {
                         fetchSongsList={async () => {
                           await fetchPlaylistSongList();
                         }}
+                        onUpdateItem={handleUpdateItem}
                       />
                     );
                   }}

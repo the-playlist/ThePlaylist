@@ -8,7 +8,12 @@ import { Loader, SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
 import { useUpdatePlayerNamePlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 
-const QualifiedPlayersDropdown = ({ item, socket, onUpdateSongsList }) => {
+const QualifiedPlayersDropdown = ({
+  item,
+  socket,
+  onUpdateSongsList,
+  onUpdateItem,
+}) => {
   const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
   const [isLoading, setIsLoading] = useState(false);
   const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistMutation();
@@ -39,9 +44,16 @@ const QualifiedPlayersDropdown = ({ item, socket, onUpdateSongsList }) => {
           playlistItemId: item._id,
           assignedPlayerID: value._id,
         });
-        debugger;
+        const updatedItem = {
+          ...item, // Spread the existing item
+          assignedPlayerId: value._id,
+          playerName: value.playerName,
+        };
+
+        // Call the provided callback to update the item in the parent or component state
+        onUpdateItem(updatedItem); // This function should handle the state update for 'item'
+
         await onUpdateSongsList();
-        debugger;
         setIsLoading(false);
 
         socket.emit("undoActionRequest", {
@@ -71,6 +83,7 @@ export function PlaylistSongItem({
   loading,
   setLoader,
   fetchSongsList,
+  onUpdateItem,
 }) {
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
@@ -205,12 +218,11 @@ export function PlaylistSongItem({
           {isMoreThanOneQualifiedPlayers ? (
             <QualifiedPlayersDropdown
               onUpdateSongsList={async () => {
-                if (!isUpvoteOrDownVote) {
-                  await fetchSongsList();
-                }
+                await fetchSongsList();
               }}
               socket={socket}
               item={item}
+              onUpdateItem={onUpdateItem}
             />
           ) : (
             playerName
