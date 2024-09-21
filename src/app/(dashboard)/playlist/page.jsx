@@ -309,7 +309,7 @@ const page = () => {
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
     localStorage.setItem("isFirstTimeFetched", false);
     // !isTrashPress && dispatch(setInitialSongPlaylist(false));
-    await removeItemById(id, isTrashPress);
+    let res = await removeItemById(id, isTrashPress);
     setUndoItemsInStorage({
       action: ACTION_TYPE.SINGLE_DEL,
       data: id,
@@ -338,6 +338,11 @@ const page = () => {
 
     if (response && !response.error) {
       toast(response?.data?.description);
+      socket.emit("RemoveSongFromPlaylistRequest", {
+        isFirst: false,
+        playlist: res,
+        time: 10,
+      });
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
@@ -364,11 +369,7 @@ const page = () => {
         setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
       );
     }
-    socket.emit("RemoveSongFromPlaylistRequest", {
-      isFirst: false,
-      playlist: currentArray,
-      time: 10,
-    });
+    return currentArray;
   };
 
   const handleDragEnd = (result, source, destination, movedItem) => {
