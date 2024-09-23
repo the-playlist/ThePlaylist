@@ -7,11 +7,13 @@ import {
   songFromPlaylist,
   songsForTableView,
   songReports,
+  songFromPlaylistV2,
 } from "../aggregation/playlist";
 import Players from "../models/players";
 import mongoose from "mongoose";
 import { convertTimeToSeconds, formatTime } from "../utils/helper";
 import { playlistAlgorithm } from "../algorithm/playlistAlgo";
+import PlaylistV2 from "../models/playlistV2";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 
@@ -317,7 +319,7 @@ export const getSongsForTableView = async (req, res, next) => {
 export const updateSongsOrder = async (req, res, next) => {
   const songsList = req?.body?.songsList;
   for (const item of songsList) {
-    await Playlist.updateOne(
+    await PlaylistV2.updateOne(
       { _id: item.id },
       {
         $set: {
@@ -383,6 +385,31 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   res.status(200).json(response);
 };
 
+export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
+  const id = req.query.id;
+  const isDeleted = req.query.isDeleted;
+  if (!id) {
+    return res.status(400).json({ message: "ID parameter is missing" });
+  }
+  await PlaylistV2.findByIdAndUpdate(
+    id,
+    { isDeleted: isDeleted },
+    { new: true }
+  );
+  const activeSongs = await PlaylistV2.find({ isDeleted: false });
+  if (activeSongs?.length === 1) {
+    await PlaylistType.updateOne(
+      {
+        _id: SETTING_ID,
+      },
+      {
+        $set: { isFirst: true },
+      }
+    );
+  }
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
+};
 // export const deleteSongFromPlaylistById = async (req, res, next) => {
 //   const id = req.query.id;
 //   if (!id) {
@@ -651,4 +678,209 @@ export const isPlaylistEmpty = async (req, res, next) => {
     isFirstTimeFetched: result?.length == 0 ? true : false,
   });
   res.status(201).json(response);
+};
+
+export const getSongsFromPlaylistV2 = async (req, res, next) => {
+  const firstFetch = req?.query?.isFirstTimeFetched;
+
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
+
+  const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);
+  const playlistCount = await PlaylistV2.countDocuments({ isDeleted: false });
+
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => {
+      const duration = convertTimeToSeconds(item?.songData?.songDuration);
+      const introSec = item?.songData?.introSec || 0;
+      const totalDuration = formatTime(duration + parseInt(introSec));
+
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        qualifiedPlayers: item?.qualifiedPlayers,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec,
+        songDuration: totalDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: item.upVote,
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item?.sortByMaster,
+        addByCustomer: item.addByCustomer,
+        isFixed: item?.isFixed,
+      };
+    });
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+
+  const finalPlaylist = playlistAlgorithm(
+    firstFetch ?? isFirstTimeFetched,
+    flattenedPlaylist
+  );
+
+  const updatedSongs = finalPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+
+  await Promise.all(
+    updatedSongs.map((song) =>
+      PlaylistV2.updateOne(
+        { _id: song._id },
+        {
+          $set: {
+            sortOrder: song.sortOrder,
+            isFixed:
+              song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+          },
+        }
+      )
+    )
+  );
+
+  const newFlattenedPlaylist = flattenPlaylist(
+    await PlaylistV2.aggregate(songFromPlaylistV2)
+  );
+
+  const filteredPlaylist = isFavortiteListType
+    ? newFlattenedPlaylist.filter((item) => item.isFav)
+    : newFlattenedPlaylist;
+
+  const isFixedItems = filteredPlaylist?.filter(
+    (item) => item?.isFixed == true
+  );
+
+  const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+  res.status(200).json(
+    new ResponseModel(true, "Songs fetched successfully.", {
+      isFixedItems: isFixedItems,
+      isNotFixed: isNotFixedItems,
+      playlistCount,
+      isFavortiteListType,
+      completeList: filteredPlaylist,
+    })
+  );
+
+  // res.status(200).json(
+  //   new ResponseModel(true, "Songs fetched successfully.", {
+  //     playlist: filteredPlaylist,
+  //     isFavortiteListType,
+  //     playlistCount,
+  //     isFirstTimeFetched,
+  //   })
+  // );
+};
+
+export const addSongsToPlaylistV2 = async (req, res, next) => {
+  const result = await PlaylistV2.find({ isDeleted: false });
+  const playlistCount = result?.length;
+  const songsWithExpiration = req.body.map((song, index) => ({
+    ...song,
+    sortOrder: playlistCount + index,
+    qualifiedPlayers: song.qualifiedPlayers.map((player) => ({
+      id: player?._id,
+      name: player?.playerName,
+    })),
+  }));
+
+  const playlist = await PlaylistV2.insertMany(songsWithExpiration);
+  const response = new ResponseModel(
+    true,
+    "Songs Added To V2 Successfully",
+    playlist
+  );
+  res.status(201).json(response);
+  // const list = await Playlist.aggregate(songFromPlaylist);
+  // const newIsFirstValue = result?.length == 0;
+  // await PlaylistType.updateOne(
+  //   {
+  //     _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+  //   },
+  //   {
+  //     $set: { isFirst: newIsFirstValue },
+  //   },
+  //   { new: true }
+  // );
+  // const { isFavortiteListType } = await PlaylistType.findOne({
+  //   _id: SETTING_ID,
+  // }).lean();
+
+  // let flattenedPlaylist = list.map((item) => {
+  //   const duration = convertTimeToSeconds(item?.songData?.songDuration);
+  //   const introSec =
+  //     item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
+  //   const totalDuration = formatTime(duration + introSec);
+  //   return {
+  //     _id: item._id,
+  //     playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+  //     assignedPlayerId: item.assignedPlayer?._id,
+  //     songId: item.songData._id,
+  //     title: item.songData.title,
+  //     artist: item.songData.artist,
+  //     introSec: item?.songData?.introSec == "" ? 0 : item?.songData?.introSec,
+  //     songDuration: totalDuration,
+  //     isFav: item.songData.isFav,
+  //     dutyStatus: item?.assignedPlayer?.duty?.status,
+  //     category: item.songData.category,
+  //     tableUpVote: item.upVote,
+  //     tableDownVote: item.downVote,
+  //     upVote: item.upVoteCount,
+  //     downVote: item.downVoteCount,
+  //     sortOrder: item.sortOrder,
+  //     sortByMaster: item?.sortByMaster,
+  //     addByCustomer: item.addByCustomer,
+  //   };
+  // });
+  // if (isFavortiteListType) {
+  //   flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  // }
+  // const finalPlaylist = playlistAlgorithm(newIsFirstValue, flattenedPlaylist);
+  // const bulkOps = finalPlaylist.map((item, index) => ({
+  //   updateOne: {
+  //     filter: { _id: item?._id },
+  //     update: { $set: { sortOrder: index } },
+  //   },
+  // }));
+
+  // await Playlist.bulkWrite(bulkOps);
+  // const response = new ResponseModel(
+  //   true,
+  //   "Songs added to playlist successfully.",
+  //   {
+  //     isFavortiteListType: isFavortiteListType,
+  //     playlist: finalPlaylist,
+  //     isFirstTimeFetched: newIsFirstValue,
+  //   }
+  // );
+  // res.status(201).json(response);
+};
+
+export const deleteAllSongsFromPlaylistV2 = async (req, res, next) => {
+  await PlaylistV2.deleteMany({});
+  await PlaylistType.updateOne(
+    {
+      _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+    },
+    {
+      $set: { isFirst: true },
+    },
+    { new: true }
+  );
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
 };

@@ -3,24 +3,23 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
     isFirstTimeFetched = JSON.parse(isFirstTimeFetched);
   }
 
+  //separate song adjust by master
   const flattenedRemainingPlaylist = flattenedPlaylist.filter(
-    (song) => !song.sortByMaster
+    (song) => !song.sortByMaster && !song.isFixed
   );
 
-  // Separate first two songs
-  const firstTwoSongs = flattenedPlaylist.slice(0, 2);
+  // Filter out songs that are not fixed (i.e., apply algorithm only to non-fixed songs)
+  const nonFixedSongs = flattenedPlaylist.filter((song) => !song.isFixed);
 
-  const remainingSongs = flattenedPlaylist
-    .slice(2)
-    .filter((song) => !song.sortByMaster);
+  // Separate songs that are fixed
+  const fixedSongs = flattenedPlaylist.filter((song) => song.isFixed);
 
-  // Ensure correct initial sort order for non-sortByMaster songs (assuming sortOrder is used for initial positioning)
-  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
+  // Sort non-fixed songs by sortOrder initially
+  flattenedRemainingPlaylist.sort((a, b) => a.sortOrder - b.sortOrder);
 
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    isFirstTimeFetched == true ? flattenedRemainingPlaylist : remainingSongs,
-    isFirstTimeFetched == true ? null : firstTwoSongs
+    flattenedRemainingPlaylist
   );
 
   // Create a map to store sortByMaster songs with their original sortOrder
@@ -39,11 +38,11 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
       finalPlaylist.push(sortByMasterMap.get(i));
       sortByMasterMap.delete(i); // Remove inserted song from the map
     } else {
-      if (isFirstTimeFetched == true && modifiedRemainingSongs?.length > 0) {
+      if (fixedSongs?.length == 0 && modifiedRemainingSongs?.length > 0) {
         finalPlaylist.push(modifiedRemainingSongs.shift());
       } else {
         finalPlaylist.push(
-          firstTwoSongs.shift() || modifiedRemainingSongs.shift()
+          fixedSongs.shift() || modifiedRemainingSongs.shift()
         );
       }
     }

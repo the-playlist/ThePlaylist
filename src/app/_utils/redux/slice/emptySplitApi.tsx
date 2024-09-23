@@ -19,10 +19,12 @@ const endPoints = {
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   UPDATE_PLAYERNAME_PLAYLIST: "api/playlist/updatePlayerName",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
+  DELETE_SONG_FROM_PLAYLISTV2: "api/playlist/deleteSongFromPlaylistById-v2?id=",
   DISABLE_SONG: "api/songs/disableSongStatus",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
   DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
+  DELETE_ALL_SONGS_PLAYLIST_V2: "api/playlist/deleteAllSongsFromPlaylist-v2",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList?reportType=",
@@ -43,6 +45,7 @@ const endPoints = {
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
   GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
   REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
+  GET_SONGS_FROM_PLAYLIST_V2: "api/playlist/getSongsFromPlaylist-v2",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -69,6 +72,9 @@ export const emptySplitApi = createApi({
   endpoints: (builder) => ({
     getSongsFromPlaylist: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
+    }),
+    getSongsFromPlaylistV2: builder.query({
+      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST_V2}`,
     }),
     getSongsReportList: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
@@ -238,6 +244,12 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
+    deleteAllSongsFromPlaylistV2: builder.mutation({
+      query: () => ({
+        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST_V2}`,
+        method: "DELETE",
+      }),
+    }),
     undoDeletedSongsFromPlaylist: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST}`,
@@ -248,6 +260,12 @@ export const emptySplitApi = createApi({
     deleteSongFromPlaylistById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_SONG_FROM_PLAYLIST}${body.id}&isDeleted=${body.isDeleted} `,
+        method: "DELETE",
+      }),
+    }),
+    deleteSongFromPlaylistByIdV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted} `,
         method: "DELETE",
       }),
     }),
@@ -330,5 +348,8 @@ export const {
   useLazyGetAddSongListForCustomerQuery,
   useDisbaleSongFromSongBankMutation,
   useRevertMasterCheckMutation,
-  useUpdatePlayerNamePlaylistMutation
+  useUpdatePlayerNamePlaylistMutation,
+  useLazyGetSongsFromPlaylistV2Query,
+  useDeleteSongFromPlaylistByIdV2Mutation,
+  useDeleteAllSongsFromPlaylistV2Mutation,
 } = emptySplitApi;

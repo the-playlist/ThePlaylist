@@ -10,6 +10,7 @@ import { IoPlaySharp, IoPause } from "react-icons/io5";
 import { useDispatch } from "react-redux";
 import { convertTimeToSeconds, formatTime } from "../../_utils/helper";
 import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
 
 const SongCountdownTimer = ({
   advanceTheQueue,
@@ -34,6 +35,10 @@ const SongCountdownTimer = ({
   const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
 
   useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
+    socket.connect();
     if (isStart) {
       if (duration == 0) {
         clearInterval(timer);
@@ -41,7 +46,14 @@ const SongCountdownTimer = ({
         return;
       }
       timer = setInterval(() => {
-        dispatch(setCurrentSongSecond(parseInt(duration) - 1));
+        const remainingTime = parseInt(duration) - 1;
+
+        if (remainingTime < 3) {
+          socket.emit("remainingTimeReq", {
+            remainingTime: remainingTime,
+          });
+        }
+        dispatch(setCurrentSongSecond(remainingTime));
       }, 1000);
     } else {
       clearInterval(timer);

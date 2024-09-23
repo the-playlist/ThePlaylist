@@ -32,6 +32,7 @@ import {
   setCurrentSongSecond,
   setIsFirstTimeFetched,
   setInitialSongPlaylist,
+  setRecentSong,
 } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
@@ -50,6 +51,7 @@ const ACTION_TYPE = {
 };
 
 const page = () => {
+  const recentSong = useSelector((state) => state?.playlistReducer?.recentSong);
   const isOnline = useOnlineStatus();
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
@@ -90,7 +92,7 @@ const page = () => {
   const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
 
   const containerRef = useRef();
-
+  const [addedByCustomerList, setAddedByCustomerList] = useState([]);
   useEffect(() => {
     if (isOnline) {
       const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -144,25 +146,22 @@ const page = () => {
     });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
-      const playlistWithId = playlist?.map((item, index) => ({
-        ...item,
-        id: index, // Add a unique id if it doesn't exist
-      }));
-      setPlaylistSongList([...playlistWithId]);
+      fetchPlaylistSongList(isFirst);
+      // setAddedByCustomerList(playlist);
     });
     socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-    socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst, duration } = item;
-      // dispatch(setCurrentSongSecond(duration));
-      const playlistWithId = playlist?.map((item, index) => ({
-        ...item,
-        id: index, // Add a unique id if it doesn't exist
-      }));
-      setPlaylistSongList([...playlistWithId]);
-    });
+    // socket.on("RemoveSongFromPlaylistResponse", (item) => {
+    //   const { playlist, isFirst, duration } = item;
+    //   // dispatch(setCurrentSongSecond(duration));
+    //   const playlistWithId = playlist?.map((item, index) => ({
+    //     ...item,
+    //     id: index, // Add a unique id if it doesn't exist
+    //   }));
+    //   setPlaylistSongList([...playlistWithId]);
+    // });
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
@@ -170,6 +169,30 @@ const page = () => {
       await fetchPlaylistSongList(null);
     });
   }, []);
+
+  // useEffect(() => {
+  //   // const playlistWithId = playlist?.map((item, index) => ({
+  //   //   ...item,
+  //   //   id: index, // Add a unique id if it doesn't exist
+  //   // }));
+  //   // const currentArray = playlistWithId.filter(
+  //   //   (item) => item._id != recentSong
+  //   // );
+  //   // setPlaylistSongList([...currentArray]);
+  //   if (addedByCustomerList?.length > 0) {
+  //     const playlistWithId = addedByCustomerList?.map((item, index) => ({
+  //       ...item,
+  //       id: index,
+  //       sortOrder: index,
+  //     }));
+  //     const currentArray = playlistWithId.filter(
+  //       (item) => item._id != recentSong
+  //     );
+
+  //     console.log("currentArray", currentArray);
+  //     setPlaylistSongList([...currentArray]);
+  //   }
+  // }, [addedByCustomerList]);
 
   useEffect(() => {
     if (votingList != null) {
@@ -306,14 +329,18 @@ const page = () => {
 
   const [selectSongModal, setSelectSongModal] = useState(false);
 
-  const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
+  const deleteSongFromPlaylistHandler = async (id, isTrashPress, isNotAuto) => {
+    dispatch(setRecentSong(id));
     localStorage.setItem("isFirstTimeFetched", false);
     // !isTrashPress && dispatch(setInitialSongPlaylist(false));
-    let res = await removeItemById(id, isTrashPress);
-    setUndoItemsInStorage({
-      action: ACTION_TYPE.SINGLE_DEL,
-      data: id,
-    });
+    await removeItemById(id, isTrashPress);
+    if (isNotAuto) {
+      setUndoItemsInStorage({
+        action: ACTION_TYPE.SINGLE_DEL,
+        data: id,
+      });
+    }
+
     if (playlistSongList?.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
@@ -338,11 +365,6 @@ const page = () => {
 
     if (response && !response.error) {
       toast(response?.data?.description);
-      socket.emit("RemoveSongFromPlaylistRequest", {
-        isFirst: false,
-        playlist: res,
-        time: 10,
-      });
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
@@ -369,7 +391,11 @@ const page = () => {
         setCurrentSongSecond(convertTimeToSeconds(newSong?.songDuration))
       );
     }
-    return currentArray;
+    socket.emit("RemoveSongFromPlaylistRequest", {
+      isFirst: false,
+      playlist: currentArray,
+      time: 10,
+    });
   };
 
   const handleDragEnd = (result, source, destination, movedItem) => {
@@ -575,7 +601,11 @@ const page = () => {
               <button
                 disabled={isAdvanceTheQueeDisable}
                 onClick={async () => {
-                  await deleteSongFromPlaylistHandler(playlistSongList[0]?._id);
+                  await deleteSongFromPlaylistHandler(
+                    playlistSongList[0]?._id,
+                    false,
+                    true
+                  );
                   if (playlistSongList?.length > 0) {
                     const songDuration = convertTimeToSeconds(
                       playlistSongList[1]?.songDuration
@@ -607,7 +637,7 @@ const page = () => {
               {isFavExist?.length > 0 &&
                 (isFavSongs || playlistSongList?.length > 0) && (
                   <button
-                    disabled={playlistSongList?.length == 0}
+                    disabled={playingState}
                     onClick={toggleFavSongs}
                     className={`flex items-center hover:cursor-pointer border ${
                       !isFavSongs ? "border-black" : "border-top-queue-bg"
