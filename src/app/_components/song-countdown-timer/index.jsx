@@ -16,9 +16,7 @@ const SongCountdownTimer = ({
   advanceTheQueue,
   playlistSongList,
   isStart,
-  setShowCountDown,
   orignalSongDuration,
-  socket,
 }) => {
   let timer;
   const dispatch = useDispatch();
@@ -47,12 +45,6 @@ const SongCountdownTimer = ({
       }
       timer = setInterval(() => {
         const remainingTime = parseInt(duration) - 1;
-
-        if (remainingTime < 3) {
-          socket.emit("remainingTimeReq", {
-            remainingTime: remainingTime,
-          });
-        }
         dispatch(setCurrentSongSecond(remainingTime));
       }, 1000);
     } else {
@@ -84,17 +76,9 @@ const SongCountdownTimer = ({
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration && playingState) {
       dispatch(setPlayingState(false));
-      setShowCountDown(true);
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
+
       if (initialSongPlaylist) {
-        socket.emit("startIntroSecondsRequest", {
-          time: 10,
-        });
-        // setTimeout(() => {
         changePlayingState();
-        // }, 10000);
       } else {
         changePlayingState();
       }
@@ -106,30 +90,11 @@ const SongCountdownTimer = ({
     dispatch(setInitialSongPlaylist(false));
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration) {
-      setShowCountDown(true);
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
       if (initialSongPlaylist) {
-        socket.emit("startIntroSecondsRequest", {
-          time: 10,
-        });
-        // setTimeout(() => {
         changePlayingState();
-        // socket.emit("startPlayerViewTimeReq", {
-        //   time: 10,
-        // });
-        // }, 10000);
       } else {
         changePlayingState();
       }
-      // setTimeout(() => {
-      //   socket.emit("startIntroSecondsRequest", {
-      //     time: 10,
-      //   });
-
-      //   dispatch(setPlayingState(true));
-      // }, 10000);
     } else {
       dispatch(setPlayingState(true));
     }

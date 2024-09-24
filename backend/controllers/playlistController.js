@@ -8,6 +8,7 @@ import {
   songsForTableView,
   songReports,
   songFromPlaylistV2,
+  songsForTableViewV2,
 } from "../aggregation/playlist";
 import Players from "../models/players";
 import mongoose from "mongoose";
@@ -339,7 +340,7 @@ export const updateSongsOrder = async (req, res, next) => {
 
 export const revertMasterCheck = async (req, res, next) => {
   const item = req?.body?.item;
-  const result = await Playlist.updateOne(
+  const result = await PlaylistV2.updateOne(
     { _id: item._id },
     {
       $set: {
@@ -369,7 +370,11 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
-  await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
+  await Playlist.findByIdAndUpdate(
+    id,
+    { isDeleted: isDeleted, isFixed: false },
+    { new: true }
+  );
   const activeSongs = await Playlist.find({ isDeleted: false });
   if (activeSongs?.length === 1) {
     await PlaylistType.updateOne(
@@ -504,7 +509,7 @@ function calculateExpirationTime() {
 
 export const addSongToPlaylistByCustomer = async (req, res) => {
   const { songId, addByCustomer } = req.body;
-  const result = await Playlist.find({ isDeleted: false });
+  await PlaylistV2.find({ isDeleted: false });
   if (!songId) {
     return res.status(400).json({ message: "Song ID is required" });
   }
@@ -517,7 +522,7 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
     },
     {
       $lookup: {
-        from: "playlists",
+        from: "playlistsv2",
         localField: "_id",
         foreignField: "assignedPlayer",
         as: "playlistEntries",
@@ -574,23 +579,22 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       }
     }
   }
-
+  let playlistCount;
   if (playerToAssign) {
-    const playlistCount = await Playlist.countDocuments({
+    playlistCount = await PlaylistV2.countDocuments({
       isDeleted: false,
     });
-    const newPlaylistEntry = new Playlist({
+    const newPlaylistEntry = new PlaylistV2({
       assignedPlayer: playerToAssign._id,
       songData: new mongoose.Types.ObjectId(songId),
       addByCustomer: addByCustomer,
-      expiresAt: calculateExpirationTime(),
       sortOrder: playlistCount,
     });
     await newPlaylistEntry.save();
-    const list = await Playlist.aggregate(songFromPlaylist);
-    const { isFavortiteListType } = await PlaylistType.findOne({
-      _id: SETTING_ID,
-    }).lean();
+    const list = await PlaylistV2.aggregate(songFromPlaylistV2);
+    // const { isFavortiteListType } = await PlaylistType.findOne({
+    //   _id: SETTING_ID,
+    // }).lean();
 
     const flattenPlaylist = (playlist) =>
       playlist.map((item) => {
@@ -618,40 +622,51 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
           sortOrder: item.sortOrder,
           sortByMaster: item?.sortByMaster,
           addByCustomer: item.addByCustomer,
+          isFixed: item?.isFixed,
         };
       });
 
     let flattenedPlaylist = flattenPlaylist(list);
-    if (isFavortiteListType) {
-      flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-    }
-
-    const finalPlaylist = playlistAlgorithm(
-      result?.length == 0 ? true : false,
-      flattenedPlaylist
+    const foundSong = flattenedPlaylist.find(
+      (song) => song.songId.toString() === songId.toString()
     );
 
-    const updatedSongs = finalPlaylist.map((song, index) => ({
-      ...song,
-      sortOrder: index,
-    }));
+    // if (isFavortiteListType) {
+    //   flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+    // }
 
-    await Promise.all(
-      updatedSongs.map((song) =>
-        Playlist.updateOne(
-          { _id: song._id },
-          { $set: { sortOrder: song.sortOrder } }
-        )
-      )
-    );
+    // const finalPlaylist = playlistAlgorithm(
+    //   result?.length == 0 ? true : false,
+    //   flattenedPlaylist
+    // );
 
-    const newFlattenedPlaylist = flattenPlaylist(
-      await Playlist.aggregate(songFromPlaylist)
-    );
+    // const updatedSongs = finalPlaylist.map((song, index) => ({
+    //   ...song,
+    //   sortOrder: index,
+    // }));
 
-    const filteredPlaylist = isFavortiteListType
-      ? newFlattenedPlaylist.filter((item) => item.isFav)
-      : newFlattenedPlaylist;
+    // await Promise.all(
+    //   updatedSongs.map((song) =>
+    //     PlaylistV2.updateOne(
+    //       { _id: song._id },
+    //       {
+    //         $set: {
+    //           sortOrder: song.sortOrder,
+    //           isFixed:
+    //             song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+    //         },
+    //       }
+    //     )
+    //   )
+    // );
+
+    // const newFlattenedPlaylist = flattenPlaylist(
+    //   await PlaylistV2.aggregate(songFromPlaylist)
+    // );
+
+    // const filteredPlaylist = isFavortiteListType
+    //   ? newFlattenedPlaylist.filter((item) => item.isFav)
+    //   : newFlattenedPlaylist;
 
     const response = new ResponseModel(
       true,
@@ -659,8 +674,8 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       {
         message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
         player: playerToAssign,
-        isFirstTimeFetched: result?.length > 0 ? false : true,
-        playlist: filteredPlaylist,
+        song: foundSong,
+        playlistCount: playlistCount,
       }
     );
     res.status(200).json(response);
@@ -784,6 +799,106 @@ export const getSongsFromPlaylistV2 = async (req, res, next) => {
   //     isFirstTimeFetched,
   //   })
   // );
+};
+
+export const getSongsForTableViewV2 = async (req, res, next) => {
+  const { id: deviceId, firstFetch } = req?.body;
+
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
+
+  const playlist = await PlaylistV2.aggregate(songsForTableViewV2);
+  const votList = await Vote.find({ customerId: deviceId }).lean();
+  const voteLookup = votList.reduce((acc, vote) => {
+    acc[vote.playlistItemId?.toString()] = vote.isUpVote;
+    return acc;
+  }, {});
+
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => {
+      const vote = voteLookup[item._id?.toString()];
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec: item.songData.introSec,
+        songDuration: item.songData.songDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: vote !== undefined ? vote : item.upVote,
+
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item.sortByMaster,
+        addByCustomer: item.addByCustomer,
+        isFixed: item?.isFixed,
+      };
+    });
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+
+  const finalPlaylist = playlistAlgorithm(
+    firstFetch ?? isFirstTimeFetched,
+    flattenedPlaylist
+  );
+
+  const updatedSongs = finalPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+
+  await Promise.all(
+    updatedSongs.map((song) =>
+      PlaylistV2.updateOne(
+        { _id: song._id },
+        {
+          $set: {
+            sortOrder: song.sortOrder,
+            isFixed:
+              song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+          },
+        }
+      )
+    )
+  );
+
+  let newFlattenedPlaylist = flattenPlaylist(
+    await PlaylistV2.aggregate(songsForTableViewV2)
+  );
+
+  if (isFavortiteListType) {
+    newFlattenedPlaylist = newFlattenedPlaylist.filter((item) => item.isFav);
+  }
+
+  const isFixedItems = newFlattenedPlaylist?.filter(
+    (item) => item?.isFixed == true
+  );
+
+  const isNotFixedItems = newFlattenedPlaylist?.filter(
+    (item) => !item?.isFixed
+  );
+
+  res.status(200).json(
+    new ResponseModel(true, "Songs fetched successfully.", {
+      list: newFlattenedPlaylist,
+      isFavortiteListType,
+      isFirstTimeFetched,
+      isFixedItems: isFixedItems,
+      isNotFixed: isNotFixedItems,
+    })
+  );
 };
 
 export const addSongsToPlaylistV2 = async (req, res, next) => {

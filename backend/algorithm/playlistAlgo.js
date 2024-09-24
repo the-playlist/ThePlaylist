@@ -67,12 +67,8 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     }
   }
 
-  const lastPlayerFromFirstTwo = firstTwoSongs
-    ? firstTwoSongs[1]?.playerName
-    : null;
-  const lastCategoryFromFirstTwo = firstTwoSongs
-    ? firstTwoSongs[1]?.category
-    : null;
+  const lastPlayerFromFirstTwo = songs ? songs[1]?.playerName : null;
+  const lastCategoryFromFirstTwo = songs ? songs[1]?.category : null;
 
   let lastCategory = lastCategoryFromFirstTwo;
 

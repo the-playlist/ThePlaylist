@@ -17,6 +17,7 @@ const endPoints = {
   GET_SONGS_FROM_PLAYLIST:
     "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
+  ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
   UPDATE_PLAYERNAME_PLAYLIST: "api/playlist/updatePlayerName",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   DELETE_SONG_FROM_PLAYLISTV2: "api/playlist/deleteSongFromPlaylistById-v2?id=",
@@ -27,6 +28,7 @@ const endPoints = {
   DELETE_ALL_SONGS_PLAYLIST_V2: "api/playlist/deleteAllSongsFromPlaylist-v2",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView",
+  GET_TABLE_VIEW_SONGS_V2: "api/playlist/getSongsForTableView-v2",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList?reportType=",
   CHANGE_PASSWORD: "api/auth/changePassword",
   CREATE_STREAM_USER: "api/stream/createStreamUser",
@@ -114,6 +116,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    getTableViewSongsV2: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.GET_TABLE_VIEW_SONGS_V2,
+        method: "POST",
+        body: body,
+      }),
+    }),
     disbaleSongFromSongBank: builder.mutation({
       query: (body: any) => ({
         url: endPoints.DISABLE_SONG,
@@ -187,6 +196,13 @@ export const emptySplitApi = createApi({
     addUpdatePlayer: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_PLAYER,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    addSongsToPlaylistV2: builder.mutation({
+      query: (body) => ({
+        url: endPoints.ADD_SONGS_TO_PLAYLIST_V2,
         method: "POST",
         body: body,
       }),
@@ -352,4 +368,6 @@ export const {
   useLazyGetSongsFromPlaylistV2Query,
   useDeleteSongFromPlaylistByIdV2Mutation,
   useDeleteAllSongsFromPlaylistV2Mutation,
+  useAddSongsToPlaylistV2Mutation,
+  useGetTableViewSongsV2Mutation,
 } = emptySplitApi;

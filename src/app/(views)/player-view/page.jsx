@@ -6,6 +6,7 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 
 import {
   useLazyGetSongsFromPlaylistQuery,
+  useLazyGetSongsFromPlaylistV2Query,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
@@ -16,7 +17,7 @@ import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
-  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
+  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -44,30 +45,17 @@ const PerformerView = () => {
     socket.connect();
 
     socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+      const { playlist } = item;
       setPerformers([...playlist]);
-    });
-    socket.on("handleDragRes", (item) => {
-      const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
-    });
-    socket.on("bufferTimeRes", (item) => {
-      setTimerRunning(false);
-      const { time } = item;
-      setSeconds(time);
-      setTimerRunning(true);
     });
 
-    socket.on("startIntroSecondsResponse", (item) => {
-      setShowCountDown(true);
-    });
-    socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+    socket.on("favoriteSongRes", (item) => {
+      const { playlist } = item;
       setPerformers([...playlist]);
     });
+
     socket.on("playerViewRes", (item) => {
-      const { playlist, isFirst } = item;
-      localStorage.setItem("isFirstTimeFetched", isFirst);
+      const { playlist } = item;
 
       setPerformers([...playlist]);
     });
@@ -80,10 +68,7 @@ const PerformerView = () => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-    socket.on("undoFavRes", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
+
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
@@ -152,11 +137,10 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
-        const list = response?.data?.content?.playlist;
-        if (list?.length == 0) {
-          localStorage.setItem("isFirstTimeFetched", true);
-        }
-        setPerformers(list);
+        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
+          response?.data?.content;
+
+        setPerformers(completeList);
       }
       setLoading(false);
     } catch (error) {

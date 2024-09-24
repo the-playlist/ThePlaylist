@@ -246,7 +246,6 @@ export function PlaylistSongItem({
           <div className="flex items-center justify-end ">
             {index === 0 && (
               <SongCountdownTimer
-                socket={socket}
                 orignalSongDuration={songDuration}
                 setShowCountDown={(value) => {
                   if (initialSongPlaylist) {
@@ -288,7 +287,7 @@ export function PlaylistSongItemV2({
   revertCrownhandler,
   deleteSongFromPlaylistHandler,
   socket,
-  setShowCountDown,
+
   playlistSongList,
   item,
   dragHandleProps,
@@ -323,8 +322,7 @@ export function PlaylistSongItemV2({
   } = item || {};
 
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
-  const isMoreThanOneQualifiedPlayers =
-    item?.qualifiedPlayers.length > 1 && index > 1;
+  const isMoreThanOneQualifiedPlayers = item?.qualifiedPlayers.length > 1;
 
   const isUpvoteOrDownVote = upVote > 0 || downVote > 0;
 
@@ -438,13 +436,7 @@ export function PlaylistSongItemV2({
           </div>
         </div>
         <div className={`w-2/12 flex items-center justify-center `}>
-          <div
-            className={` ${
-              index > 1 ? "bg-[#F7F7F7]" : "bg-white"
-            } rounded-3xl px-5 py-2`}
-          >
-            {category}
-          </div>
+          <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>{category}</div>
         </div>
         <div className="w-1/12">
           <div className="flex items-center justify-end ">

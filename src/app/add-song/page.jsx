@@ -114,14 +114,13 @@ const Typeahead = () => {
         addByCustomer: true,
       });
       if (response && !response.error) {
-        const { isFirstTimeFetched, playlist } = response?.data?.content;
-        localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
+        const { song, playlistCount } = response?.data?.content;
         toast.success(response?.data?.description);
         setInputValue("");
         setSelectedSong(null);
         socket.emit("songAddByCustomerReq", {
-          isFirst: isFirstTimeFetched,
-          playlist: playlist,
+          song: song,
+          playlistCount: playlistCount,
         });
         router.back();
       } else {

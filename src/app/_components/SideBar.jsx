@@ -108,32 +108,32 @@ const SideBar = () => {
   };
 
   let intervalId = 0;
-  useEffect(() => {
-    // RetrieveTIMERvalue from localStorage on component mount
-    if (pathname != "/playlist") {
-      if (parseInt(currentSongSecond) === 0) {
-        deleteSongFromPlaylistHandler(currentSong.id);
-      }
-      if (currentSongSecond) {
-        dispatch(setCurrentSongSecond(parseInt(currentSongSecond)));
-      } else {
-        dispatch(setCurrentSongSecond(0));
-      }
+  // useEffect(() => {
+  //   // RetrieveTIMERvalue from localStorage on component mount
+  //   if (pathname != "/playlist-v2") {
+  //     if (parseInt(currentSongSecond) === 0) {
+  //       deleteSongFromPlaylistHandler(currentSong.id);
+  //     }
+  //     if (currentSongSecond) {
+  //       dispatch(setCurrentSongSecond(parseInt(currentSongSecond)));
+  //     } else {
+  //       dispatch(setCurrentSongSecond(0));
+  //     }
 
-      if (playingState) {
-        intervalId = setInterval(() => {
-          if (currentSongSecond > 0) {
-            dispatch(setCurrentSongSecond((currentSongSecond - 1).toString()));
-          } else {
-            clearInterval(intervalId);
-          }
-        }, 1000);
-      } else {
-        clearInterval(intervalId);
-      }
-    }
-    return () => clearInterval(intervalId); // Cleanup on unmount
-  }, [currentSongSecond, playingState, pathname]); // Re-run useEffect when secondsRemaining changes
+  //     if (playingState) {
+  //       intervalId = setInterval(() => {
+  //         if (currentSongSecond > 0) {
+  //           dispatch(setCurrentSongSecond((currentSongSecond - 1).toString()));
+  //         } else {
+  //           clearInterval(intervalId);
+  //         }
+  //       }, 1000);
+  //     } else {
+  //       clearInterval(intervalId);
+  //     }
+  //   }
+  //   return () => clearInterval(intervalId); // Cleanup on unmount
+  // }, [currentSongSecond, playingState, pathname]); // Re-run useEffect when secondsRemaining changes
 
   const changePlayingState = () => {
     dispatch(setPlayingState(!playingState));

@@ -5,6 +5,7 @@ import { MdClear } from "react-icons/md";
 import _ from "lodash";
 import {
   useAddSongsToPlaylistMutation,
+  useAddSongsToPlaylistV2Mutation,
   useLazyGetAssignSongsWithPlayersQuery,
   useLazyGetLimitByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
@@ -97,7 +98,7 @@ const SelectSongModal = ({
   }, [openModal]);
 
   const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
-    useAddSongsToPlaylistMutation();
+    useAddSongsToPlaylistV2Mutation();
 
   useEffect(() => {
     getLimitByTitleHandler();

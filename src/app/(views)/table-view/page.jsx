@@ -10,6 +10,7 @@ import {
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
   useGetTableViewSongsMutation,
+  useGetTableViewSongsV2Mutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
@@ -35,7 +36,7 @@ const TableView = () => {
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
   const [getPlaylistSongTableView, { isLoading: getSongsLoader }] =
-    useGetTableViewSongsMutation();
+    useGetTableViewSongsV2Mutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -93,9 +94,7 @@ const TableView = () => {
       fetchPlaylistSongList(isFirst);
     });
     socket.on("voteCastingResponse", (item) => {
-      const { isFirst } = item;
-      localStorage.setItem("isFirstTimeFetched", isFirst);
-      fetchPlaylistSongList(isFirst);
+      fetchPlaylistSongList(false);
     });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
@@ -112,10 +111,7 @@ const TableView = () => {
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
     });
-    socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
-      setVotingList(playlist);
-    });
+
     socket.on("handleDragRes", (item) => {
       const { playlist, isFirst } = item;
       setVotingList([...playlist]);
@@ -131,6 +127,10 @@ const TableView = () => {
     socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
+    });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setVotingList(playlist);
     });
     socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
@@ -180,11 +180,9 @@ const TableView = () => {
       let response = await getPlaylistSongTableView(payload);
       if (response && !response.isError) {
         const { list, isFirstTimeFetched } = response?.data?.content;
+        console.log("==>", list);
         setPerformers(list || []);
         setVotingLoader(false);
-        if (list?.length == 0) {
-          localStorage.setItem("isFirstTimeFetched", true);
-        }
       }
       setLoading(false);
     } catch (error) {
