@@ -92,6 +92,11 @@ const page = () => {
     (state) => state?.playlistReducer?.checkIsFixed
   );
 
+  const initialSongPlaylist_ = useSelector(
+    (state) => state?.playlistReducer?.initialSongPlaylist
+  );
+  const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
+
   useEffect(() => {
     if (isOnline) {
       const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -389,7 +394,7 @@ const page = () => {
       }
     }
     if (response && !response.error) {
-      fetchPlaylistSongList();
+      // fetchPlaylistSongList();
 
       toast(response?.data?.description);
     } else {

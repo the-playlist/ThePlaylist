@@ -398,7 +398,7 @@ export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
   }
   await PlaylistV2.findByIdAndUpdate(
     id,
-    { isDeleted: isDeleted },
+    { isDeleted: isDeleted, isFixed: false },
     { new: true }
   );
   const activeSongs = await PlaylistV2.find({ isDeleted: false });
@@ -412,6 +412,25 @@ export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
       }
     );
   }
+  const updatedSongs = activeSongs.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+  await Promise.all(
+    updatedSongs.map((song) =>
+      PlaylistV2.updateOne(
+        { _id: song._id },
+        {
+          $set: {
+            sortOrder: song.sortOrder,
+            isFixed:
+              song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+          },
+        }
+      )
+    )
+  );
+
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

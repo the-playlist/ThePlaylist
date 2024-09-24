@@ -5,7 +5,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
 
   //separate song adjust by master
   const flattenedRemainingPlaylist = flattenedPlaylist.filter(
-    (song) => !song.sortByMaster && !song.isFixed
+    (song) => !song.sortByMaster
   );
 
   // Filter out songs that are not fixed (i.e., apply algorithm only to non-fixed songs)
@@ -15,11 +15,17 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
   const fixedSongs = flattenedPlaylist.filter((song) => song.isFixed);
 
   // Sort non-fixed songs by sortOrder initially
-  flattenedRemainingPlaylist.sort((a, b) => a.sortOrder - b.sortOrder);
+  nonFixedSongs.sort((a, b) => a.sortOrder - b.sortOrder);
 
+  const remainingSongs = flattenedPlaylist
+    .slice(2)
+    .filter((song) => !song.sortByMaster);
+
+  remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    flattenedRemainingPlaylist
+    fixedSongs?.length == 0 ? flattenedRemainingPlaylist : nonFixedSongs,
+    fixedSongs
   );
 
   // Create a map to store sortByMaster songs with their original sortOrder
@@ -47,6 +53,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
       }
     }
   }
+
   return finalPlaylist;
 }
 
@@ -67,8 +74,12 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
     }
   }
 
-  const lastPlayerFromFirstTwo = songs ? songs[1]?.playerName : null;
-  const lastCategoryFromFirstTwo = songs ? songs[1]?.category : null;
+  const lastPlayerFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
+    : null;
+  const lastCategoryFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[firstTwoSongs?.length - 1]?.category
+    : null;
 
   let lastCategory = lastCategoryFromFirstTwo;
 
