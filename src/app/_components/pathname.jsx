@@ -10,7 +10,7 @@ import {
 export const navlinks = [
   {
     name: "Playlist",
-    href: "/playlist",
+    href: "/playlist-v2",
     icon: (isActive) => <PlaylistIcon color={isActive ? "#EFC440" : "#000"} />,
   },
   {

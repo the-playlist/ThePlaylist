@@ -74,6 +74,11 @@ const PerformerView = () => {
       setPerformers([...playlist]);
     });
 
+    socket.on("handleDragRes", (item) => {
+      const { playlist } = item;
+      setPerformers([...playlist]);
+    });
+
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {

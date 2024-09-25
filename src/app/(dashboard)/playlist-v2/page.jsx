@@ -280,7 +280,7 @@ const page = () => {
       if (response && !response?.isError) {
         const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
           response?.data?.content;
-        console.log("==>", isFixedItems, isNotFixed);
+
         const playlistWithId = isNotFixed?.map((item, index) => ({
           ...item,
           id: index, // Add a unique id if it doesn't exist
@@ -436,8 +436,6 @@ const page = () => {
   };
 
   const handleDragEnd = (result, source, destination, movedItem) => {
-    debugger;
-
     const sourceIndex = source;
     const destinationIndex = destination;
     if (sourceIndex != destinationIndex) {
@@ -448,6 +446,12 @@ const page = () => {
         ...result.slice(index + 1),
       ];
 
+      socket.emit("handleDragReq", {
+        isFirst: false,
+        playlist: [...fixedContent, ...updatedPlaylist],
+      });
+
+      setCompleteList([...fixedContent, ...updatedPlaylist]);
       setNonFixedContent([...updatedPlaylist]);
 
       const updatedArr = updatedPlaylist.map((item, index) => ({
@@ -461,9 +465,10 @@ const page = () => {
   };
   const updateSongsOrderHandler = async (payload) => {
     try {
-      await updateSortOrderApi({
+      const res = await updateSortOrderApi({
         songsList: payload,
       });
+      toast.success(res?.data?.description);
     } catch (error) {
       console.log(error);
     }
@@ -479,6 +484,7 @@ const page = () => {
     const response = await revertMasterCheckApi({
       item: item,
     });
+
     setCrownLoader(null);
     let updatedPlaylist = [...completeList];
     const updatedList = updateObjectInArray(updatedPlaylist, item);
@@ -487,12 +493,16 @@ const page = () => {
       ...item,
       id: index, // Add a unique id if it doesn't exist
     }));
-    const tempNonFixed = playlistWithId.filter((song) => !song.isFixed);
-    const tempFixed = playlistWithId.filter((song) => song.isFixed);
-    setFixedContent([...tempFixed]);
-    setNonFixedContent([...tempNonFixed]);
+    setCompleteList([...playlistWithId]);
 
-    setCompleteList(playlistWithId);
+    const tempNonFixed = playlistWithId.filter((song) => !song.isFixed);
+    // const tempFixed = playlistWithId.filter((song) => song.isFixed);
+    // setFixedContent([...tempFixed]);
+    setNonFixedContent([...tempNonFixed]);
+    socket.emit("handleDragReq", {
+      isFirst: false,
+      playlist: newList,
+    });
 
     toast.success(response?.data?.description);
   };
@@ -627,7 +637,7 @@ const page = () => {
       {isLoading ? (
         <CustomLoader />
       ) : (
-        <div className="flex flex-col flex-1">
+        <div className="flex-1 relative h-full ">
           <div
             className={`flex items-center ${
               fixedContent?.length > 0 ? "justify-between" : "justify-end"
@@ -687,7 +697,7 @@ const page = () => {
           {fixedContent?.length === 0 &&
             nonFixedContent?.length === 0 &&
             !getPlaylistSongListResponse.isFetching && (
-              <div className="flex items-center justify-center flex-1">
+              <div className="flex items-center justify-center flex-1 h-full">
                 <span className="text-black font-semibold">
                   Currently, there are no songs available in the playlist
                 </span>
@@ -769,7 +779,7 @@ const page = () => {
           <div
             id="scrollableContainer"
             ref={containerRef}
-            className="overflow-y-auto md:h-[50vh] h-[43vh]"
+            className="overflow-y-auto h-[calc(100vh-490px)]"
           >
             <DraggableList
               unsetZIndex={true}

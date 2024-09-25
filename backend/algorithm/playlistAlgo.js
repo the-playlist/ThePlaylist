@@ -3,9 +3,13 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
     isFirstTimeFetched = JSON.parse(isFirstTimeFetched);
   }
 
+  if (flattenedPlaylist?.length < 4) {
+    return flattenedPlaylist;
+  }
+
   //separate song adjust by master
   const flattenedRemainingPlaylist = flattenedPlaylist.filter(
-    (song) => !song.sortByMaster
+    (song) => !song.sortByMaster && !song.isFixed
   );
 
   // Filter out songs that are not fixed (i.e., apply algorithm only to non-fixed songs)
@@ -24,7 +28,7 @@ export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
   remainingSongs.sort((a, b) => a.sortOrder - b.sortOrder);
   // Apply algorithm to remaining songs (excluding first two and sortByMaster)
   const modifiedRemainingSongs = applySongSequenceAlgorithm(
-    fixedSongs?.length == 0 ? flattenedRemainingPlaylist : nonFixedSongs,
+    flattenedRemainingPlaylist,
     fixedSongs
   );
 

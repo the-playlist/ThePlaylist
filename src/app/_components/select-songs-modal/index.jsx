@@ -60,6 +60,10 @@ const SelectSongModal = ({
   isDuty,
   onReload,
 }) => {
+  const currentSongSecond = useSelector(
+    (state) => state?.playlistReducer?.currentSongSecond
+  );
+  const storedSeconds = parseInt(currentSongSecond);
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
   );
@@ -171,7 +175,13 @@ const SelectSongModal = ({
         closeModal();
         toast.success(response?.data?.description);
         onReload();
-        await fetchList(isFirstTimeFetched);
+        if (storedSeconds < 2) {
+          setTimeout(async () => {
+            await fetchList(isFirstTimeFetched);
+          }, 20000);
+        } else {
+          await fetchList(isFirstTimeFetched);
+        }
 
         setBtnLoader(false);
       }
