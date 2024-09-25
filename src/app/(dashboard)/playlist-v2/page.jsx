@@ -377,7 +377,7 @@ const page = () => {
     dispatch(setIsAdvanceTheQueeDisable(true));
     await removeItemById(id, isTrashPress);
 
-    if (playlistSongList?.length === 1) {
+    if (completeList?.length === 1) {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
@@ -387,7 +387,7 @@ const page = () => {
     });
     dispatch(setIsAdvanceTheQueeDisable(false));
     if (playingState == true && !isTrashPress) {
-      if (playlistSongList?.length > 1) {
+      if (completeList?.length > 1) {
         if (initialSongPlaylist) {
           dispatch(setPlayingState(false));
         }
@@ -436,6 +436,8 @@ const page = () => {
   };
 
   const handleDragEnd = (result, source, destination, movedItem) => {
+    debugger;
+
     const sourceIndex = source;
     const destinationIndex = destination;
     if (sourceIndex != destinationIndex) {
@@ -462,7 +464,6 @@ const page = () => {
       await updateSortOrderApi({
         songsList: payload,
       });
-      fetchPlaylistSongList();
     } catch (error) {
       console.log(error);
     }
@@ -566,6 +567,7 @@ const page = () => {
         await deleteSongByIdApi({
           id: lastAction?.data,
           isDeleted: false,
+          is,
         });
         socket.emit("undoActionRequest", {
           lastAction: lastAction?.data,
@@ -601,20 +603,38 @@ const page = () => {
     );
   };
 
+  const [height, setHeight] = useState("h-[50vh]");
+  const [emptyListHeight, setEmptyListHeight] = useState("h-[80vh]");
+  useEffect(() => {
+    const updateHeight = () => {
+      if (window.innerHeight <= 750) {
+        setHeight("h-[27vh]");
+      } else if (window.innerHeight > 750 && window.innerHeight <= 920) {
+        setHeight("h-[28vh]");
+      } else {
+        setHeight("h-[50vh]");
+      }
+    };
+
+    updateHeight(); // Set initial height
+    window.addEventListener("resize", updateHeight); // Update on resize
+
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
   return (
     <div className="h-full py-5 flex flex-col">
       {isLoading ? (
         <CustomLoader />
       ) : (
-        <>
+        <div className="flex flex-col flex-1">
           <div
             className={`flex items-center ${
               fixedContent?.length > 0 ? "justify-between" : "justify-end"
-            } items-center mx-1 `}
+            } mx-1`}
           >
             {(fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
               <button
-                // disabled={isAdvanceTheQueeDisable}
                 onClick={async () => {
                   await deleteSongFromPlaylistHandler(
                     fixedContent[0]?._id,
@@ -622,20 +642,20 @@ const page = () => {
                     true
                   );
                 }}
-                className="flex items-center hover:cursor-pointer bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4  lg:text-lg justify-center rounded-lg disabled:bg-gray-400 "
+                className="flex items-center bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer"
               >
                 <span className="mr-2">Advance the Queue</span>
                 <FaForward />
               </button>
             )}
-            <div className="flex flex-row  ">
+            <div className="flex flex-row">
               {!isFavSongs &&
                 (fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
                   <button
                     className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105"
                     onClick={() => setIsConfirmationPopup(true)}
                   >
-                    <span className="flex flex-row items-center">
+                    <span className="flex items-center">
                       <TbMusicX className="mr-2" />
                       Clear Songs
                     </span>
@@ -646,7 +666,6 @@ const page = () => {
                   fixedContent?.length > 0 ||
                   nonFixedContent?.length > 0) && (
                   <button
-                    // disabled={playingState}
                     onClick={toggleFavSongs}
                     className={`flex items-center hover:cursor-pointer border ${
                       !isFavSongs ? "border-black" : "border-top-queue-bg"
@@ -658,7 +677,7 @@ const page = () => {
                   >
                     {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
                     <span className="ml-2">
-                      {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+                      {isFavSongs ? "Back to Playlist" : "Play Favorite Songs"}
                     </span>
                   </button>
                 )}
@@ -666,18 +685,19 @@ const page = () => {
           </div>
 
           {fixedContent?.length === 0 &&
-            nonFixedContent?.length == 0 &&
+            nonFixedContent?.length === 0 &&
             !getPlaylistSongListResponse.isFetching && (
-              <div className={`flex items-center justify-center flex-1 `}>
-                <span className=" text-black font-semibold ">
-                  Currently there are no songs available in the playlist
+              <div className="flex items-center justify-center flex-1">
+                <span className="text-black font-semibold">
+                  Currently, there are no songs available in the playlist
                 </span>
               </div>
             )}
+
           {fixedContent?.length > 0 && (
-            <div className="text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+            <div className="text-base font-medium text-black text-center flex mt-10 mb-5 px-5">
               <div className="w-1/12"></div>
-              <div className="w-2/12 ">Title</div>
+              <div className="w-2/12">Title</div>
               <div className="w-1/12"></div>
               <div className="w-3/12">Player</div>
               <div className="w-2/12">Intro</div>
@@ -689,26 +709,20 @@ const page = () => {
           {fixedContent?.map((item, index) => {
             const {
               title,
-              upVote,
-              downVote,
               playerName,
               introSec,
               category,
               isFav,
-              sortOrder,
-              sortByMaster,
               songDuration,
             } = item || {};
 
             return (
               <div
                 key={index}
-                className={` text-center 
-             bg-top-queue-bg
-            shadow rounded-2xl h-20 flex items-center  px-5 mb-3 `}
+                className="text-center bg-top-queue-bg shadow rounded-2xl h-20 flex items-center px-5 mb-3"
               >
-                <div className="w-1/12 text-start font-extrabold text-lg ">
-                  <div className=" flex items-center justify-center  cursor-pointer">
+                <div className="w-1/12 text-start font-extrabold text-lg">
+                  <div className="flex items-center justify-center cursor-pointer">
                     {index + 1}
                   </div>
                 </div>
@@ -723,9 +737,9 @@ const page = () => {
                     {introSec || 0}
                   </div>
                 </div>
-                <div className={`w-2/12 flex items-center justify-center `}>
+                <div className="w-2/12 flex items-center justify-center">
                   <div
-                    className={` ${
+                    className={`${
                       index > 1 ? "bg-[#F7F7F7]" : "bg-white"
                     } rounded-3xl px-5 py-2`}
                   >
@@ -733,7 +747,7 @@ const page = () => {
                   </div>
                 </div>
                 <div className="w-1/12">
-                  <div className="flex items-center justify-end ">
+                  <div className="flex items-center justify-end">
                     {index === 0 && (
                       <SongCountdownTimer
                         orignalSongDuration={songDuration}
@@ -745,7 +759,7 @@ const page = () => {
                         isStart={playingState}
                       />
                     )}
-                    {isFav && <FaHeart className={`text-primary`} size={20} />}
+                    {isFav && <FaHeart className="text-primary" size={20} />}
                   </div>
                 </div>
               </div>
@@ -755,7 +769,7 @@ const page = () => {
           <div
             id="scrollableContainer"
             ref={containerRef}
-            className={`overflow-y-auto     md:h-[50vh] h-[43vh]`}
+            className="overflow-y-auto md:h-[50vh] h-[43vh]"
           >
             <DraggableList
               unsetZIndex={true}
@@ -774,9 +788,7 @@ const page = () => {
                     socket={socket}
                     loading={crownLoader}
                     setLoader={setCrownLoader}
-                    fetchSongsList={async () => {
-                      await fetchPlaylistSongList();
-                    }}
+                    fetchSongsList={fetchPlaylistSongList}
                     onUpdateItem={handleUpdateItem}
                   />
                 );
@@ -784,7 +796,7 @@ const page = () => {
               list={nonFixedContent}
               onMoveEnd={(newList, movedItem, oldIndex, newIndex) => {
                 // if (oldIndex != 0 && oldIndex != 1) {
-                // if (newIndex != 0 && newIndex != 1) {
+                //   if (newIndex != 0 && newIndex != 1) {
                 handleDragEnd(newList, oldIndex, newIndex, movedItem);
                 // }
                 // }
@@ -792,56 +804,50 @@ const page = () => {
               container={() => containerRef.current}
             />
           </div>
+
           {!isFavSongs && (
-            <div className="sticky bottom-0 w-full flex  z-10 items-center justify-center  bg-[#fafafa] gap-3">
+            <div className="sticky bottom-0 w-full flex z-10 items-center justify-center bg-[#fafafa] gap-3">
               <button
-                onClick={async () => {
-                  setSelectSongModal(true);
-                }}
-                className="flex text-base w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
+                onClick={() => setSelectSongModal(true)}
+                className="flex w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
               >
                 + Add a Song
               </button>
               <button
                 disabled={isUndoDisable}
                 onClick={onUndoPressHandler}
-                className={` w-full shadow-md text-base flex items-center bg-white ${
+                className={`w-full shadow-md text-base flex items-center bg-white ${
                   isUndoDisable &&
                   "bg-slate-200 cursor-not-allowed text-slate-400"
-                }   text-black font-bold py-3 px-4 rounded-md justify-center ${
+                } text-black font-bold py-3 px-4 rounded-md justify-center ${
                   !isUndoDisable && "hover:bg-active-tab"
                 }`}
               >
                 <IoArrowUndo />
                 <span className="ml-2">Undo Action</span>
               </button>
-              {selectSongModal && (
-                <SelectSongModal
-                  onReload={() => {
-                    setIsLoading(true);
-                  }}
-                  btnText={"Add"}
-                  title={"Select songs"}
-                  openModal={selectSongModal}
-                  fetchList={fetchPlaylistSongList}
-                  closeModal={() => {
-                    setSelectSongModal(false);
-                  }}
-                />
-              )}
-
-              {isConfirmationPopup && (
-                <ConfirmationPopup
-                  isLoading={deleteAllSongsResponse?.isLoading}
-                  title={"Are you sure to remove all songs from playlist?"}
-                  onYesPress={deleteAllSongsHandler}
-                  closeModal={() => setIsConfirmationPopup(false)}
-                  openModal={isConfirmationPopup}
-                />
-              )}
             </div>
           )}
-        </>
+          {selectSongModal && (
+            <SelectSongModal
+              onReload={() => setIsLoading(true)}
+              btnText="Add"
+              title="Select songs"
+              openModal={selectSongModal}
+              fetchList={fetchPlaylistSongList}
+              closeModal={() => setSelectSongModal(false)}
+            />
+          )}
+          {isConfirmationPopup && (
+            <ConfirmationPopup
+              isLoading={deleteAllSongsResponse?.isLoading}
+              title="Are you sure to remove all songs from playlist?"
+              onYesPress={deleteAllSongsHandler}
+              closeModal={() => setIsConfirmationPopup(false)}
+              openModal={isConfirmationPopup}
+            />
+          )}
+        </div>
       )}
     </div>
   );

@@ -6,7 +6,10 @@ import { HiOutlineArrowsUpDown } from "react-icons/hi2";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
 import { Loader, SongCountdownTimer } from "../../_components";
 import { useSelector } from "react-redux";
-import { useUpdatePlayerNamePlaylistMutation } from "@/app/_utils/redux/slice/emptySplitApi";
+import {
+  useUpdatePlayerNamePlaylistMutation,
+  useUpdatePlayerNamePlaylistV2Mutation,
+} from "@/app/_utils/redux/slice/emptySplitApi";
 
 const QualifiedPlayersDropdown = ({
   item,
@@ -17,6 +20,70 @@ const QualifiedPlayersDropdown = ({
   const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
   const [isLoading, setIsLoading] = useState(false);
   const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistMutation();
+  function generateObjectByPlayerId(record, playerId) {
+    const assignedPlayer = record?.qualifiedPlayers.find(
+      (player) => player.id == playerId
+    );
+    if (!assignedPlayer) {
+      return null;
+    }
+    return {
+      _id: assignedPlayer?.id,
+      playerName: assignedPlayer?.name,
+    };
+  }
+
+  return isLoading ? (
+    <Loader />
+  ) : (
+    <select
+      value={selectedId}
+      onChange={async (e) => {
+        e.preventDefault();
+        setIsLoading(true);
+        const value = generateObjectByPlayerId(item, e.target.value);
+        setSelectedId(value._id);
+        await updatePlayerNameAPI({
+          playlistItemId: item._id,
+          assignedPlayerID: value._id,
+        });
+        const updatedItem = {
+          ...item, // Spread the existing item
+          assignedPlayerId: value._id,
+          playerName: value.playerName,
+        };
+
+        // Call the provided callback to update the item in the parent or component state
+        onUpdateItem(updatedItem); // This function should handle the state update for 'item'
+
+        await onUpdateSongsList();
+        setIsLoading(false);
+
+        socket.emit("undoActionRequest", {
+          lastAction: null,
+          isFirst: false,
+        });
+      }}
+      className="select select-bordered w-auto max-w-xs focus:outline-none "
+    >
+      {item?.qualifiedPlayers?.map((item) => {
+        return (
+          <option key={item?.id} value={item?.id}>{`${item.name}`}</option>
+        );
+      })}
+    </select>
+  );
+};
+
+const QualifiedPlayersDropdownV2 = ({
+  item,
+  socket,
+  onUpdateSongsList,
+  onUpdateItem,
+}) => {
+  const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistV2Mutation();
   function generateObjectByPlayerId(record, playerId) {
     const assignedPlayer = record?.qualifiedPlayers.find(
       (player) => player.id == playerId
@@ -287,8 +354,6 @@ export function PlaylistSongItemV2({
   revertCrownhandler,
   deleteSongFromPlaylistHandler,
   socket,
-
-  playlistSongList,
   item,
   dragHandleProps,
   loading,
@@ -296,17 +361,6 @@ export function PlaylistSongItemV2({
   fetchSongsList,
   onUpdateItem,
 }) {
-  const currentSongSecond = useSelector(
-    (state) => state?.playlistReducer?.currentSongSecond
-  );
-  const initialSongPlaylist_ = useSelector(
-    (state) => state?.playlistReducer?.initialSongPlaylist
-  );
-  const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
-
-  const playingState = useSelector(
-    (state) => state?.playlistReducer?.playingState
-  );
   const {
     title,
     upVote,
@@ -418,7 +472,7 @@ export function PlaylistSongItemV2({
         </div>
         <div className="w-3/12 disable-select  " style={{ userSelect: "none" }}>
           {isMoreThanOneQualifiedPlayers ? (
-            <QualifiedPlayersDropdown
+            <QualifiedPlayersDropdownV2
               onUpdateSongsList={async () => {
                 await fetchSongsList();
               }}

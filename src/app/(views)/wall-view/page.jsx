@@ -100,6 +100,10 @@ const WallView = () => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);

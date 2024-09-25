@@ -19,6 +19,7 @@ const endPoints = {
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
   ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
   UPDATE_PLAYERNAME_PLAYLIST: "api/playlist/updatePlayerName",
+  UPDATE_PLAYERNAME_PLAYLIST_V2: "api/playlist/updatePlayerName-v2",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
   DELETE_SONG_FROM_PLAYLISTV2: "api/playlist/deleteSongFromPlaylistById-v2?id=",
   DISABLE_SONG: "api/songs/disableSongStatus",
@@ -242,6 +243,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    updatePlayerNamePlaylistV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.UPDATE_PLAYERNAME_PLAYLIST_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
     deletePlayerById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_PLAYER}${body}`,
@@ -370,4 +378,5 @@ export const {
   useDeleteAllSongsFromPlaylistV2Mutation,
   useAddSongsToPlaylistV2Mutation,
   useGetTableViewSongsV2Mutation,
+  useUpdatePlayerNamePlaylistV2Mutation,
 } = emptySplitApi;

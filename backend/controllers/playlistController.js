@@ -31,6 +31,21 @@ export const updatePlayerName = async (req, res, next) => {
   );
   res.status(200).json(response);
 };
+
+export const updatePlayerNameV2 = async (req, res, next) => {
+  const playlistItemId = req.body.playlistItemId;
+  const assignedPlayerId = req.body.assignedPlayerID;
+  await PlaylistV2.findByIdAndUpdate(playlistItemId, {
+    assignedPlayer: assignedPlayerId,
+  });
+  const response = new ResponseModel(
+    true,
+    "Player Name updated  playlist successfully.",
+    null
+  );
+  res.status(200).json(response);
+};
+
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
   const playlistCount = result?.length;

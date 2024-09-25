@@ -80,6 +80,10 @@ const PerformerView = () => {
         getThemeByTitleHandler(title);
       }
     });
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
 
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
