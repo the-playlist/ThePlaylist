@@ -677,13 +677,14 @@ const page = () => {
                   nonFixedContent?.length > 0) && (
                   <button
                     onClick={toggleFavSongs}
+                    disabled={playingState}
                     className={`flex items-center hover:cursor-pointer border ${
                       !isFavSongs ? "border-black" : "border-top-queue-bg"
                     }  ${
                       !isFavSongs
                         ? "hover:bg-black hover:text-white text-black"
                         : "text-top-queue-bg"
-                    }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                    }   font-bold py-3 px-4 lg:text-xl justify-center rounded  disabled:bg-gray-400`}
                   >
                     {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
                     <span className="ml-2">
