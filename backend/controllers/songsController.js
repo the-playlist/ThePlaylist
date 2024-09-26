@@ -3,6 +3,10 @@ import Players from "../models/players";
 import Songs from "../models/songs";
 import ResponseModel from "./responseModel";
 import Playlist from "../models/playlist";
+import { songFromPlaylist } from "../aggregation/playlist";
+import { convertTimeToSeconds, formatTime } from "@/app/_utils/helper";
+import PlaylistType from "../models/playlistType";
+import { SETTING_ID } from "./playlistController";
 
 export const addUpdateSong = async (req, res, next) => {
   const id = req?.body?.id;
@@ -469,6 +473,54 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
       ];
 
       data = await Songs.aggregate(pipeline);
+      const { isFavortiteListType } = await PlaylistType.findOne({
+        _id: SETTING_ID,
+      }).lean();
+      const playlist = await Playlist.aggregate(songFromPlaylist);
+      const flattenPlaylist = (playlist) =>
+        playlist.map((item) => {
+          const duration = convertTimeToSeconds(item?.songData?.songDuration);
+          const introSec = item?.songData?.introSec || 0;
+          const totalDuration = formatTime(duration + parseInt(introSec));
+
+          return {
+            _id: item._id,
+            playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+            assignedPlayerId: item.assignedPlayer?._id,
+            qualifiedPlayers: item?.qualifiedPlayers,
+            songId: item.songData._id,
+            title: item.songData.title,
+            artist: item.songData.artist,
+            introSec,
+            songDuration: totalDuration,
+            isFav: item.songData.isFav,
+            dutyStatus: item?.assignedPlayer?.duty?.status,
+            category: item.songData.category,
+            tableUpVote: item.upVote,
+            tableDownVote: item.downVote,
+            upVote: item.upVoteCount,
+            downVote: item.downVoteCount,
+            sortOrder: item.sortOrder,
+            sortByMaster: item?.sortByMaster,
+            addByCustomer: item.addByCustomer,
+          };
+        });
+
+      let flattenedPlaylist = flattenPlaylist(playlist);
+
+      if (isFavortiteListType) {
+        flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+      }
+
+      const firstTwoSongs = flattenedPlaylist?.filter(
+        (song, index) =>
+          song.sortOrder === 0 ||
+          song.sortOrder === 1 ||
+          index == 0 ||
+          index == 1
+      );
+      const titlesToRemove = firstTwoSongs?.map((song) => song.title);
+      data = data?.filter((song) => !titlesToRemove.includes(song.title));
     }
 
     const response = new ResponseModel(

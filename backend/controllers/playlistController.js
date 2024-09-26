@@ -379,6 +379,51 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
       }
     );
   }
+  const playlist = await Playlist.aggregate(songFromPlaylist);
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => {
+      const duration = convertTimeToSeconds(item?.songData?.songDuration);
+      const introSec = item?.songData?.introSec || 0;
+      const totalDuration = formatTime(duration + parseInt(introSec));
+
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        qualifiedPlayers: item?.qualifiedPlayers,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec,
+        songDuration: totalDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: item.upVote,
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item?.sortByMaster,
+        addByCustomer: item.addByCustomer,
+      };
+    });
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  const updatedSongs = flattenedPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+
+  await Promise.all(
+    updatedSongs.map((song) =>
+      Playlist.updateOne(
+        { _id: song._id },
+        { $set: { sortOrder: song.sortOrder } }
+      )
+    )
+  );
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };

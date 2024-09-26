@@ -148,6 +148,9 @@ const page = () => {
         ...item,
         id: index, // Add a unique id if it doesn't exist
       }));
+      if (playlistWithId?.length > 0) {
+        setIsFavExist(playlistWithId?.filter((item) => item?.isFav));
+      }
       setPlaylistSongList([...playlistWithId]);
     });
     socket.on("undoFavRes", (item) => {
@@ -161,6 +164,7 @@ const page = () => {
         ...item,
         id: index, // Add a unique id if it doesn't exist
       }));
+
       setPlaylistSongList([...playlistWithId]);
     });
     socket.on("disconnect", async (reason) => {
@@ -490,6 +494,7 @@ const page = () => {
       dispatch(setPlayingState(false));
       dispatch(setSongsListUpdate());
       setPlaylistSongList([]);
+      setIsFavExist([]);
       socket.emit("emptyPlaylistRequest", {
         isFirst: true,
         playlist: [],
@@ -604,25 +609,24 @@ const page = () => {
                   </span>
                 </button>
               )}
-              {isFavExist?.length > 0 &&
-                (isFavSongs || playlistSongList?.length > 0) && (
-                  <button
-                    disabled={playlistSongList?.length == 0}
-                    onClick={toggleFavSongs}
-                    className={`flex items-center hover:cursor-pointer border ${
-                      !isFavSongs ? "border-black" : "border-top-queue-bg"
-                    }  ${
-                      !isFavSongs
-                        ? "hover:bg-black hover:text-white text-black"
-                        : "text-top-queue-bg"
-                    }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
-                  >
-                    {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
-                    <span className="ml-2">
-                      {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
-                    </span>
-                  </button>
-                )}
+              {isFavExist?.length > 0 && (
+                <button
+                  disabled={playingState}
+                  onClick={toggleFavSongs}
+                  className={`flex items-center hover:cursor-pointer border ${
+                    !isFavSongs ? "border-black" : "border-top-queue-bg"
+                  }  ${
+                    !isFavSongs
+                      ? "hover:bg-black hover:text-white text-black"
+                      : "text-top-queue-bg"
+                  }   font-bold py-3 px-4 lg:text-xl justify-center rounded`}
+                >
+                  {isFavSongs ? <IoArrowBackOutline /> : <FaHeart />}
+                  <span className="ml-2">
+                    {isFavSongs ? "Back to Playlist" : "Play Favorite songs"}
+                  </span>
+                </button>
+              )}
             </div>
           </div>
 
