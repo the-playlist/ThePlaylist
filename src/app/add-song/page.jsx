@@ -25,6 +25,13 @@ const Typeahead = () => {
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
+  const [songDetail, setSongDetail] = useState({
+    title: "",
+    playerName: "",
+    duration: 0,
+    playingState: false,
+    id: null,
+  });
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -50,6 +57,17 @@ const Typeahead = () => {
     socket.on("RemoveSongFromPlaylistResponse", (item) => {
       fetchSongsList();
     });
+    socket.on("remainingTimeRes", (item) => {
+      const { duration, currentSongDetail, playingState } = item;
+      setSongDetail({
+        title: currentSongDetail?.title,
+        playerName: currentSongDetail?.player,
+        duration: duration,
+        playingState: playingState,
+        id: currentSongDetail?.id,
+      });
+    });
+
     socket.connect();
     setSocket(socket);
   }, []);
@@ -123,6 +141,7 @@ const Typeahead = () => {
       let response = await addSongToPlaylistByUserApi({
         songId: id,
         addByCustomer: true,
+        songDetail: songDetail,
       });
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;

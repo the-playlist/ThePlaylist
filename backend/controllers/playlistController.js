@@ -12,6 +12,7 @@ import Players from "../models/players";
 import mongoose from "mongoose";
 import { convertTimeToSeconds, formatTime } from "../utils/helper";
 import { playlistAlgorithm } from "../algorithm/playlistAlgo";
+import { flattenPlaylist } from "./helper";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 
@@ -520,12 +521,7 @@ function calculateExpirationTime() {
   return tomorrowDate;
 }
 
-export const addSongToPlaylistByCustomer = async (req, res) => {
-  const { songId, addByCustomer } = req.body;
-  const result = await Playlist.find({ isDeleted: false });
-  if (!songId) {
-    return res.status(400).json({ message: "Song ID is required" });
-  }
+const addSongHandler = async (songId, addByCustomer, result, res) => {
   const players = await Players.aggregate([
     {
       $match: {
@@ -610,35 +606,6 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       _id: SETTING_ID,
     }).lean();
 
-    const flattenPlaylist = (playlist) =>
-      playlist.map((item) => {
-        const duration = convertTimeToSeconds(item?.songData?.songDuration);
-        const introSec = item?.songData?.introSec || 0;
-        const totalDuration = formatTime(duration + parseInt(introSec));
-
-        return {
-          _id: item._id,
-          playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-          assignedPlayerId: item.assignedPlayer?._id,
-          qualifiedPlayers: item?.qualifiedPlayers,
-          songId: item.songData._id,
-          title: item.songData.title,
-          artist: item.songData.artist,
-          introSec,
-          songDuration: totalDuration,
-          isFav: item.songData.isFav,
-          dutyStatus: item?.assignedPlayer?.duty?.status,
-          category: item.songData.category,
-          tableUpVote: item.upVote,
-          tableDownVote: item.downVote,
-          upVote: item.upVoteCount,
-          downVote: item.downVoteCount,
-          sortOrder: item.sortOrder,
-          sortByMaster: item?.sortByMaster,
-          addByCustomer: item.addByCustomer,
-        };
-      });
-
     let flattenedPlaylist = flattenPlaylist(list);
     if (isFavortiteListType) {
       flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
@@ -687,6 +654,35 @@ export const addSongToPlaylistByCustomer = async (req, res) => {
       message: "No players available to assign the song",
       players,
     });
+  }
+};
+
+export const addSongToPlaylistByCustomer = async (req, res) => {
+  const { songId, addByCustomer, songDetail } = req.body;
+  const result = await Playlist.aggregate(songFromPlaylist);
+  const flattenedPlaylist = flattenPlaylist(result);
+  const songAtTop = flattenedPlaylist
+    ?.filter((song, index) => index == 0)
+    .map((song) => song.songId);
+
+  if (!songId) {
+    return res.status(400).json({ message: "Song ID is required" });
+  }
+  const isEqual = songAtTop.toString() === songId;
+
+  const delay = songDetail?.duration + 1;
+  const timeout = delay * 1000;
+
+  if (
+    isEqual &&
+    songDetail?.playingState == true &&
+    songDetail?.duration < delay
+  ) {
+    setTimeout(() => {
+      return addSongHandler(songId, addByCustomer, result, res);
+    }, timeout);
+  } else {
+    return addSongHandler(songId, addByCustomer, result, res);
   }
 };
 

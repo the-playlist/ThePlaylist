@@ -32,7 +32,9 @@ const SongCountdownTimer = ({
     (state) => state?.playlistReducer?.initialSongPlaylist
   );
   const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
-
+  const currentSongDetail = useSelector(
+    (state) => state?.playlistReducer?.currentSong
+  );
   useEffect(() => {
     if (isStart) {
       if (duration == 0) {
@@ -41,7 +43,15 @@ const SongCountdownTimer = ({
         return;
       }
       timer = setInterval(() => {
-        dispatch(setCurrentSongSecond(parseInt(duration) - 1));
+        const remainingTime = parseInt(duration) - 1;
+        dispatch(setCurrentSongSecond(remainingTime));
+        if (remainingTime < 3) {
+          socket.emit("remainingTimeReq", {
+            duration: duration,
+            currentSongDetail: currentSongDetail,
+            playingState: playingState,
+          });
+        }
       }, 1000);
     } else {
       clearInterval(timer);
