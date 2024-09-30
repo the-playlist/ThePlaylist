@@ -253,7 +253,64 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
   if (keyword) {
     data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
   } else {
+    // let pipeline = [
+    //   {
+    //     $lookup: {
+    //       from: "players",
+    //       localField: "_id",
+    //       foreignField: "assignSongs",
+    //       as: "assignedPlayers",
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$assignedPlayers",
+    //   },
+    //   {
+    //     $match: {
+    //       "assignedPlayers.duty.status": true,
+    //       $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
+    //     },
+    //   },
+    //   {
+    //     $group: {
+    //       _id: "$_id",
+    //       isFav: { $first: "$isFav" },
+    //       title: { $first: "$title" },
+    //       artist: { $first: "$artist" },
+    //       introSec: { $first: "$introSec" },
+    //       songDuration: { $first: "$songDuration" },
+    //       category: { $first: "$category" },
+    //       assignedPlayers: {
+    //         $push: {
+    //           _id: "$assignedPlayers._id",
+    //           playerName: {
+    //             $concat: [
+    //               "$assignedPlayers.firstName",
+    //               " ",
+    //               "$assignedPlayers.lastName",
+    //             ],
+    //           },
+    //         },
+    //       },
+    //     },
+    //   },
+    //   // Add this stage to flag comedy songs
+    //   {
+    //     $addFields: {
+    //       isComedy: { $eq: ["$category", "Comedy"] },
+    //     },
+    //   },
+    //   // Sort with comedy songs at the bottom
+    //   {
+    //     $sort: {
+    //       isComedy: 1, // Non-comedy songs first
+    //       title: 1, // Then sort by title if needed
+    //     },
+    //   },
+    // ];
+
     let pipeline = [
+      // Lookup players and unwind
       {
         $lookup: {
           from: "players",
@@ -265,12 +322,14 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
       {
         $unwind: "$assignedPlayers",
       },
+      // Filter only on-duty players
       {
         $match: {
           "assignedPlayers.duty.status": true,
           $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
         },
       },
+      // Group by song and push assigned players
       {
         $group: {
           _id: "$_id",
@@ -294,7 +353,36 @@ export const getOnDutyAssignSongs = async (req, res, next) => {
           },
         },
       },
-      // Add this stage to flag comedy songs
+      // Lookup playlist information
+      {
+        $lookup: {
+          from: "playlists",
+          localField: "_id",
+          foreignField: "songData",
+          as: "playlist_info",
+        },
+      },
+      // Add a field to count playlist entries where isDeleted is false
+      {
+        $addFields: {
+          playlistPlayers: {
+            $size: {
+              $filter: {
+                input: "$playlist_info",
+                as: "playlistItem",
+                cond: { $eq: ["$$playlistItem.isDeleted", false] },
+              },
+            },
+          },
+        },
+      },
+      // Filter out songs that are already in the playlist (playlistPlayers > 0)
+      {
+        $match: {
+          playlistPlayers: { $eq: 0 }, // Only return songs that are not in the playlist
+        },
+      },
+      // Flag comedy songs
       {
         $addFields: {
           isComedy: { $eq: ["$category", "Comedy"] },
@@ -384,6 +472,93 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
     if (keyword) {
       data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
     } else {
+      // let pipeline = [
+      //   // Lookup players and unwind
+      //   {
+      //     $lookup: {
+      //       from: "players",
+      //       localField: "_id",
+      //       foreignField: "assignSongs",
+      //       as: "player_info",
+      //     },
+      //   },
+      //   {
+      //     $unwind: "$player_info",
+      //   },
+      //   // Add fields for player duty status
+      //   {
+      //     $addFields: {
+      //       duty: "$player_info.duty",
+      //     },
+      //   },
+      //   // Filter only on-duty players
+      //   {
+      //     $match: {
+      //       "duty.status": true,
+      //       $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
+      //     },
+      //   },
+      //   // Group by song and count the total players
+      //   {
+      //     $group: {
+      //       _id: "$_id",
+      //       songName: { $first: "$songName" },
+      //       artist: { $first: "$artist" },
+      //       title: { $first: "$title" },
+      //       totalPlayers: { $sum: 1 },
+      //     },
+      //   },
+      //   // Lookup playlist information
+      //   {
+      //     $lookup: {
+      //       from: "playlists",
+      //       localField: "_id",
+      //       foreignField: "songData",
+      //       as: "playlist_info",
+      //     },
+      //   },
+      //   // Add a field to count playlist entries where isDeleted is false
+      //   {
+      //     $addFields: {
+      //       playlistPlayers: {
+      //         $size: {
+      //           $filter: {
+      //             input: "$playlist_info",
+      //             as: "playlistItem",
+      //             cond: { $eq: ["$$playlistItem.isDeleted", false] },
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      //   // If playlist is not empty, filter out songs where playlistPlayers is greater than 0
+      //   {
+      //     $match: {
+      //       $or: [
+      //         { playlistPlayers: { $gt: 0 } }, // Songs in the playlist
+      //         { playlistPlayers: { $eq: 0 }, totalPlayers: { $gt: 0 } }, // Songs not in the playlist but have other players who can sing
+      //       ],
+      //     },
+      //   },
+      //   // Project the final fields
+      //   {
+      //     $project: {
+      //       _id: 1,
+      //       songName: 1,
+      //       artist: 1,
+      //       title: 1,
+      //       totalPlayers: 1,
+      //       playlistPlayers: 1,
+      //       difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
+      //     },
+      //   },
+      //   // If difference is not 0, show the song
+      //   {
+      //     $match: {
+      //       difference: { $ne: 0 },
+      //     },
+      //   },
+      // ];
       let pipeline = [
         // Lookup players and unwind
         {
@@ -443,13 +618,10 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
             },
           },
         },
-        // If playlist is not empty, filter out songs where playlistPlayers is greater than 0
+        // Filter out songs that exist in the playlist (playlistPlayers > 0)
         {
           $match: {
-            $or: [
-              { playlistPlayers: { $gt: 0 } }, // Songs in the playlist
-              { playlistPlayers: { $eq: 0 }, totalPlayers: { $gt: 0 } }, // Songs not in the playlist but have other players who can sing
-            ],
+            playlistPlayers: { $eq: 0 }, // Only songs that are not in the playlist
           },
         },
         // Project the final fields
@@ -461,13 +633,6 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
             title: 1,
             totalPlayers: 1,
             playlistPlayers: 1,
-            difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
-          },
-        },
-        // If difference is not 0, show the song
-        {
-          $match: {
-            difference: { $ne: 0 },
           },
         },
       ];
