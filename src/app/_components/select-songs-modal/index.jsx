@@ -205,24 +205,23 @@ const SelectSongModal = ({
             </div>
           ) : (
             <>
-              {playersList?.length == 0 && (
+              {/* {playersList?.length == 0 && (
                 <div className="p-4">
                   <span>
                     There is no currently Active Player, Please Go the Duty
                     Screen and mark attandance.
                   </span>
                 </div>
-              )}
+              )} */}
 
-              {playersList?.length > 0 && (
-                <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
-                  <div className="flex justify-between items-center">
-                    <div>{`${title} (${activeSongsCount}) `}</div>
-                    <button onClick={closeModal}>
-                      <MdClear size={20} />
-                    </button>
-                  </div>
-
+              <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
+                <div className="flex justify-between items-center">
+                  <div>{`${title} (${activeSongsCount}) `}</div>
+                  <button onClick={closeModal}>
+                    <MdClear size={20} />
+                  </button>
+                </div>
+                {playersList?.length > 0 && (
                   <div className="relative w-1/3 my-4 flex items-center ">
                     <input
                       type="text"
@@ -254,17 +253,18 @@ const SelectSongModal = ({
                       </button>
                     )}
                   </div>
+                )}
 
-                  <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-                    <div className="w-3/12 ">
-                      <div className="flex items-center">Title</div>
-                    </div>
-                    <div className="w-3/12">Player</div>
-                    <div className="w-3/12">Category</div>
-                    <div className="w-3/12">Intro Seconds</div>
+                <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+                  <div className="w-3/12 ">
+                    <div className="flex items-center">Title</div>
                   </div>
+                  <div className="w-3/12">Player</div>
+                  <div className="w-3/12">Category</div>
+                  <div className="w-3/12">Intro Seconds</div>
                 </div>
-              )}
+              </div>
+
               <div className="overflow-y-auto px-4">
                 {playersList?.filter((item) => {
                   return (
@@ -365,7 +365,7 @@ const SelectSongModal = ({
                 <GenericButton
                   disabled={btnLoader || activeSongsCount == 0}
                   loading={btnLoader}
-                  text={playersList?.length == 0 ? "Duty Screen" : btnText}
+                  text={btnText}
                   onClick={() => {
                     if (playersList?.length == 0) {
                       closeModal();
