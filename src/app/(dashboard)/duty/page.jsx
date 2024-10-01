@@ -101,7 +101,7 @@ const DutyScreen = () => {
   };
 
   return (
-    <div className="">
+    <div className=" flex-1  h-full">
       {getStaffListResponse?.isFetching ? (
         <CustomLoader />
       ) : (
@@ -167,7 +167,7 @@ const DutyScreen = () => {
           {staffList?.length > 0 ? (
             <>
               <div className="px-2">
-                <h2 className="font-bold my-5">
+                <h2 className="font-bold py-5">
                   On Duty Players ({countTrueDuty})
                 </h2>
                 <div className="relative w-1/4 mb-8 flex items-center ">
@@ -202,15 +202,15 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className="overflow-y-auto pb-12 ">
-                <div className="pb-32 px-2">
+              <div className="px-2 pb-10 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
+                <div className="px-2">
                   <div className="sticky top-0 z-10 bg-[#FAFAFA] grid grid-cols-4 text-base font-medium text-black">
                     <span>Players</span>
                     <span>Status</span>
                     <span className="text-center">On Duty Time</span>
                     <span className="text-right">Change Status</span>
                   </div>
-                  <div className="max-h-[500px]">
+                  <div className="">
                     {filteredPlayers?.map((item, index) => (
                       <div
                         key={index}
