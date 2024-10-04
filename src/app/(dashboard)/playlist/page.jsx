@@ -1,15 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { FaForward, FaHeart, FaTrashAlt } from "react-icons/fa";
-import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
-import { HiOutlineArrowsUpDown } from "react-icons/hi2";
+import { FaForward, FaHeart } from "react-icons/fa";
 import { IoArrowBackOutline } from "react-icons/io5";
 import { TbMusicX } from "react-icons/tb";
-import { SelectSongModal, SongCountdownTimer } from "../../_components";
+import { SelectSongModal } from "../../_components";
 import {
   useLazyGetSongsFromPlaylistQuery,
-  useLazyGetAssignSongsWithPlayersQuery,
   useDeleteSongFromPlaylistByIdMutation,
   useUpdateSortOrderOfSongsMutation,
   useUpdatePlaylistTypeMutation,
@@ -18,10 +15,8 @@ import {
   useRevertMasterCheckMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
 import { io } from "socket.io-client";
 import { IoArrowUndo } from "react-icons/io5";
-import { SortByMasterIcon, RevertMasterIcon } from "@/app/svgs";
 import { useDispatch } from "react-redux";
 import {
   setCurrentSong,
@@ -36,12 +31,11 @@ import {
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
-import CountDown from "./coutdown";
 import { playlistAlgorithm } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
-import { EllipsisText } from "@/app/_components/ellipsis-text";
 import DraggableList from "react-draggable-list";
 import { PlaylistSongItem } from "./songItem";
+import { useSaveUserActionMutation } from "../../_utils/redux/slice/emptySplitApi";
 
 const LAST_ACTION = "LAST_ACTION";
 const ACTION_TYPE = {
@@ -53,6 +47,7 @@ const page = () => {
   const isOnline = useOnlineStatus();
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
     useLazyGetSongsFromPlaylistQuery();
+  const [saveUserActionApi] = useSaveUserActionMutation();
   const [deleteAllSongsApi, deleteAllSongsResponse] =
     useDeleteAllSongsFromPlaylistMutation();
   const [updatePlaylistTypeAPI] = useUpdatePlaylistTypeMutation();
@@ -71,9 +66,6 @@ const page = () => {
   const dispatch = useDispatch();
   const [votingList, setVotingList] = useState(null);
   const [crownLoader, setCrownLoader] = useState(null);
-  const data = Array(10)
-    .fill(null)
-    .map((item, index) => ({ id: index }));
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -295,7 +287,19 @@ const page = () => {
         setIsFavSongs(isFav);
         if (songList?.length > 0) {
           setIsFavExist(songList?.filter((item) => item?.isFav));
+          let payload = {
+            actionName: "fetchPlaylistSongList",
+            pathName: "/playlist",
+            details: {
+              status: "success",
+              content: playlistWithId,
+              description: response?.data?.description,
+              signalName: "insertSongIntoPlaylistRequest",
+            },
+          };
+          await saveUserActionApi(payload);
         }
+
         newConnection.emit("insertSongIntoPlaylistRequest", {
           isFirst: firstFetch ?? isFirst,
           playlist: playlistWithId,
@@ -341,6 +345,19 @@ const page = () => {
     }
 
     if (response && !response.error) {
+      let payload = {
+        actionName: isTrashPress
+          ? "Delete upon clicking trash icon"
+          : "Advance the queue",
+        pathName: "/playlist",
+        details: {
+          status: "success",
+          content: res,
+          description: response?.data?.description,
+          signalName: "RemoveSongFromPlaylistRequest",
+        },
+      };
+      await saveUserActionApi(payload);
       toast(response?.data?.description);
       socket.emit("RemoveSongFromPlaylistRequest", {
         isFirst: false,
@@ -348,6 +365,18 @@ const page = () => {
         time: 10,
       });
     } else {
+      let payload = {
+        actionName: isTrashPress
+          ? "Delete upon clicking trash icon"
+          : "Advance the queue",
+        pathName: "/playlist",
+        details: {
+          status: "false",
+          content: res,
+          description: response?.data?.description || "Something Went Wrong...",
+        },
+      };
+      await saveUserActionApi(payload);
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
@@ -376,7 +405,7 @@ const page = () => {
     return currentArray;
   };
 
-  const handleDragEnd = (result, source, destination, movedItem) => {
+  const handleDragEnd = async (result, source, destination, movedItem) => {
     dispatch(setIsFirstTimeFetched(false));
     const sourceIndex = source;
     const destinationIndex = destination;
@@ -391,8 +420,17 @@ const page = () => {
         isFirst: false,
         playlist: updatedPlaylist,
       });
-      // const newList = playlistAlgorithm(false, updatedPlaylist);
       setPlaylistSongList([...updatedPlaylist]);
+      let payload = {
+        actionName: "Handle Drag",
+        pathName: "/playlist",
+        details: {
+          status: "true",
+          content: updatedPlaylist,
+          signalName: "handleDragReq",
+        },
+      };
+      await saveUserActionApi(payload);
       const updatedArr = updatedPlaylist.map((item, index) => ({
         id: item._id,
         newSortOrder: index,
@@ -403,7 +441,6 @@ const page = () => {
   };
   const updateSongsOrderHandler = async (payload) => {
     localStorage.setItem("isFirstTimeFetched", false);
-    // dispatch(setInitialSongPlaylist(false));
     try {
       await updateSortOrderApi({
         songsList: payload,
@@ -434,6 +471,16 @@ const page = () => {
       id: index, // Add a unique id if it doesn't exist
     }));
     setPlaylistSongList([...playlistWithId]);
+    let payload = {
+      actionName: "Revert Crown",
+      pathName: "/playlist",
+      details: {
+        status: "true",
+        content: newList,
+        signalName: "handleDragReq(Revert Crown)",
+      },
+    };
+    await saveUserActionApi(payload);
     socket.emit("handleDragReq", {
       isFirst: false,
       playlist: newList,
@@ -462,10 +509,32 @@ const page = () => {
         isFavSongs: !isFavSongs,
         currentSongSecond: initialSongDuration,
       });
+      let payload = {
+        actionName: "Play Favorite Songs",
+        pathName: "/playlist",
+        details: {
+          isFavSongs: !isFavSongs,
+          status: "success",
+          content: favSongsList,
+          currentSongSecond: initialSongDuration,
+          signalName: "insertSongIntoPlaylistRequest",
+        },
+      };
+      await saveUserActionApi(payload);
     } else {
       socket.emit("undoFavReq", {
         isFirst: true,
       });
+      let payload = {
+        actionName: "Back To Playlist",
+        pathName: "/playlist",
+        details: {
+          isFavSongs: false,
+          status: "success",
+          signalName: "undoFavReq",
+        },
+      };
+      await saveUserActionApi(payload);
       setIsLoading(true);
       fetchPlaylistSongList();
     }
@@ -487,6 +556,17 @@ const page = () => {
     dispatch(setPlaylistLength(0));
     let response = await deleteAllSongsApi();
     if (response && !response.error) {
+      let payload = {
+        actionName: "Clear All Songs",
+        pathName: "/playlist",
+        details: {
+          status: "true",
+          content: [],
+          description: response?.data?.description,
+          signalName: "emptyPlaylistRequest",
+        },
+      };
+      await saveUserActionApi(payload);
       setIsConfirmationPopup(false);
       toast.success(response?.data?.description);
       dispatch(setCurrentSongSecond(0));
@@ -514,6 +594,16 @@ const page = () => {
           lastAction: lastAction?.data,
           isFirst: false,
         });
+        let payload = {
+          actionName: "Undo Action",
+          pathName: "/playlist",
+          details: {
+            status: "success",
+            signalName: "undoActionRequest",
+            lastAction: lastAction?.data,
+          },
+        };
+        await saveUserActionApi(payload);
         await setPlaylistSongList([]);
         await fetchPlaylistSongList();
         localStorage.setItem(LAST_ACTION, null);
@@ -557,7 +647,6 @@ const page = () => {
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
   const handleUpdateItem = (updatedItem) => {
-    // Update the state with the new item data
     setPlaylistSongList((prevItems) =>
       prevItems.map((item) =>
         item._id === updatedItem._id ? updatedItem : item
@@ -651,13 +740,11 @@ const page = () => {
                 <div className="w-2/12">Category</div>
                 <div className="w-1/12"></div>
               </div>
-              {/* <div className="border-separate border-spacing-y-5 mx-1 mb-10  "> */}
+
               <div
-                // style={{ touchAction: "pan-y", background: "#F9F9F9" }}
                 id="scrollableContainer"
                 ref={containerRef}
                 className={`overflow-y-auto ${height}`}
-                // style={{ overflowY: "auto", height: "630px" }}
               >
                 <DraggableList
                   unsetZIndex={true}
@@ -695,7 +782,6 @@ const page = () => {
                   container={() => containerRef.current}
                 />
               </div>
-              {/* </div> */}
             </>
           )}
           {!isFavSongs && (

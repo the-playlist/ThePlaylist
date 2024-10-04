@@ -10,15 +10,18 @@ import {
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
   useGetTableViewSongsMutation,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
 
 const TableView = () => {
+  const pathname = usePathname();
   const isOnline = useOnlineStatus();
+  const [saveUserActionApi] = useSaveUserActionMutation();
 
   useEffect(() => {
     if (isOnline) {
@@ -356,7 +359,21 @@ const TableView = () => {
         isUpVote: isTrue,
         songDetail: songDetail,
       });
-
+      let payload = {
+        actionName: isTrue ? "Upvote" : "DownVote",
+        pathName: pathname,
+        details: {
+          status: "success",
+          customerId: deviceId,
+          songId: item?.songId,
+          playlistItemId: item?._id,
+          playerId: item?.assignedPlayerId,
+          isUpVote: isTrue,
+          songDetail: songDetail,
+          signalName: "voteCastingRequest",
+        },
+      };
+      await saveUserActionApi(payload);
       castVote({
         isFirst: false,
         userId: deviceId,
