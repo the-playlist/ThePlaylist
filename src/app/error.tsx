@@ -48,23 +48,31 @@ export default function ErrorBoundary({ error, reset }: ErrorBoundaryProps) {
     }
   };
 
-  useEffect(() => {
-    addError();
-  }, [error]);
+  useEffect(() => {}, [error]);
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <h2>Something went wrong</h2>
-      <div className="w-40 mt-5">
-        <GenericButton
-          text="Reset"
-          onClick={() => {
-            signOut({
-              callbackUrl: "/login",
-              redirect: true,
-            });
-          }}
-        />
+      <div className="flex items-center gap-2">
+        <div className="w-40 mt-5">
+          <GenericButton
+            text="Reload"
+            onClick={() => {
+              window.location.reload();
+            }}
+          />
+        </div>
+        <div className="w-40 mt-5">
+          <GenericButton
+            text="Reset"
+            onClick={() => {
+              signOut({
+                callbackUrl: "/login",
+                redirect: true,
+              });
+            }}
+          />
+        </div>
       </div>
     </div>
   );
