@@ -1,5 +1,7 @@
 import Players from "../models/players";
 import ResponseModel from "./responseModel";
+import Playlist from "../models/playlist";
+import { songFromPlaylist } from "../aggregation/playlist";
 
 export const getAllStaff = async (req, res, next) => {
   const players = await Players.find().select("firstName lastName duty");
@@ -20,6 +22,7 @@ export const updateDutyStatus = async (req, res, next) => {
       const update = {
         $set: { "duty.status": status, "duty.startTime": startTime },
       };
+
       const updatedPlayer = await Players.findOneAndUpdate(filter, update, {
         new: true,
       });
@@ -28,6 +31,15 @@ export const updateDutyStatus = async (req, res, next) => {
         responseMessages.push(
           `Status updated successfully for player with ID ${id}`
         );
+        if (status === false) {
+          const updatedPlaylists = await Playlist.updateMany(
+            {
+              assignedPlayer: id,
+              isDeleted: false,
+            },
+            { $set: { isDeleted: true } }
+          );
+        }
       } else {
         responseMessages.push(
           `Player with ID ${id} not found or already has status=true`

@@ -7,6 +7,7 @@ import {
   useAddSongsToPlaylistMutation,
   useLazyGetAssignSongsWithPlayersQuery,
   useLazyGetLimitByTitleQuery,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -15,6 +16,7 @@ import { Loader } from "../loader";
 import { useDispatch } from "react-redux";
 import { setInitialSongPlaylist } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
+import { usePathname } from "next/navigation";
 
 const AssignedSongsDropdown = ({ item }) => {
   const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
@@ -59,6 +61,8 @@ const SelectSongModal = ({
   isDuty,
   onReload,
 }) => {
+  const pathname = usePathname();
+
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
   );
@@ -66,6 +70,7 @@ const SelectSongModal = ({
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [songLimit, setSongLimit] = useState(0);
+  const [saveUserActionApi] = useSaveUserActionMutation();
   const [socket, setSocket] = useState();
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,14 +116,36 @@ const SelectSongModal = ({
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
+
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
+        let payload = {
+          actionName: "Add song (Fetch)",
+          pathName: pathname,
+          details: {
+            status: "success",
+            content: tempArr,
+            description: response?.data?.description,
+            playlistCount: playlistCount,
+          },
+        };
+        await saveUserActionApi(payload);
         setPlayersList(tempArr);
       }
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.error("Fetch failed:", error);
+      let payload = {
+        actionName: "Add song (Fetch)",
+        pathName: pathname,
+        details: {
+          status: "false",
+
+          description: error,
+        },
+      };
+      await saveUserActionApi(payload);
     }
   };
 
@@ -167,7 +194,18 @@ const SelectSongModal = ({
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
+        let payload = {
+          actionName: "Add song (Post)",
+          pathName: pathname,
+          details: {
+            status: "success",
+            content: data,
+            description: response?.data?.description,
+          },
+        };
         closeModal();
+        await saveUserActionApi(payload);
+
         toast.success(response?.data?.description);
         onReload();
         await fetchList(isFirstTimeFetched);
@@ -205,24 +243,23 @@ const SelectSongModal = ({
             </div>
           ) : (
             <>
-              {playersList?.length == 0 && (
+              {/* {playersList?.length == 0 && (
                 <div className="p-4">
                   <span>
                     There is no currently Active Player, Please Go the Duty
                     Screen and mark attandance.
                   </span>
                 </div>
-              )}
+              )} */}
 
-              {playersList?.length > 0 && (
-                <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
-                  <div className="flex justify-between items-center">
-                    <div>{`${title} (${activeSongsCount}) `}</div>
-                    <button onClick={closeModal}>
-                      <MdClear size={20} />
-                    </button>
-                  </div>
-
+              <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
+                <div className="flex justify-between items-center">
+                  <div>{`${title} (${activeSongsCount}) `}</div>
+                  <button onClick={closeModal}>
+                    <MdClear size={20} />
+                  </button>
+                </div>
+                {playersList?.length > 0 && (
                   <div className="relative w-1/3 my-4 flex items-center ">
                     <input
                       type="text"
@@ -254,17 +291,18 @@ const SelectSongModal = ({
                       </button>
                     )}
                   </div>
+                )}
 
-                  <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
-                    <div className="w-3/12 ">
-                      <div className="flex items-center">Title</div>
-                    </div>
-                    <div className="w-3/12">Player</div>
-                    <div className="w-3/12">Category</div>
-                    <div className="w-3/12">Intro Seconds</div>
+                <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+                  <div className="w-3/12 ">
+                    <div className="flex items-center">Title</div>
                   </div>
+                  <div className="w-3/12">Player</div>
+                  <div className="w-3/12">Category</div>
+                  <div className="w-3/12">Intro Seconds</div>
                 </div>
-              )}
+              </div>
+
               <div className="overflow-y-auto px-4">
                 {playersList?.filter((item) => {
                   return (
@@ -365,7 +403,7 @@ const SelectSongModal = ({
                 <GenericButton
                   disabled={btnLoader || activeSongsCount == 0}
                   loading={btnLoader}
-                  text={playersList?.length == 0 ? "Duty Screen" : btnText}
+                  text={btnText}
                   onClick={() => {
                     if (playersList?.length == 0) {
                       closeModal();
