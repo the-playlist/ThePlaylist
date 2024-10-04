@@ -5,14 +5,17 @@ import {
   useAddSongToPlaylistByCustomerMutation,
   useLazyGetLimitByTitleQuery,
   useLazyGetAddSongListForCustomerQuery,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
   let limitTitle = "Song Limit";
+  const pathName = usePathname();
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
+  const [saveUserActionApi] = useSaveUserActionMutation();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
     useAddSongToPlaylistByCustomerMutation();
@@ -25,6 +28,13 @@ const Typeahead = () => {
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
+  const [songDetail, setSongDetail] = useState({
+    title: "",
+    playerName: "",
+    duration: 0,
+    playingState: false,
+    id: null,
+  });
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -39,6 +49,28 @@ const Typeahead = () => {
     socket.on("songAddByCustomerRes", (item) => {
       fetchSongsList();
     });
+
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      fetchSongsList();
+    });
+    socket.on("emptyPlaylistResponse", (item) => {
+      fetchSongsList();
+    });
+
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      fetchSongsList();
+    });
+    socket.on("remainingTimeRes", (item) => {
+      const { duration, currentSongDetail, playingState } = item;
+      setSongDetail({
+        title: currentSongDetail?.title,
+        playerName: currentSongDetail?.player,
+        duration: duration,
+        playingState: playingState,
+        id: currentSongDetail?.id,
+      });
+    });
+
     socket.connect();
     setSocket(socket);
   }, []);
@@ -50,9 +82,10 @@ const Typeahead = () => {
       setFilteredOptions(songList);
       return;
     }
-    const filtered = songList.filter((option) =>
-      option.title.toLowerCase().includes(value.toLowerCase()) ||
-      option.artist.toLowerCase().includes(value.toLowerCase())
+    const filtered = songList.filter(
+      (option) =>
+        option.title.toLowerCase().includes(value.toLowerCase()) ||
+        option.artist.toLowerCase().includes(value.toLowerCase())
     );
     setFilteredOptions(filtered);
   };
@@ -111,6 +144,7 @@ const Typeahead = () => {
       let response = await addSongToPlaylistByUserApi({
         songId: id,
         addByCustomer: true,
+        songDetail: songDetail,
       });
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
@@ -122,6 +156,18 @@ const Typeahead = () => {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });
+        let payload = {
+          actionName: "Song Added By Customer",
+          pathName: pathName,
+          details: {
+            status: "success",
+            songId: id,
+            addByCustomer: true,
+            songDetail: songDetail,
+            signalName: "songAddByCustomerReq",
+          },
+        };
+        await saveUserActionApi(payload);
         router.back();
       } else {
         toast.error(response?.error?.data?.description);
