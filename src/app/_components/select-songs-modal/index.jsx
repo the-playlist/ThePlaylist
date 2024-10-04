@@ -7,6 +7,7 @@ import {
   useAddSongsToPlaylistMutation,
   useLazyGetAssignSongsWithPlayersQuery,
   useLazyGetLimitByTitleQuery,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -15,6 +16,7 @@ import { Loader } from "../loader";
 import { useDispatch } from "react-redux";
 import { setInitialSongPlaylist } from "@/app/_utils/redux/slice/playlist-list";
 import { useSelector } from "react-redux";
+import { usePathname } from "next/navigation";
 
 const AssignedSongsDropdown = ({ item }) => {
   const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
@@ -59,6 +61,8 @@ const SelectSongModal = ({
   isDuty,
   onReload,
 }) => {
+  const pathname = usePathname();
+
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
   );
@@ -66,6 +70,7 @@ const SelectSongModal = ({
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
   const [songLimit, setSongLimit] = useState(0);
+  const [saveUserActionApi] = useSaveUserActionMutation();
   const [socket, setSocket] = useState();
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
@@ -111,14 +116,36 @@ const SelectSongModal = ({
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
+
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
+        let payload = {
+          actionName: "Add song (Fetch)",
+          pathName: pathname,
+          details: {
+            status: "success",
+            content: tempArr,
+            description: response?.data?.description,
+            playlistCount: playlistCount,
+          },
+        };
+        await saveUserActionApi(payload);
         setPlayersList(tempArr);
       }
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.error("Fetch failed:", error);
+      let payload = {
+        actionName: "Add song (Fetch)",
+        pathName: pathname,
+        details: {
+          status: "false",
+
+          description: error,
+        },
+      };
+      await saveUserActionApi(payload);
     }
   };
 
@@ -167,7 +194,18 @@ const SelectSongModal = ({
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
+        let payload = {
+          actionName: "Add song (Post)",
+          pathName: pathname,
+          details: {
+            status: "success",
+            content: data,
+            description: response?.data?.description,
+          },
+        };
         closeModal();
+        await saveUserActionApi(payload);
+
         toast.success(response?.data?.description);
         onReload();
         await fetchList(isFirstTimeFetched);

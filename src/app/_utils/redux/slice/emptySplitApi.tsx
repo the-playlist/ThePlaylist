@@ -43,6 +43,7 @@ const endPoints = {
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
   GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
   REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
+  SAVE_USER_ACTION: `api/actions/saveUserAction`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -268,6 +269,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    saveUserAction: builder.mutation({
+      query: (body) => ({
+        url: endPoints.SAVE_USER_ACTION,
+        method: "POST",
+        body: body,
+      }),
+    }),
     getThemeByTitle: builder.query({
       query: (body: any) => `${endPoints.GET_THEME_BY_TITLE}${body}`,
     }),
@@ -330,5 +338,6 @@ export const {
   useLazyGetAddSongListForCustomerQuery,
   useDisbaleSongFromSongBankMutation,
   useRevertMasterCheckMutation,
-  useUpdatePlayerNamePlaylistMutation
+  useUpdatePlayerNamePlaylistMutation,
+  useSaveUserActionMutation,
 } = emptySplitApi;
