@@ -5,14 +5,17 @@ import {
   useAddSongToPlaylistByCustomerMutation,
   useLazyGetLimitByTitleQuery,
   useLazyGetAddSongListForCustomerQuery,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
   let limitTitle = "Song Limit";
+  const pathName = usePathname();
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
+  const [saveUserActionApi] = useSaveUserActionMutation();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
     useAddSongToPlaylistByCustomerMutation();
@@ -153,6 +156,18 @@ const Typeahead = () => {
           isFirst: isFirstTimeFetched,
           playlist: playlist,
         });
+        let payload = {
+          actionName: "Song Added By Customer",
+          pathName: pathName,
+          details: {
+            status: "success",
+            songId: id,
+            addByCustomer: true,
+            songDetail: songDetail,
+            signalName: "songAddByCustomerReq",
+          },
+        };
+        await saveUserActionApi(payload);
         router.back();
       } else {
         toast.error(response?.error?.data?.description);
