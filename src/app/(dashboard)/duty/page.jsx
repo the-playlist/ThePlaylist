@@ -103,7 +103,6 @@ const DutyScreen = () => {
 
   //
 
-
   return (
     <div className=" flex-1  h-full">
       {getStaffListResponse?.isFetching ? (
@@ -220,7 +219,7 @@ const DutyScreen = () => {
                         key={index}
                         className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4  grid grid-cols-4"
                       >
-                        <div className="capitalize">{`${item?.firstName} ${item?.lastName}`}</div>
+                        <div className="capitalize flex items-center">{`${item?.firstName} ${item?.lastName}`}</div>
                         <div className="flex items-center">
                           <div
                             className={`h-2 w-2 rounded-full mr-2 ${
@@ -229,10 +228,10 @@ const DutyScreen = () => {
                           ></div>
                           {item?.duty.status ? "On Duty" : "Off Duty"}
                         </div>
-                        <div className="text-center">
+                        <div className=" flex items-center justify-center">
                           {item?.duty?.startTime || "-"}
                         </div>
-                        <div className=" text-end">
+                        <div className=" flex items-center justify-end">
                           <input
                             onClick={() => {
                               changeStatus(item?._id, item?.duty.status);
