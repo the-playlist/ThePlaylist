@@ -43,6 +43,7 @@ const endPoints = {
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
   GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
   REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
+  CREATE_ERROR: `api/error/create-error`,
   SAVE_USER_ACTION: `api/actions/saveUserAction`,
 };
 
@@ -109,6 +110,7 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+
     disbaleSongFromSongBank: builder.mutation({
       query: (body: any) => ({
         url: endPoints.DISABLE_SONG,
@@ -262,6 +264,13 @@ export const emptySplitApi = createApi({
     getThemeList: builder.query({
       query: () => endPoints.GET_THEME_LIST,
     }),
+    createError: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.CREATE_ERROR,
+        method: "POST",
+        body: body,
+      }),
+    }),
     addUpdateTheme: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_THEME,
@@ -336,6 +345,7 @@ export const {
   useLazyGetFavSongListQuery,
   useLazyGetIsPlaylistEmptyQuery,
   useLazyGetAddSongListForCustomerQuery,
+  useCreateErrorMutation,
   useDisbaleSongFromSongBankMutation,
   useRevertMasterCheckMutation,
   useUpdatePlayerNamePlaylistMutation,
