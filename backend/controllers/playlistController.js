@@ -7,15 +7,22 @@ import {
   songFromPlaylist,
   songsForTableView,
   songReports,
+  songFromPlaylistV2,
+  songsForTableViewV2,
 } from "../aggregation/playlist";
 import Players from "../models/players";
 import mongoose from "mongoose";
 import { convertTimeToSeconds, formatTime } from "../utils/helper";
-import { playlistAlgorithm } from "../algorithm/playlistAlgo";
+import {
+  playlistAlgorithm,
+  playlistAlgorithmV2,
+} from "../algorithm/playlistAlgo";
+import PlaylistV2 from "../models/playlistV2";
 import { flattenPlaylist } from "./helper";
+import AlgorithmStatus from "../models/algorithStatus";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
-
+export const algoStatusId = "6728794712916c8fc48542c3";
 export const updatePlayerName = async (req, res, next) => {
   const playlistItemId = req.body.playlistItemId;
   const assignedPlayerId = req.body.assignedPlayerID;
@@ -29,6 +36,7 @@ export const updatePlayerName = async (req, res, next) => {
   );
   res.status(200).json(response);
 };
+
 export const addSongsToPlaylist = async (req, res, next) => {
   const result = await Playlist.find({ isDeleted: false });
   const playlistCount = result?.length;
@@ -119,35 +127,6 @@ export const getSongsFromPlaylist = async (req, res, next) => {
 
   const playlist = await Playlist.aggregate(songFromPlaylist);
   const playlistCount = await Playlist.countDocuments({ isDeleted: false });
-
-  const flattenPlaylist = (playlist) =>
-    playlist.map((item) => {
-      const duration = convertTimeToSeconds(item?.songData?.songDuration);
-      const introSec = item?.songData?.introSec || 0;
-      const totalDuration = formatTime(duration + parseInt(introSec));
-
-      return {
-        _id: item._id,
-        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-        assignedPlayerId: item.assignedPlayer?._id,
-        qualifiedPlayers: item?.qualifiedPlayers,
-        songId: item.songData._id,
-        title: item.songData.title,
-        artist: item.songData.artist,
-        introSec,
-        songDuration: totalDuration,
-        isFav: item.songData.isFav,
-        dutyStatus: item?.assignedPlayer?.duty?.status,
-        category: item.songData.category,
-        tableUpVote: item.upVote,
-        tableDownVote: item.downVote,
-        upVote: item.upVoteCount,
-        downVote: item.downVoteCount,
-        sortOrder: item.sortOrder,
-        sortByMaster: item?.sortByMaster,
-        addByCustomer: item.addByCustomer,
-      };
-    });
 
   let flattenedPlaylist = flattenPlaylist(playlist);
 
@@ -368,7 +347,11 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
   }
-  await Playlist.findByIdAndUpdate(id, { isDeleted: isDeleted }, { new: true });
+  await Playlist.findByIdAndUpdate(
+    id,
+    { isDeleted: isDeleted, isFixed: false },
+    { new: true }
+  );
   const activeSongs = await Playlist.find({ isDeleted: false });
   if (activeSongs?.length === 1) {
     await PlaylistType.updateOne(
@@ -380,83 +363,9 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
       }
     );
   }
-  const playlist = await Playlist.aggregate(songFromPlaylist);
-  const flattenPlaylist = (playlist) =>
-    playlist.map((item) => {
-      const duration = convertTimeToSeconds(item?.songData?.songDuration);
-      const introSec = item?.songData?.introSec || 0;
-      const totalDuration = formatTime(duration + parseInt(introSec));
-
-      return {
-        _id: item._id,
-        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-        assignedPlayerId: item.assignedPlayer?._id,
-        qualifiedPlayers: item?.qualifiedPlayers,
-        songId: item.songData._id,
-        title: item.songData.title,
-        artist: item.songData.artist,
-        introSec,
-        songDuration: totalDuration,
-        isFav: item.songData.isFav,
-        dutyStatus: item?.assignedPlayer?.duty?.status,
-        category: item.songData.category,
-        tableUpVote: item.upVote,
-        tableDownVote: item.downVote,
-        upVote: item.upVoteCount,
-        downVote: item.downVoteCount,
-        sortOrder: item.sortOrder,
-        sortByMaster: item?.sortByMaster,
-        addByCustomer: item.addByCustomer,
-      };
-    });
-
-  let flattenedPlaylist = flattenPlaylist(playlist);
-
-  const updatedSongs = flattenedPlaylist.map((song, index) => ({
-    ...song,
-    sortOrder: index,
-  }));
-
-  await Promise.all(
-    updatedSongs.map((song) =>
-      Playlist.updateOne(
-        { _id: song._id },
-        { $set: { sortOrder: song.sortOrder } }
-      )
-    )
-  );
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
-
-// export const deleteSongFromPlaylistById = async (req, res, next) => {
-//   const id = req.query.id;
-//   if (!id) {
-//     return res.status(400).json({ message: "ID parameter is missing" });
-//   }
-
-//   // Delete the record by ID
-//   await Playlist.findByIdAndDelete(id);
-
-//   // Find active songs
-//   const activeSongs = await Playlist.find({ isDeleted: false });
-
-//   // If there's only one active song, update PlaylistType
-//   if (activeSongs?.length === 1) {
-//     await PlaylistType.updateOne(
-//       {
-//         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
-//       },
-//       {
-//         $set: { isFirst: true },
-//       }
-//     );
-//   }
-
-//   // Respond with success
-//   const response = new ResponseModel(true, "List Updated Successfully.", null);
-//   res.status(200).json(response);
-// };
 
 export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
@@ -472,35 +381,6 @@ export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   const response = new ResponseModel(true, "List Updated Successfully.", null);
   res.status(200).json(response);
 };
-
-// export const deleteAllSongsFromPlaylist = async (req, res, next) => {
-//   try {
-//     // Delete all documents where isDeleted is false
-//     await Playlist.deleteMany({ isDeleted: false });
-
-//     // Optionally update PlaylistType if needed
-//     await PlaylistType.updateOne(
-//       {
-//         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
-//       },
-//       {
-//         $set: { isFirst: true },
-//       },
-//       { new: true }
-//     );
-
-//     // Respond with success
-//     const response = new ResponseModel(
-//       true,
-//       "All songs deleted and list updated successfully.",
-//       null
-//     );
-//     res.status(200).json(response);
-//   } catch (error) {
-//     // Handle errors
-//     next(error);
-//   }
-// };
 
 export const undoDeleteSongsFromPlaylist = async (req, res, next) => {
   const songsIdList = req.body.data;
@@ -692,4 +572,583 @@ export const isPlaylistEmpty = async (req, res, next) => {
     isFirstTimeFetched: result?.length == 0 ? true : false,
   });
   res.status(201).json(response);
+};
+
+export const getSongsFromPlaylistV2 = async (req, res, next) => {
+  const firstFetch = req?.query?.isFirstTimeFetched;
+
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
+
+  const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);
+  const playlistCount = await PlaylistV2.countDocuments({ isDeleted: false });
+  const status = await AlgorithmStatus.findById(
+    algoStatusId,
+    "isApplied"
+  ).lean();
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+  let tempNonFix = flattenedPlaylist?.filter((item) => !item?.isFixed);
+  const secondLastSong = tempNonFix[tempNonFix?.length - 2];
+  const lastSong = tempNonFix[tempNonFix?.length - 1];
+
+  if (status?.isApplied || lastSong?.playerName == secondLastSong?.playerName) {
+    const finalPlaylist = playlistAlgorithmV2(
+      firstFetch ?? isFirstTimeFetched,
+      flattenedPlaylist
+    );
+
+    const updatedSongs = finalPlaylist.map((song, index) => ({
+      ...song,
+      sortOrder: index,
+    }));
+
+    await Promise.all(
+      updatedSongs.map((song) =>
+        PlaylistV2.updateOne(
+          { _id: song._id },
+          {
+            $set: {
+              sortOrder: song.sortOrder,
+              isFixed:
+                song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+              addByCustomer: false,
+            },
+          }
+        )
+      )
+    );
+
+    const newFlattenedPlaylist = flattenPlaylist(
+      await PlaylistV2.aggregate(songFromPlaylistV2)
+    );
+
+    const filteredPlaylist = isFavortiteListType
+      ? newFlattenedPlaylist.filter((item) => item.isFav)
+      : newFlattenedPlaylist;
+
+    const isFixedItems = filteredPlaylist?.filter(
+      (item) => item?.isFixed == true
+    );
+
+    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+    res.status(200).json(
+      new ResponseModel(true, "Songs fetched successfully.", {
+        isFixedItems: isFixedItems,
+        isNotFixed: isNotFixedItems,
+        playlistCount,
+        isFavortiteListType,
+        completeList: filteredPlaylist,
+      })
+    );
+    await AlgorithmStatus.findByIdAndUpdate(
+      algoStatusId,
+      {
+        isApplied: false,
+      },
+      {
+        new: true,
+      }
+    );
+  } else {
+    const filteredPlaylist = isFavortiteListType
+      ? flattenedPlaylist?.filter((item) => item.isFav)
+      : flattenedPlaylist;
+    const isFixedItems = filteredPlaylist?.filter(
+      (item) => item?.isFixed == true
+    );
+    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+    res.status(200).json(
+      new ResponseModel(true, "Songs fetched successfully.", {
+        isFixedItems: isFixedItems,
+        isNotFixed: isNotFixedItems,
+        playlistCount,
+        isFavortiteListType,
+        completeList: filteredPlaylist,
+      })
+    );
+  }
+};
+
+export const getSongsForTableViewV2 = async (req, res, next) => {
+  const { id: deviceId, firstFetch } = req?.body;
+  const status = await AlgorithmStatus.findById(
+    algoStatusId,
+    "isApplied"
+  ).lean();
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
+    await PlaylistType.findOne({
+      _id: SETTING_ID,
+    }).lean();
+
+  const playlist = await PlaylistV2.aggregate(songsForTableViewV2);
+  const votList = await Vote.find({ customerId: deviceId }).lean();
+  const voteLookup = votList?.reduce((acc, vote) => {
+    acc[vote.playlistItemId?.toString()] = vote.isUpVote;
+    return acc;
+  }, {});
+
+  const flattenPlaylist = (playlist) =>
+    playlist.map((item) => {
+      const vote = voteLookup[item._id?.toString()];
+      return {
+        _id: item._id,
+        playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
+        assignedPlayerId: item.assignedPlayer?._id,
+        songId: item.songData._id,
+        title: item.songData.title,
+        artist: item.songData.artist,
+        introSec: item.songData.introSec,
+        songDuration: item.songData.songDuration,
+        isFav: item.songData.isFav,
+        dutyStatus: item?.assignedPlayer?.duty?.status,
+        category: item.songData.category,
+        tableUpVote: vote !== undefined ? vote : item.upVote,
+        tableDownVote: item.downVote,
+        upVote: item.upVoteCount,
+        downVote: item.downVoteCount,
+        sortOrder: item.sortOrder,
+        sortByMaster: item.sortByMaster,
+        addByCustomer: item.addByCustomer,
+        isFixed: item?.isFixed,
+      };
+    });
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+  if (status?.isApplied) {
+    const finalPlaylist = playlistAlgorithmV2(false, flattenedPlaylist);
+    const updatedSongs = finalPlaylist.map((song, index) => ({
+      ...song,
+      sortOrder: index,
+    }));
+    await Promise.all(
+      updatedSongs.map((song) =>
+        PlaylistV2.updateOne(
+          { _id: song._id },
+          {
+            $set: {
+              sortOrder: song.sortOrder,
+              isFixed:
+                song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+              addByCustomer: false,
+            },
+          }
+        )
+      )
+    );
+
+    let newFlattenedPlaylist = flattenPlaylist(
+      await PlaylistV2.aggregate(songsForTableViewV2)
+    );
+    if (isFavortiteListType) {
+      newFlattenedPlaylist = newFlattenedPlaylist.filter((item) => item.isFav);
+    }
+    const isFixedItems = newFlattenedPlaylist?.filter(
+      (item) => item?.isFixed == true
+    );
+
+    const isNotFixedItems = newFlattenedPlaylist?.filter(
+      (item) => !item?.isFixed
+    );
+
+    res.status(200).json(
+      new ResponseModel(true, "Songs fetched successfully.", {
+        list: newFlattenedPlaylist,
+        isFavortiteListType,
+        isFirstTimeFetched,
+        isFixedItems: isFixedItems,
+        isNotFixed: isNotFixedItems,
+      })
+    );
+    await AlgorithmStatus.findByIdAndUpdate(
+      algoStatusId,
+      {
+        isApplied: false,
+      },
+      {
+        new: true,
+      }
+    );
+  } else {
+    const filteredPlaylist = isFavortiteListType
+      ? flattenedPlaylist?.filter((item) => item.isFav)
+      : flattenedPlaylist;
+    const isFixedItems = filteredPlaylist?.filter(
+      (item) => item?.isFixed == true
+    );
+    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+    res.status(200).json(
+      new ResponseModel(true, "Songs fetched successfully.", {
+        isFixedItems: isFixedItems,
+        isNotFixed: isNotFixedItems,
+        isFirstTimeFetched,
+        isFavortiteListType,
+        list: filteredPlaylist,
+      })
+    );
+  }
+};
+
+export const addSongsToPlaylistV2 = async (req, res, next) => {
+  const result = await PlaylistV2.find({ isDeleted: false });
+  const playlistCount = result?.length;
+
+  const songsWithExpiration = req.body.map((song, index) => ({
+    ...song,
+    sortOrder: playlistCount + index,
+    qualifiedPlayers: song.qualifiedPlayers.map((player) => ({
+      id: player?._id,
+      name: player?.playerName,
+    })),
+  }));
+
+  const playlist = await PlaylistV2.insertMany(songsWithExpiration);
+  await AlgorithmStatus.findByIdAndUpdate(
+    algoStatusId,
+    {
+      isApplied: true,
+    },
+    {
+      new: true,
+    }
+  );
+  const response = new ResponseModel(
+    true,
+    "Songs Added To Playlist Successfully",
+    playlist
+  );
+  res.status(201).json(response);
+};
+
+export const deleteAllSongsFromPlaylistV2 = async (req, res, next) => {
+  await PlaylistV2.deleteMany({});
+  await AlgorithmStatus.findByIdAndUpdate(
+    algoStatusId,
+    {
+      isApplied: true,
+    },
+    {
+      new: true,
+    }
+  );
+  await PlaylistType.updateOne(
+    {
+      _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
+    },
+    {
+      $set: { isFirst: true },
+    },
+    { new: true }
+  );
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
+};
+
+export const updatePlayerNameV2 = async (req, res, next) => {
+  const playlistItemId = req.body.playlistItemId;
+  const assignedPlayerId = req.body.assignedPlayerID;
+  await AlgorithmStatus.findByIdAndUpdate(
+    algoStatusId,
+    {
+      isApplied: true,
+    },
+    {
+      new: true,
+    }
+  );
+  await PlaylistV2.findByIdAndUpdate(playlistItemId, {
+    assignedPlayer: assignedPlayerId,
+  });
+  const response = new ResponseModel(
+    true,
+    "Player Name updated  playlist successfully.",
+    null
+  );
+  res.status(200).json(response);
+};
+
+export const updateSongsOrderV2 = async (req, res, next) => {
+  const songsList = req?.body?.songsList;
+  for (const item of songsList) {
+    await PlaylistV2.updateOne(
+      { _id: item.id },
+      {
+        $set: {
+          sortOrder: item.newSortOrder,
+          sortByMaster: item.sortByMaster,
+        },
+      }
+    );
+  }
+  const response = new ResponseModel(
+    true,
+    "Order of Songs Updated Successfull",
+    null
+  );
+  res.status(200).json(response);
+};
+
+export const revertMasterCheckV2 = async (req, res, next) => {
+  const item = req?.body?.item;
+  await AlgorithmStatus.findByIdAndUpdate(
+    algoStatusId,
+    {
+      isApplied: true,
+    },
+    {
+      new: true,
+    }
+  );
+  const result = await PlaylistV2.updateOne(
+    { _id: item._id },
+    {
+      $set: {
+        sortOrder: item.sortOrder,
+        sortByMaster: item.sortByMaster,
+      },
+    }
+  );
+
+  if (result.nModified === 0) {
+    return res
+      .status(404)
+      .json(new ResponseModel(false, "Item not found or no changes made"));
+  }
+
+  const response = new ResponseModel(
+    true,
+    "Playlist item updated successfully",
+    null
+  );
+  res.status(200).json(response);
+};
+
+export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
+  const id = req.query.id;
+  const isDeleted = req.query.isDeleted;
+  const isAuto = req?.query.auto || false;
+  if (isAuto) {
+    await AlgorithmStatus.findByIdAndUpdate(
+      algoStatusId,
+      {
+        isApplied: true,
+      },
+      {
+        new: true,
+      }
+    );
+  }
+  if (!id) {
+    return res.status(400).json({ message: "ID parameter is missing" });
+  }
+
+  await PlaylistV2.findByIdAndUpdate(
+    id,
+    { isDeleted: isDeleted, isFixed: false },
+    { new: true }
+  );
+  const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);
+  if (playlist?.length === 1) {
+    await PlaylistType.updateOne(
+      {
+        _id: SETTING_ID,
+      },
+      {
+        $set: { isFirst: true },
+      }
+    );
+  }
+
+  let flattenedPlaylist = flattenPlaylist(playlist);
+  const updatedSongs = flattenedPlaylist.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+  }));
+  await Promise.all(
+    updatedSongs.map((song) =>
+      PlaylistV2.updateOne(
+        { _id: song._id },
+        {
+          $set: {
+            sortOrder: song.sortOrder,
+            isFixed:
+              song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
+          },
+        }
+      )
+    )
+  );
+
+  const response = new ResponseModel(true, "List Updated Successfully.", null);
+  res.status(200).json(response);
+};
+
+const addSongHandlerV2 = async (songId, addByCustomer, res) => {
+  const players = await Players.aggregate([
+    {
+      $match: {
+        assignSongs: new mongoose.Types.ObjectId(songId),
+        "duty.status": true,
+      },
+    },
+    {
+      $lookup: {
+        from: "playlistv2",
+        localField: "_id",
+        foreignField: "assignedPlayer",
+        as: "playlistEntries",
+        pipeline: [
+          {
+            $match: {
+              songData: new mongoose.Types.ObjectId(songId),
+              isDeleted: false,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $addFields: {
+        isInPlaylist: { $gt: [{ $size: "$playlistEntries" }, 0] },
+      },
+    },
+    {
+      $sort: { createdAt: 1 }, // Sort players by createdAt in ascending order
+    },
+    {
+      $project: {
+        _id: 1,
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        phone: 1,
+        isInPlaylist: 1,
+        playlistEntries: 1,
+      },
+    },
+  ]);
+
+  let playerToAssign = null;
+
+  if (players?.length > 0) {
+    // Find a player who is not in the playlist
+    playerToAssign = players.find((player) => !player.isInPlaylist);
+
+    // If all players are already in the playlist, select the second player
+    if (!playerToAssign) {
+      // If the first and last players are the same, select the second player
+      if (
+        players?.length > 1 &&
+        players[0]._id.equals(players[players?.length - 1]._id)
+      ) {
+        playerToAssign = players[1];
+      } else {
+        // playerToAssign = players[0];
+        return res
+          .status(400)
+          .json(new ResponseModel(false, "Song Already exist in the playlist"));
+      }
+    }
+  }
+  let playlistCount;
+  if (playerToAssign) {
+    playlistCount = await PlaylistV2.countDocuments({
+      isDeleted: false,
+    });
+    const newPlaylistEntry = new PlaylistV2({
+      assignedPlayer: playerToAssign._id,
+      songData: new mongoose.Types.ObjectId(songId),
+      addByCustomer: addByCustomer,
+      sortOrder: playlistCount,
+    });
+    await newPlaylistEntry.save();
+    const list = await PlaylistV2.aggregate(songFromPlaylistV2);
+
+    let flattenedPlaylist = flattenPlaylist(list);
+    const foundSong = flattenedPlaylist.find(
+      (song) => song.songId.toString() === songId.toString()
+    );
+
+    const response = new ResponseModel(
+      true,
+      "Song added to playlist successfully",
+      {
+        message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
+        player: playerToAssign,
+        song: foundSong,
+        playlistCount: playlistCount,
+      }
+    );
+    res.status(200).json(response);
+  } else {
+    res.status(200).json({
+      message: "No players available to assign the song",
+      players,
+    });
+  }
+};
+
+export const addSongToPlaylistByCustomerV2 = async (req, res) => {
+  const { songId, addByCustomer, songDetail } = req.body;
+  const list = await PlaylistV2.aggregate(songFromPlaylistV2);
+  const flattenedPlaylist = flattenPlaylist(list);
+  const songAtTop = flattenedPlaylist
+    ?.filter((song, index) => index == 0)
+    .map((song) => song.songId);
+  if (!songId) {
+    return res.status(400).json({ message: "Song ID is required" });
+  }
+  const isEqual = songAtTop.toString() === songId;
+
+  const delay = songDetail?.duration + 1;
+  const timeout = delay * 1000;
+
+  if (
+    isEqual &&
+    songDetail?.playingState == true &&
+    songDetail?.duration < delay
+  ) {
+    setTimeout(() => {
+      return addSongHandlerV2(songId, addByCustomer, res);
+    }, timeout);
+  } else {
+    return addSongHandlerV2(songId, addByCustomer, res);
+  }
+};
+
+export const addMultipleSongsToPlaylistV2 = async (req, res) => {
+  const songIds = req.body;
+  // await AlgorithmStatus.findByIdAndUpdate(
+  //   algoStatusId,
+  //   {
+  //     isApplied: true,
+  //   },
+  //   {
+  //     new: true,
+  //   }
+  // );
+  // Validate that songIds is provided and is an array
+  if (!Array.isArray(songIds) || songIds.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "An array of song IDs is required" });
+  }
+
+  // Prepare an array of promises for each song addition
+  songIds.map(async (item, index) => {
+    addSongHandlerV2(item?.songId, false, res);
+  });
 };

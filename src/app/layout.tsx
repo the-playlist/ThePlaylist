@@ -28,13 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ReduxProvider>
-        <ToastProvider>
-          <body className={inter.className}>
+      <body className={inter.className}>
+        <ReduxProvider>
+          <ToastProvider>
             <div>{children}</div>
-          </body>
-        </ToastProvider>
-      </ReduxProvider>
+          </ToastProvider>
+        </ReduxProvider>
+      </body>
     </html>
   );
 }

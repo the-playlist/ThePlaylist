@@ -6,6 +6,7 @@ import { MdOutlineFullscreenExit } from "react-icons/md";
 
 import {
   useLazyGetSongsFromPlaylistQuery,
+  useLazyGetSongsFromPlaylistV2Query,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
@@ -16,7 +17,7 @@ import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
-  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
+  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);
@@ -43,57 +44,50 @@ const PerformerView = () => {
     });
     socket.connect();
 
-    socket.on("insertSongIntoPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+    socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
+      const { playlist } = item;
       setPerformers([...playlist]);
-    });
-    socket.on("handleDragRes", (item) => {
-      const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
-    });
-    socket.on("bufferTimeRes", (item) => {
-      setTimerRunning(false);
-      const { time } = item;
-      setSeconds(time);
-      setTimerRunning(true);
     });
 
-    socket.on("startIntroSecondsResponse", (item) => {
-      setShowCountDown(true);
-    });
-    socket.on("RemoveSongFromPlaylistResponse", (item) => {
-      const { playlist, isFirst } = item;
+    socket.on("favoriteSongRes-v2", (item) => {
+      const { playlist } = item;
       setPerformers([...playlist]);
     });
-    socket.on("playerViewRes", (item) => {
-      const { playlist, isFirst } = item;
-      localStorage.setItem("isFirstTimeFetched", isFirst);
+
+    socket.on("playerViewRes-v2", (item) => {
+      const { playlist } = item;
 
       setPerformers([...playlist]);
     });
-    socket.on("emptyPlaylistResponse", (item) => {
+    socket.on("emptyPlaylistResponse-v2", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
 
-    socket.on("undoActionResponse", (item) => {
+    socket.on("undoActionResponse-v2", (item) => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-    socket.on("undoFavRes", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("songAddByCustomerRes", (item) => {
+
+    socket.on("songAddByCustomerRes-v2", (item) => {
       const { playlist, isFirst } = item;
       setPerformers([...playlist]);
     });
 
-    socket.on("themeChangeByMasterRes", (item) => {
+    socket.on("handleDragRes-v2", (item) => {
+      const { playlist } = item;
+      setPerformers([...playlist]);
+    });
+
+    socket.on("themeChangeByMasterRes-v2", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);
       }
+    });
+    socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
     });
 
     socket.on("disconnect", async (reason) => {
@@ -152,11 +146,10 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
-        const list = response?.data?.content?.playlist;
-        if (list?.length == 0) {
-          localStorage.setItem("isFirstTimeFetched", true);
-        }
-        setPerformers(list);
+        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
+          response?.data?.content;
+
+        setPerformers(completeList);
       }
       setLoading(false);
     } catch (error) {

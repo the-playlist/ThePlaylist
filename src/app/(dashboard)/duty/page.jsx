@@ -1,11 +1,9 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import { FaQuestion } from "react-icons/fa";
-
 import {
   useLazyGetStaffListQuery,
   useUpdateDutyStatusMutation,
-  useLazyGetAssignSongsWithPlayersQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { MdClear } from "react-icons/md";
 import { toast } from "react-toastify";
@@ -22,7 +20,8 @@ const DutyScreen = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [updateStatusAPI, updateStatusResponse] = useUpdateDutyStatusMutation();
-
+  const [isPlaylist, setIsPlaylist] = useState("/playlist");
+  const [confirmationLoader, setConfirmationLoader] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -65,12 +64,15 @@ const DutyScreen = () => {
     if (response && !response.error) {
       toast(response?.data?.description);
       setShowModal(false);
+      setConfirmationLoader(null);
+
       staffList.some((player) => {
         if (player.duty.status === true) {
           setSelectSongModal(true);
         }
       });
     } else {
+      setConfirmationLoader(null);
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
   };
@@ -101,10 +103,8 @@ const DutyScreen = () => {
     );
   };
 
-  //
-
   return (
-    <div className=" flex-1  h-full">
+    <div className="h-full  flex flex-col">
       {getStaffListResponse?.isFetching ? (
         <CustomLoader />
       ) : (
@@ -133,17 +133,21 @@ const DutyScreen = () => {
                 </div>
               </div>
               <div className="">
-                <div className="w-full flex  justify-between">
+                <div className="w-full flex gap-2">
                   <button
-                    className="btn w-[49%] bg-white text-black border border-black"
+                    className="btn flex-1  bg-white text-black border border-black"
                     onClick={() => {
                       setShowModal(false);
                     }}
                   >
                     No, cancel
                   </button>
+
                   <button
                     onClick={() => {
+                      // setIsPlaylist("/playlist-v2");
+                      setConfirmationLoader("/playlist-v2");
+
                       let payload = [];
                       staffList?.forEach((item) => {
                         payload.push({
@@ -155,25 +159,73 @@ const DutyScreen = () => {
 
                       onUpdateStatusHandler(payload);
                     }}
-                    className="btn w-[49%] bg-primary text-black "
+                    className="btn flex-1 bg-primary text-black "
                   >
-                    {updateStatusResponse?.isLoading ? (
+                    {confirmationLoader == "/playlist-v2" ? (
                       <span className="loading loading-spinner loading-md"></span>
                     ) : (
                       "Yes, confirm"
                     )}
                   </button>
+                  {/* <button
+                    onClick={() => {
+                      setIsPlaylist("/playlist");
+                      setConfirmationLoader("/playlist");
+                      let payload = [];
+                      staffList?.forEach((item) => {
+                        payload.push({
+                          id: item?._id,
+                          status: item?.duty.status,
+                          startTime: item?.duty.startTime,
+                        });
+                      });
+
+                      onUpdateStatusHandler(payload);
+                    }}
+                    className="btn flex-1  bg-primary text-black "
+                  >
+                    {confirmationLoader == "/playlist" ? (
+                      <span className="loading loading-spinner loading-md"></span>
+                    ) : (
+                      "Yes, confirm V1"
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsPlaylist("/playlist-v2");
+                      setConfirmationLoader("/playlist-v2");
+
+                      let payload = [];
+                      staffList?.forEach((item) => {
+                        payload.push({
+                          id: item?._id,
+                          status: item?.duty.status,
+                          startTime: item?.duty.startTime,
+                        });
+                      });
+
+                      onUpdateStatusHandler(payload);
+                    }}
+                    className="btn flex-1 bg-primary text-black "
+                  >
+                    {confirmationLoader == "/playlist-v2" ? (
+                      <span className="loading loading-spinner loading-md"></span>
+                    ) : (
+                      "Yes, confirm V2"
+                    )}
+                  </button> */}
                 </div>
               </div>
             </div>
           </dialog>
+
           {staffList?.length > 0 ? (
-            <>
+            <div className="flex-1 relative">
               <div className="px-2">
-                <h2 className="font-bold py-5">
+                <h2 className="font-bold my-5">
                   On Duty Players ({countTrueDuty})
                 </h2>
-                <div className="relative w-1/4 mb-8 flex items-center ">
+                <div className="relative w-1/4 mb-8 flex items-center">
                   <input
                     type="text"
                     placeholder="Search"
@@ -197,7 +249,7 @@ const DutyScreen = () => {
                   </svg>
                   {searchTerm?.length > 0 && (
                     <button
-                      className="absolute right-0 top-2 hover:pointer rounded-r-lg px-4 py-2 "
+                      className="absolute right-0 top-2 hover:pointer rounded-r-lg px-4 py-2"
                       onClick={() => setSearchTerm("")}
                     >
                       <MdClear size={20} className="text-gray-400" />
@@ -205,54 +257,55 @@ const DutyScreen = () => {
                   )}
                 </div>
               </div>
-              <div className="px-2 pb-10 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
-                <div className="px-2">
-                  <div className="sticky top-0 z-10 bg-[#FAFAFA] grid grid-cols-4 text-base font-medium text-black">
-                    <span>Players</span>
-                    <span>Status</span>
-                    <span className="text-center">On Duty Time</span>
-                    <span className="text-right">Change Status</span>
-                  </div>
-                  <div className="">
-                    {filteredPlayers?.map((item, index) => (
-                      <div
-                        key={index}
-                        className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4  grid grid-cols-4"
-                      >
-                        <div className="capitalize flex items-center">{`${item?.firstName} ${item?.lastName}`}</div>
-                        <div className="flex items-center">
-                          <div
-                            className={`h-2 w-2 rounded-full mr-2 ${
-                              item?.duty.status ? "bg-green-700" : "bg-gray-400"
-                            }`}
-                          ></div>
-                          {item?.duty.status ? "On Duty" : "Off Duty"}
-                        </div>
-                        <div className=" flex items-center justify-center">
-                          {item?.duty?.startTime || "-"}
-                        </div>
-                        <div className=" flex items-center justify-end">
-                          <input
-                            onClick={() => {
-                              changeStatus(item?._id, item?.duty.status);
-                            }}
-                            type="checkbox"
-                            className="toggle toggle-success"
-                            checked={item.duty.status}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  {filteredPlayers?.length == 0 && (
-                    <div className="flex justify-center text-base items-center h-[90vh] text-black w-full">
-                      No Players Found
-                    </div>
-                  )}
+
+              <div className="px-2 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
+                <div className="sticky top-0 z-10 bg-[#FAFAFA] grid grid-cols-4 text-base font-medium text-black">
+                  <span>Players</span>
+                  <span>Status</span>
+                  <span className="text-center">On Duty Time</span>
+                  <span className="text-right">Change Status</span>
                 </div>
+
+                <div>
+                  {filteredPlayers?.map((item, index) => (
+                    <div
+                      key={index}
+                      className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4 grid grid-cols-4"
+                    >
+                      <div className="capitalize flex items-center ">{`${item?.firstName} ${item?.lastName}`}</div>
+                      <div className="flex items-center">
+                        <div
+                          className={`h-2 w-2 rounded-full mr-2   ${
+                            item?.duty.status ? "bg-green-700" : "bg-gray-400"
+                          }`}
+                        ></div>
+                        {item?.duty.status ? "On Duty" : "Off Duty"}
+                      </div>
+                      <div className="  flex items-center justify-center">
+                        {item?.duty?.startTime || "-"}
+                      </div>
+                      <div className=" flex items-center justify-end">
+                        <input
+                          onClick={() => {
+                            changeStatus(item?._id, item?.duty.status);
+                          }}
+                          type="checkbox"
+                          className="toggle toggle-success"
+                          checked={item.duty.status}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {filteredPlayers?.length == 0 && (
+                  <div className="flex justify-center text-base items-center h-[90vh] text-black w-full">
+                    No Players Found
+                  </div>
+                )}
               </div>
 
-              <div className=" absolute bottom-0 w-[80%] flex justify-end py-4 bg-[#fafafa]">
+              <div className="absolute bottom-0 w-full flex justify-end py-2 bg-[#fafafa]">
                 <GenericButton
                   text="Save Attendance"
                   onClick={() => {
@@ -260,8 +313,10 @@ const DutyScreen = () => {
                   }}
                 />
               </div>
+
               {selectSongModal && (
                 <SelectSongModal
+                  isPlaylist={isPlaylist}
                   onReload={() => {
                     console.log("called");
                   }}
@@ -270,6 +325,9 @@ const DutyScreen = () => {
                   title={"Push to Queue"}
                   openModal={selectSongModal}
                   fetchList={() => {
+                    // isPlaylist == "/playlist"
+                    //   ? router.push("/playlist")
+                    //   : router.push("/playlist-v2");
                     router.push("/playlist");
                   }}
                   closeModal={() => {
@@ -277,7 +335,7 @@ const DutyScreen = () => {
                   }}
                 />
               )}
-            </>
+            </div>
           ) : (
             <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
               No Players found
