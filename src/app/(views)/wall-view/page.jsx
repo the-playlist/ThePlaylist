@@ -1,11 +1,11 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import {
-  useLazyGetSongsFromPlaylistV2Query,
+  useLazyGetSongsFromPlaylistQuery,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
@@ -17,11 +17,12 @@ import { EllipsisText } from "@/app/_components/ellipsis-text";
 const WallView = () => {
   const handle = useFullScreenHandle();
 
-  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
+  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistQuery();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const isOnline = useOnlineStatus();
   const [isLoading, setIsLoading] = useState(true);
   const [songList, setSongList] = useState([]);
+  const elementRef = useRef(null);
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   const [currentActive, setCurrentActive] = useState(null);
@@ -50,7 +51,7 @@ const WallView = () => {
     });
     socket.connect();
 
-    socket.on("wallViewJumbotronResponse-v2", (item) => {
+    socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
       setCurrentActive(screenName);
       localStorage.setItem("currentActive", screenName);
@@ -58,29 +59,31 @@ const WallView = () => {
         fetchPlaylistSongList();
       }
     });
-    socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
-      const { playlist } = item;
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
       setSongList([...playlist]);
     });
-    socket.on("favoriteSongRes-v2", (item) => {
-      const { playlist } = item;
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-    socket.on("handleDragRes-v2", (item) => {
-      const { playlist } = item;
-      setSongList([...playlist]);
-    });
-    socket.on("emptyPlaylistResponse-v2", (item) => {
-      const { playlist } = item;
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
 
-    socket.on("wallViewRes-v2", (item) => {
-      const { playlist } = item;
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setSongList([...playlist]);
+    });
+    socket.on("wallViewRes", (item) => {
+      const { playlist, isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
 
       setSongList([...playlist]);
     });
-    socket.on("undoActionResponse-v2", (item) => {
+    socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
@@ -90,17 +93,13 @@ const WallView = () => {
         getThemeByTitleHandler(title);
       }
     });
-    socket.on("songAddByCustomerRes-v2", (item) => {
+    socket.on("songAddByCustomerRes", (item) => {
       const { playlist, isFirst } = item;
       setSongList([...playlist]);
     });
-    socket.on("undoFavRes-v2", (item) => {
+    socket.on("undoFavRes", (item) => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
-    });
-    socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
     });
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
@@ -126,9 +125,10 @@ const WallView = () => {
     try {
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
-        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-          response?.data?.content;
-        setSongList(completeList);
+        setSongList(response?.data?.content?.playlist);
+        if (response?.data?.content?.playlist?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setIsLoading(false);
     } catch (error) {

@@ -10,9 +10,7 @@ export default function RootLayout({
       <SideBar />
       <div className="flex flex-col flex-1">
         <NavBar />
-        <div className="flex-grow flex flex-col">
-          <div className="flex-grow overflow-y-auto ">{children}</div>
-        </div>
+        <div className=" flex-1 mt-2">{children}</div>
       </div>
     </div>
   );

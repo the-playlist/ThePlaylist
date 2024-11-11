@@ -27,6 +27,10 @@ const Players = () => {
     fetchPlayers();
   }, []);
 
+  // useEffect(() => {
+  //   throw new Error("Simulated error for testing ErrorBoundary");
+  // }, []);
+  
   const fetchPlayers = async (second) => {
     try {
       const result = await getAllPlayersApi();

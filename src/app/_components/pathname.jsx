@@ -13,11 +13,6 @@ export const navlinks = [
     href: "/playlist",
     icon: (isActive) => <PlaylistIcon color={isActive ? "#EFC440" : "#000"} />,
   },
-  // {
-  //   name: "PlaylistV2",
-  //   href: "/playlist-v2",
-  //   icon: (isActive) => <PlaylistIcon color={isActive ? "#EFC440" : "#000"} />,
-  // },
   {
     name: "Duty",
     href: "/duty",

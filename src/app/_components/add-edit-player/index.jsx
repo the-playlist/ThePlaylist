@@ -155,13 +155,11 @@ function AddEditPlayer({
             />
             <InputField
               title="Phone"
-              validate={{ required: "Phone Number is required" }}
               register={register}
               name="phone"
               isPhone
               placeholder="Enter Phone"
               onChange={handleNumberChange}
-              error={errors.phone}
             />
           </div>
           <div className="font-semibold my-1 text-lg ">{`Assign Songs (${selectedSongsList?.length})`}</div>

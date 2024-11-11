@@ -14,27 +14,17 @@ const endPoints = {
   UPDATE_DUTY_STATUS: "api/duty/updateDutyStatus",
   GET_ONDUTY_PLAYER_SONGS: "api/songs/getOnDutyPlayerSongs",
   GET_ASSIGN_SONGS_WITH_PLAYERS: "api/songs/getAssignSongs",
-  GET_ASSIGN_SONGS_WITH_PLAYERS_V2: "api/songs/getAssignSongs-v2",
   GET_SONGS_FROM_PLAYLIST:
     "api/playlist/getSongsFromPlaylist?isFirstTimeFetched=",
   ADD_SONGS_TO_PLAYLIST: "api/playlist/addSongsToPlaylist",
-  ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
   UPDATE_PLAYERNAME_PLAYLIST: "api/playlist/updatePlayerName",
-  UPDATE_PLAYERNAME_PLAYLIST_V2: "api/playlist/updatePlayerName-v2",
   DELETE_SONG_FROM_PLAYLIST: "api/playlist/deleteSongFromPlaylistById?id=",
-  DELETE_SONG_FROM_PLAYLISTV2: "api/playlist/deleteSongFromPlaylistById-v2?id=",
   DISABLE_SONG: "api/songs/disableSongStatus",
   UPDATE_SORT_ORDER_SONGS: "api/playlist/updateSongsOrder",
-  UPDATE_SORT_ORDER_SONGS_V2: "api/playlist/updateSongsOrder-v2",
-
   UPDATE_PLAYLIST_TYPE: "api/playlist/addPlaylistType",
   DELETE_ALL_SONGS_PLAYLIST: "api/playlist/deleteAllSongsFromPlaylist",
-  DELETE_ALL_SONGS_PLAYLIST_V2: "api/playlist/deleteAllSongsFromPlaylist-v2",
   ADD_UPDATE_VOTE: "api/vote/addUpdateVote",
-  ADD_UPDATE_VOTE_V2: "api/vote/addUpdateVote-v2",
-
   GET_TABLE_VIEW_SONGS: "api/playlist/getSongsForTableView",
-  GET_TABLE_VIEW_SONGS_V2: "api/playlist/getSongsForTableView-v2",
   GET_SONGS_REPORT_LIST: "api/vote/getSongsReportList?reportType=",
   CHANGE_PASSWORD: "api/auth/changePassword",
   CREATE_STREAM_USER: "api/stream/createStreamUser",
@@ -43,8 +33,6 @@ const endPoints = {
   CHANGE_STREAM_REQUEST_STATUS: "api/stream/changeStreamStatus",
   GET_LIVE_STREAM: "api/stream/getLiveStream",
   ADD_SONG_TO_PLAYLIST_BY_CUSTOMER: "api/playlist/addSongToPlaylistByCustomer",
-  ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2:
-    "api/playlist/addSongToPlaylistByCustomer-v2",
   GET_THEME_LIST: "api/theme/getThemeList",
   ADD_UPDATE_THEME: "api/theme/addUpdateTheme",
   GET_THEME_BY_TITLE: "api/theme/getThemeByTitle?title=",
@@ -54,11 +42,9 @@ const endPoints = {
   GET_ALL_FAV_SONGS: `api/songs/getAllFavSongs`,
   IS_PLAYLIST_EMPTY: "api/playlist/isPlaylistEmpty",
   GET_ADD_SONG_LIST_FOR_CUSTOMER: `api/songs/getOnDutyPlayerSongsForCustomer`,
-  GET_ADD_SONG_LIST_FOR_CUSTOMER_V2: `api/songs/getOnDutyPlayerSongsForCustomer-v2`,
   REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
-  REVERT_MASTER_CHECK_V2: `api/playlist/revertMasterCheck-v2`,
-  GET_SONGS_FROM_PLAYLIST_V2: "api/playlist/getSongsFromPlaylist-v2",
-  ADD_MULTI_SONGS_IN_PLAYLIST_V2: "api/songs/addMultipleSongsToPlaylist-v2",
+  CREATE_ERROR: `api/error/create-error`,
+  SAVE_USER_ACTION: `api/actions/saveUserAction`,
 };
 
 // Define a service using a base URL and expected endpoints
@@ -86,17 +72,11 @@ export const emptySplitApi = createApi({
     getSongsFromPlaylist: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
     }),
-    getSongsFromPlaylistV2: builder.query({
-      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST_V2}`,
-    }),
     getSongsReportList: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
     }),
     getAssignSongsWithPlayers: builder.query({
       query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS,
-    }),
-    getAssignSongsWithPlayersV2: builder.query({
-      query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS_V2,
     }),
     getSongsList: builder.query({
       query: () => endPoints.GET_SONGS_LIST,
@@ -116,9 +96,6 @@ export const emptySplitApi = createApi({
     getAddSongListForCustomer: builder.query({
       query: () => endPoints.GET_ADD_SONG_LIST_FOR_CUSTOMER,
     }),
-    getAddSongListForCustomerV2: builder.query({
-      query: () => endPoints.GET_ADD_SONG_LIST_FOR_CUSTOMER_V2,
-    }),
     getIsPlaylistEmpty: builder.query({
       query: () => endPoints.IS_PLAYLIST_EMPTY,
     }),
@@ -133,13 +110,7 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    getTableViewSongsV2: builder.mutation({
-      query: (body: any) => ({
-        url: endPoints.GET_TABLE_VIEW_SONGS_V2,
-        method: "POST",
-        body: body,
-      }),
-    }),
+
     disbaleSongFromSongBank: builder.mutation({
       query: (body: any) => ({
         url: endPoints.DISABLE_SONG,
@@ -196,23 +167,9 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    addUpdateVoteV2: builder.mutation({
-      query: (body: any) => ({
-        url: `${endPoints.ADD_UPDATE_VOTE_V2}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
     updateSortOrderOfSongs: builder.mutation({
       query: (body: any) => ({
         url: `${endPoints.UPDATE_SORT_ORDER_SONGS}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
-    updateSortOrderOfSongsV2: builder.mutation({
-      query: (body: any) => ({
-        url: `${endPoints.UPDATE_SORT_ORDER_SONGS_V2}`,
         method: "POST",
         body: body,
       }),
@@ -224,23 +181,9 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    revertMasterCheckV2: builder.mutation({
-      query: (body: any) => ({
-        url: `${endPoints.REVERT_MASTER_CHECK_V2}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
     addUpdatePlayer: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_PLAYER,
-        method: "POST",
-        body: body,
-      }),
-    }),
-    addSongsToPlaylistV2: builder.mutation({
-      query: (body) => ({
-        url: endPoints.ADD_SONGS_TO_PLAYLIST_V2,
         method: "POST",
         body: body,
       }),
@@ -280,13 +223,6 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    updatePlayerNamePlaylistV2: builder.mutation({
-      query: (body) => ({
-        url: `${endPoints.UPDATE_PLAYERNAME_PLAYLIST_V2}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
     deletePlayerById: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_PLAYER}${body}`,
@@ -305,12 +241,6 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
-    deleteAllSongsFromPlaylistV2: builder.mutation({
-      query: () => ({
-        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST_V2}`,
-        method: "DELETE",
-      }),
-    }),
     undoDeletedSongsFromPlaylist: builder.mutation({
       query: (body) => ({
         url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST}`,
@@ -324,12 +254,6 @@ export const emptySplitApi = createApi({
         method: "DELETE",
       }),
     }),
-    deleteSongFromPlaylistByIdV2: builder.mutation({
-      query: (body) => ({
-        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto} `,
-        method: "DELETE",
-      }),
-    }),
     addSongToPlaylistByCustomer: builder.mutation({
       query: (body) => ({
         url: `${endPoints.ADD_SONG_TO_PLAYLIST_BY_CUSTOMER}`,
@@ -337,26 +261,26 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    addSongToPlaylistByCustomerV2: builder.mutation({
-      query: (body) => ({
-        url: `${endPoints.ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
-    addMultiSongToPlaylistV2: builder.mutation({
-      query: (body) => ({
-        url: `${endPoints.ADD_MULTI_SONGS_IN_PLAYLIST_V2}`,
-        method: "POST",
-        body: body,
-      }),
-    }),
     getThemeList: builder.query({
       query: () => endPoints.GET_THEME_LIST,
+    }),
+    createError: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.CREATE_ERROR,
+        method: "POST",
+        body: body,
+      }),
     }),
     addUpdateTheme: builder.mutation({
       query: (body) => ({
         url: endPoints.ADD_UPDATE_THEME,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    saveUserAction: builder.mutation({
+      query: (body) => ({
+        url: endPoints.SAVE_USER_ACTION,
         method: "POST",
         body: body,
       }),
@@ -421,20 +345,9 @@ export const {
   useLazyGetFavSongListQuery,
   useLazyGetIsPlaylistEmptyQuery,
   useLazyGetAddSongListForCustomerQuery,
+  useCreateErrorMutation,
   useDisbaleSongFromSongBankMutation,
   useRevertMasterCheckMutation,
   useUpdatePlayerNamePlaylistMutation,
-  useLazyGetSongsFromPlaylistV2Query,
-  useDeleteSongFromPlaylistByIdV2Mutation,
-  useDeleteAllSongsFromPlaylistV2Mutation,
-  useAddSongsToPlaylistV2Mutation,
-  useGetTableViewSongsV2Mutation,
-  useUpdatePlayerNamePlaylistV2Mutation,
-  useLazyGetAssignSongsWithPlayersV2Query,
-  useRevertMasterCheckV2Mutation,
-  useUpdateSortOrderOfSongsV2Mutation,
-  useAddUpdateVoteV2Mutation,
-  useLazyGetAddSongListForCustomerV2Query,
-  useAddSongToPlaylistByCustomerV2Mutation,
-  useAddMultiSongToPlaylistV2Mutation,
+  useSaveUserActionMutation,
 } = emptySplitApi;

@@ -2,26 +2,29 @@
 import React, { useEffect, useState } from "react";
 import { MdClear } from "react-icons/md";
 import {
-  useAddSongToPlaylistByCustomerV2Mutation,
+  useAddSongToPlaylistByCustomerMutation,
   useLazyGetLimitByTitleQuery,
-  useLazyGetAddSongListForCustomerV2Query,
+  useLazyGetAddSongListForCustomerQuery,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 
 const Typeahead = () => {
   let limitTitle = "Song Limit";
+  const pathName = usePathname();
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
+  const [saveUserActionApi] = useSaveUserActionMutation();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
-    useAddSongToPlaylistByCustomerV2Mutation();
+    useAddSongToPlaylistByCustomerMutation();
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
   const [filteredOptions, setFilteredOptions] = useState();
   const [songsListApi, getSongsListResponse] =
-    useLazyGetAddSongListForCustomerV2Query();
+    useLazyGetAddSongListForCustomerQuery();
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
@@ -32,6 +35,7 @@ const Typeahead = () => {
     playingState: false,
     id: null,
   });
+
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
@@ -42,20 +46,21 @@ const Typeahead = () => {
         getLimitByTitleHandler(title);
       }
     });
+    socket.on("songAddByCustomerRes", (item) => {
+      fetchSongsList();
+    });
 
-    socket.on("insertSongIntoPlaylistRequest-v2", (item) => {
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
       fetchSongsList();
     });
-    socket.on("songAddByCustomerRes-v2", (item) => {
+    socket.on("emptyPlaylistResponse", (item) => {
       fetchSongsList();
     });
-    socket.on("insertSongIntoPlaylistRequest-v2", () => {
+
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
       fetchSongsList();
     });
-    socket.on("RemoveSongFromPlaylistResponse-v2", () => {
-      fetchSongsList();
-    });
-    socket.on("remainingTimeRes-v2", (item) => {
+    socket.on("remainingTimeRes", (item) => {
       const { duration, currentSongDetail, playingState } = item;
       setSongDetail({
         title: currentSongDetail?.title,
@@ -65,6 +70,7 @@ const Typeahead = () => {
         id: currentSongDetail?.id,
       });
     });
+
     socket.connect();
     setSocket(socket);
   }, []);
@@ -133,7 +139,6 @@ const Typeahead = () => {
       }
     }
   };
-
   const addSongsHandler = async (id) => {
     try {
       let response = await addSongToPlaylistByUserApi({
@@ -142,14 +147,27 @@ const Typeahead = () => {
         songDetail: songDetail,
       });
       if (response && !response.error) {
-        const { song, playlistCount } = response?.data?.content;
+        const { isFirstTimeFetched, playlist } = response?.data?.content;
+        localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
         toast.success(response?.data?.description);
         setInputValue("");
         setSelectedSong(null);
-        socket.emit("songAddByCustomerReq-v2", {
-          song: song,
-          playlistCount: playlistCount,
+        socket.emit("songAddByCustomerReq", {
+          isFirst: isFirstTimeFetched,
+          playlist: playlist,
         });
+        let payload = {
+          actionName: "Song Added By Customer",
+          pathName: pathName,
+          details: {
+            status: "success",
+            songId: id,
+            addByCustomer: true,
+            songDetail: songDetail,
+            signalName: "songAddByCustomerReq",
+          },
+        };
+        await saveUserActionApi(payload);
         router.back();
       } else {
         toast.error(response?.error?.data?.description);
