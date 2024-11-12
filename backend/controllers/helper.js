@@ -26,5 +26,6 @@ export const flattenPlaylist = (playlist) =>
       sortOrder: item.sortOrder,
       sortByMaster: item?.sortByMaster,
       addByCustomer: item.addByCustomer,
+      isFixed: item?.isFixed,
     };
   });

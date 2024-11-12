@@ -5,9 +5,10 @@ import { MdClear } from "react-icons/md";
 import _ from "lodash";
 import {
   useAddSongsToPlaylistMutation,
+  useAddSongsToPlaylistV2Mutation,
   useLazyGetAssignSongsWithPlayersQuery,
+  useLazyGetAssignSongsWithPlayersV2Query,
   useLazyGetLimitByTitleQuery,
-  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -52,6 +53,7 @@ const AssignedSongsDropdown = ({ item }) => {
 };
 
 const SelectSongModal = ({
+  isPlaylist,
   item,
   title,
   openModal,
@@ -63,14 +65,19 @@ const SelectSongModal = ({
 }) => {
   const pathname = usePathname();
 
+  const currentSongSecond = useSelector(
+    (state) => state?.playlistReducer?.currentSongSecond
+  );
+  const storedSeconds = parseInt(currentSongSecond);
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
   );
 
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [getAssignSongsApi] = useLazyGetAssignSongsWithPlayersQuery();
+  const [getAssignSongsV2Api] = useLazyGetAssignSongsWithPlayersV2Query();
+
   const [songLimit, setSongLimit] = useState(0);
-  const [saveUserActionApi] = useSaveUserActionMutation();
   const [socket, setSocket] = useState();
   const reff = useRef();
   const [searchTerm, setSearchTerm] = useState("");
@@ -101,8 +108,8 @@ const SelectSongModal = ({
     }
   }, [openModal]);
 
-  const [addSongToPlaylistApi, AddSongsToPlaylistResponse] =
-    useAddSongsToPlaylistMutation();
+  const [addSongToPlaylistV2Api] = useAddSongsToPlaylistV2Mutation();
+  const [addSongToPlaylistApi] = useAddSongsToPlaylistMutation();
 
   useEffect(() => {
     getLimitByTitleHandler();
@@ -112,40 +119,21 @@ const SelectSongModal = ({
   const fetchAssignSongsList = async () => {
     try {
       setIsLoading(true);
-      let response = await getAssignSongsApi(null);
+      let response = await getAssignSongsV2Api(null);
+      // pathname == "/playlist" || isPlaylist == "/playlist"
+      //   ? await getAssignSongsApi(null)
+      //   : await getAssignSongsV2Api(null);
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
-
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
-        let payload = {
-          actionName: "Add song (Fetch)",
-          pathName: pathname,
-          details: {
-            status: "success",
-            content: tempArr,
-            description: response?.data?.description,
-            playlistCount: playlistCount,
-          },
-        };
-        await saveUserActionApi(payload);
         setPlayersList(tempArr);
       }
       setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       console.error("Fetch failed:", error);
-      let payload = {
-        actionName: "Add song (Fetch)",
-        pathName: pathname,
-        details: {
-          status: "false",
-
-          description: error,
-        },
-      };
-      await saveUserActionApi(payload);
     }
   };
 
@@ -190,26 +178,17 @@ const SelectSongModal = ({
 
   const addSongsHandler = async (data) => {
     try {
-      let response = await addSongToPlaylistApi(data);
+      let response = await addSongToPlaylistV2Api(data);
+      // pathname == "/playlist" || isPlaylist == "/playlist"
+      //   ? await addSongToPlaylistApi(data)
+      //   : await addSongToPlaylistV2Api(data);
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
-        let payload = {
-          actionName: "Add song (Post)",
-          pathName: pathname,
-          details: {
-            status: "success",
-            content: data,
-            description: response?.data?.description,
-          },
-        };
         closeModal();
-        await saveUserActionApi(payload);
-
         toast.success(response?.data?.description);
         onReload();
-        await fetchList(isFirstTimeFetched);
-
+        fetchList(isFirstTimeFetched);
         setBtnLoader(false);
       }
     } catch (error) {
@@ -226,6 +205,7 @@ const SelectSongModal = ({
         qualifiedPlayers: record?.assignedPlayers,
       };
     });
+
     addSongsHandler(transformedRecords);
 
     return transformedRecords;
@@ -403,7 +383,7 @@ const SelectSongModal = ({
                 <GenericButton
                   disabled={btnLoader || activeSongsCount == 0}
                   loading={btnLoader}
-                  text={btnText}
+                  text={playersList?.length == 0 ? "Duty Screen" : btnText}
                   onClick={() => {
                     if (playersList?.length == 0) {
                       closeModal();

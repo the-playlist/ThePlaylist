@@ -45,6 +45,20 @@ const endPoints = {
   REVERT_MASTER_CHECK: `api/playlist/revertMasterCheck`,
   CREATE_ERROR: `api/error/create-error`,
   SAVE_USER_ACTION: `api/actions/saveUserAction`,
+  REVERT_MASTER_CHECK_V2: `api/playlist/revertMasterCheck-v2`,
+  GET_SONGS_FROM_PLAYLIST_V2: "api/playlist/getSongsFromPlaylist-v2",
+  ADD_MULTI_SONGS_IN_PLAYLIST_V2: "api/songs/addMultipleSongsToPlaylist-v2",
+  GET_ADD_SONG_LIST_FOR_CUSTOMER_V2: `api/songs/getOnDutyPlayerSongsForCustomer-v2`,
+  GET_TABLE_VIEW_SONGS_V2: "api/playlist/getSongsForTableView-v2",
+  DELETE_ALL_SONGS_PLAYLIST_V2: "api/playlist/deleteAllSongsFromPlaylist-v2",
+  ADD_UPDATE_VOTE_V2: "api/vote/addUpdateVote-v2",
+  UPDATE_SORT_ORDER_SONGS_V2: "api/playlist/updateSongsOrder-v2",
+  UPDATE_PLAYERNAME_PLAYLIST_V2: "api/playlist/updatePlayerName-v2",
+  DELETE_SONG_FROM_PLAYLISTV2: "api/playlist/deleteSongFromPlaylistById-v2?id=",
+  GET_ASSIGN_SONGS_WITH_PLAYERS_V2: "api/songs/getAssignSongs-v2",
+  ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
+  ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2:
+    "api/playlist/addSongToPlaylistByCustomer-v2",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -301,6 +315,83 @@ export const emptySplitApi = createApi({
     getLimitByTitle: builder.query({
       query: (body: any) => `${endPoints.GET_LIMIT_BY_TITLE}${body}`,
     }),
+    getAssignSongsWithPlayersV2: builder.query({
+      query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS_V2,
+    }),
+    addSongsToPlaylistV2: builder.mutation({
+      query: (body) => ({
+        url: endPoints.ADD_SONGS_TO_PLAYLIST_V2,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    updatePlayerNamePlaylistV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.UPDATE_PLAYERNAME_PLAYLIST_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    deleteSongFromPlaylistByIdV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto} `,
+        method: "DELETE",
+      }),
+    }),
+    updateSortOrderOfSongsV2: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.UPDATE_SORT_ORDER_SONGS_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    deleteAllSongsFromPlaylistV2: builder.mutation({
+      query: () => ({
+        url: `${endPoints.DELETE_ALL_SONGS_PLAYLIST_V2}`,
+        method: "DELETE",
+      }),
+    }),
+    addUpdateVoteV2: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.ADD_UPDATE_VOTE_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getTableViewSongsV2: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.GET_TABLE_VIEW_SONGS_V2,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    addSongToPlaylistByCustomerV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getAddSongListForCustomerV2: builder.query({
+      query: () => endPoints.GET_ADD_SONG_LIST_FOR_CUSTOMER_V2,
+    }),
+    revertMasterCheckV2: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.REVERT_MASTER_CHECK_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
+    getSongsFromPlaylistV2: builder.query({
+      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST_V2}`,
+    }),
+    addMultiSongToPlaylistV2: builder.mutation({
+      query: (body) => ({
+        url: `${endPoints.ADD_MULTI_SONGS_IN_PLAYLIST_V2}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -350,4 +441,17 @@ export const {
   useRevertMasterCheckMutation,
   useUpdatePlayerNamePlaylistMutation,
   useSaveUserActionMutation,
+  useAddMultiSongToPlaylistV2Mutation,
+  useAddSongToPlaylistByCustomerV2Mutation,
+  useAddSongsToPlaylistV2Mutation,
+  useAddUpdateVoteV2Mutation,
+  useDeleteAllSongsFromPlaylistV2Mutation,
+  useDeleteSongFromPlaylistByIdV2Mutation,
+  useLazyGetAddSongListForCustomerV2Query,
+  useLazyGetSongsFromPlaylistV2Query,
+  useRevertMasterCheckV2Mutation,
+  useUpdatePlayerNamePlaylistV2Mutation,
+  useUpdateSortOrderOfSongsV2Mutation,
+  useLazyGetAssignSongsWithPlayersV2Query,
+  useGetTableViewSongsV2Mutation,
 } = emptySplitApi;

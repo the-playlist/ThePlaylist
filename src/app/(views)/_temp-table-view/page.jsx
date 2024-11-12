@@ -1,24 +1,27 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { useOnlineStatus } from "@/app/_utils/helper";
 import {
+  useAddUpdateVoteMutation,
   useLazyGetThemeByTitleQuery,
   useLazyGetLimitListQuery,
-  useGetTableViewSongsV2Mutation,
-  useAddUpdateVoteV2Mutation,
+  useGetTableViewSongsMutation,
+  useSaveUserActionMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { ScreenLoader } from "@/app/_components";
 import { io } from "socket.io-client";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
 
 const TableView = () => {
+  const pathname = usePathname();
   const isOnline = useOnlineStatus();
+  const [saveUserActionApi] = useSaveUserActionMutation();
 
   useEffect(() => {
     if (isOnline) {
@@ -35,7 +38,7 @@ const TableView = () => {
   const tableno = searchParams.get("tableno");
   const [getLimitListApi] = useLazyGetLimitListQuery();
   const [getPlaylistSongTableView, { isLoading: getSongsLoader }] =
-    useGetTableViewSongsV2Mutation();
+    useGetTableViewSongsMutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [votingLimit, setVotingLimit] = useState(null);
   const [queueLimit, setQueueLimit] = useState(0);
@@ -51,7 +54,6 @@ const TableView = () => {
     id: null,
     isTrue: null,
   });
-
   const [songDetail, setSongDetail] = useState({
     title: "",
     playerName: "",
@@ -95,14 +97,16 @@ const TableView = () => {
     });
     socket.connect();
     setSocket(socket);
-    socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
+    socket.on("insertSongIntoPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       // setPerformers([...playlist]);
       fetchPlaylistSongList(isFirst);
     });
-    // socket.on("voteCastingResponse-v2", (item) => {
-    //   fetchPlaylistSongList(false);
-    // });
+    socket.on("voteCastingResponse", (item) => {
+      const { isFirst } = item;
+      localStorage.setItem("isFirstTimeFetched", isFirst);
+      fetchPlaylistSongList(isFirst);
+    });
     socket.on("themeChangeByMasterRes", (item) => {
       const { title } = item;
       if (screenName == title) {
@@ -118,33 +122,31 @@ const TableView = () => {
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
     });
-
-    socket.on("handleDragRes-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setVotingList([...playlist]);
-    });
-    socket.on("undoActionResponse-v2", (item) => {
-      const { playlist, isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("emptyPlaylistResponse-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
-    });
-    socket.on("undoFavRes-v2", (item) => {
-      const { isFirst } = item;
-      fetchPlaylistSongList(isFirst);
-    });
-    socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
+    socket.on("RemoveSongFromPlaylistResponse", (item) => {
       const { playlist, isFirst } = item;
       setVotingList(playlist);
     });
-    socket.on("songAddByCustomerRes-v2", (item) => {
+    socket.on("handleDragRes", (item) => {
+      const { playlist, isFirst } = item;
+      setVotingList([...playlist]);
+    });
+    socket.on("undoActionResponse", (item) => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-
-    socket.on("remainingTimeRes-v2", (item) => {
+    socket.on("emptyPlaylistResponse", (item) => {
+      const { playlist, isFirst } = item;
+      setPerformers([...playlist]);
+    });
+    socket.on("undoFavRes", (item) => {
+      const { isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("songAddByCustomerRes", (item) => {
+      const { playlist, isFirst } = item;
+      fetchPlaylistSongList(isFirst);
+    });
+    socket.on("remainingTimeRes", (item) => {
       const { duration, currentSongDetail, playingState } = item;
       setSongDetail({
         title: currentSongDetail?.title,
@@ -154,7 +156,6 @@ const TableView = () => {
         id: currentSongDetail?.id,
       });
     });
-
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
@@ -197,16 +198,16 @@ const TableView = () => {
         firstFetch: firstFetch ?? firstTimeFetched,
       };
       let response = await getPlaylistSongTableView(payload);
-
       if (response && !response.isError) {
-        const { list, isFirstTimeFetched } = response?.data?.content || {};
+        const { list, isFirstTimeFetched } = response?.data?.content;
         setPerformers(list || []);
         setVotingLoader(false);
+        if (list?.length == 0) {
+          localStorage.setItem("isFirstTimeFetched", true);
+        }
       }
       setLoading(false);
     } catch (error) {
-      setLoading(false);
-      window.location.reload();
       console.error("Fetch failed:", error);
     }
   };
@@ -245,7 +246,7 @@ const TableView = () => {
       >
         <button
           onClick={() => {
-            router.push("/add-song-v2");
+            router.push("/add-song");
           }}
           className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
         >
@@ -284,7 +285,7 @@ const TableView = () => {
   }
 
   function castVote(voteData) {
-    socket.emit("voteCastingRequest-v2", voteData);
+    socket.emit("voteCastingRequest", voteData);
   }
   const creatStreamUserHandler = async () => {
     let payload = {
@@ -298,7 +299,7 @@ const TableView = () => {
   };
 
   const ActionButtons = ({ index, item }) => {
-    const [addUpdateVoteAPI] = useAddUpdateVoteV2Mutation();
+    const [addUpdateVoteAPI] = useAddUpdateVoteMutation();
 
     const handleVote = (isTrue) => {
       localStorage.setItem("isFirstTimeFetched", false);
@@ -358,7 +359,21 @@ const TableView = () => {
         isUpVote: isTrue,
         songDetail: songDetail,
       });
-
+      let payload = {
+        actionName: isTrue ? "Upvote" : "DownVote",
+        pathName: pathname,
+        details: {
+          status: "success",
+          customerId: deviceId,
+          songId: item?.songId,
+          playlistItemId: item?._id,
+          playerId: item?.assignedPlayerId,
+          isUpVote: isTrue,
+          songDetail: songDetail,
+          signalName: "voteCastingRequest",
+        },
+      };
+      await saveUserActionApi(payload);
       castVote({
         isFirst: false,
         userId: deviceId,
@@ -382,8 +397,8 @@ const TableView = () => {
             item?.tableUpVote == true
               ? "bg-green-500"
               : themeMode
-                ? "bg-white"
-                : "bg-[#3A3B3E]"
+              ? "bg-white"
+              : "bg-[#3A3B3E]"
           }`}
         >
           <IoIosArrowUp size={18} color={themeMode ? "black" : "white"} />
@@ -399,8 +414,8 @@ const TableView = () => {
             item?.tableUpVote === false
               ? "bg-red-500"
               : themeMode
-                ? "bg-white"
-                : "bg-[#3A3B3E]"
+              ? "bg-white"
+              : "bg-[#3A3B3E]"
           } ml-2`}
         >
           <IoIosArrowDown size={18} color={themeMode ? "black" : "white"} />
@@ -435,7 +450,6 @@ const TableView = () => {
             {performer?.map((item, index) => {
               return (
                 <div
-                  key={index}
                   className={`flex  ${
                     index < 2 ? "bg-top-queue-bg" : ""
                   } rounded-md flex-wrap my-2`}
@@ -453,8 +467,8 @@ const TableView = () => {
                         index < 2
                           ? "text-black"
                           : themeMode
-                            ? "text-black"
-                            : "text-white"
+                          ? "text-black"
+                          : "text-white"
                       }  text-sm lg:text-lg`}
                     >
                       {item?.title}
@@ -465,8 +479,8 @@ const TableView = () => {
                       index < 2
                         ? "text-black"
                         : themeMode
-                          ? "text-black"
-                          : "text-white"
+                        ? "text-black"
+                        : "text-white"
                     } text-sm lg:text-lg`}
                   >
                     {item?.artist}

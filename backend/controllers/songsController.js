@@ -7,6 +7,7 @@ import { songFromPlaylist } from "../aggregation/playlist";
 import { convertTimeToSeconds, formatTime } from "@/app/_utils/helper";
 import PlaylistType from "../models/playlistType";
 import { SETTING_ID } from "./playlistController";
+import PlaylistV2 from "../models/playlistV2";
 
 export const addUpdateSong = async (req, res, next) => {
   const id = req?.body?.id;
@@ -697,4 +698,127 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+};
+
+export const getOnDutyAssignSongsV2 = async (req, res, next) => {
+  let data;
+  const { keyword, id } = req.query;
+  // Get the time threshold for songs added within the last hour
+  const oneHourAgo = new Date(Date.now() - 3600 * 1000);
+  if (keyword) {
+    data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
+  } else {
+    let pipeline = [
+      // Lookup players and unwind
+      {
+        $lookup: {
+          from: "players",
+          localField: "_id",
+          foreignField: "assignSongs",
+          as: "assignedPlayers",
+        },
+      },
+      {
+        $unwind: "$assignedPlayers",
+      },
+      // Filter only on-duty players
+      {
+        $match: {
+          "assignedPlayers.duty.status": true,
+          $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
+        },
+      },
+      // Group by song and push assigned players
+      {
+        $group: {
+          _id: "$_id",
+          isFav: { $first: "$isFav" },
+          title: { $first: "$title" },
+          artist: { $first: "$artist" },
+          introSec: { $first: "$introSec" },
+          songDuration: { $first: "$songDuration" },
+          category: { $first: "$category" },
+          assignedPlayers: {
+            $push: {
+              _id: "$assignedPlayers._id",
+              playerName: {
+                $concat: [
+                  "$assignedPlayers.firstName",
+                  " ",
+                  "$assignedPlayers.lastName",
+                ],
+              },
+            },
+          },
+        },
+      },
+      // Lookup playlist information
+      {
+        $lookup: {
+          from: "playlistv2",
+          localField: "_id",
+          foreignField: "songData",
+          as: "playlist_info",
+        },
+      },
+      // Add a field to count playlist entries where isDeleted is false
+      {
+        $addFields: {
+          playlistPlayers: {
+            $size: {
+              $filter: {
+                input: "$playlist_info",
+                as: "playlistItem",
+                cond: { $eq: ["$$playlistItem.isDeleted", false] },
+              },
+            },
+          },
+          // Add the latest added date from the playlist for the song
+          songAddedAt: {
+            $max: "$playlist_info.songAddedAt", // Assuming playlistAddedAt stores when the song was added to the playlist
+          },
+        },
+      },
+      // Filter out songs that are already in the playlist (playlistPlayers > 0)
+      {
+        $match: {
+          $and: [
+            { playlistPlayers: { $eq: 0 } }, // Only return songs that are not in the playlist
+            {
+              $or: [
+                { songAddedAt: { $lte: oneHourAgo } }, // Song was added more than an hour ago
+                { songAddedAt: { $eq: null } }, // Song was never added to the playlist
+              ],
+            },
+          ],
+        },
+      },
+      // Flag comedy songs
+      {
+        $addFields: {
+          isComedy: { $eq: ["$category", "Comedy"] },
+        },
+      },
+      // Sort with comedy songs at the bottom
+      {
+        $sort: {
+          isComedy: 1, // Non-comedy songs first
+          title: 1, // Then sort by title if needed
+        },
+      },
+    ];
+
+    if (id) {
+      pipeline.push({
+        $match: { _id: new mongoose.Types.ObjectId(id) },
+      });
+    }
+    data = await Songs.aggregate(pipeline);
+  }
+  const playlistCount = await PlaylistV2.countDocuments({ isDeleted: false });
+  const response = new ResponseModel(true, "Songs fetched successfully.", {
+    list: data,
+    playlistCount: playlistCount,
+  });
+  res.status(200).json(response);
 };

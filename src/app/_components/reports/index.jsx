@@ -74,6 +74,7 @@ const Reports = () => {
             <div className="overflow-y-auto h-[560px]   pb-20 px-1">
               {reportsList.map((item, index) => (
                 <div
+                  key={index}
                   className={` text-center bg-white drop-shadow rounded-2xl h-16 flex items-center mb-4 px-5`}
                 >
                   <div className="w-1/12 text-start">
