@@ -702,104 +702,123 @@ export const isPlaylistEmpty = async (req, res, next) => {
   res.status(201).json(response);
 };
 
-export const getSongsFromPlaylistV2 = async (req, res, next) => {
-  const firstFetch = req?.query?.isFirstTimeFetched;
+function filterAndSortSongs(songs, predicate, sortField) {
+  return songs.filter(predicate).sort((a, b) => a[sortField] - b[sortField]);
+}
 
-  const [playlistType, status, playlist, playlistCount] = await Promise.all([
-    PlaylistType.findOne({ _id: SETTING_ID }).lean(),
-    AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
-    PlaylistV2.aggregate(songFromPlaylistV2),
-    PlaylistV2.countDocuments({ isDeleted: false }),
-  ]);
+function mapSongsWithSortOrder(songs) {
+  return songs.map((song, index) => ({
+    ...song,
+    sortOrder: index,
+    isFixed: index < 2,
+    addByCustomer: false,
+  }));
+}
 
-  const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
-
-  let flattenedPlaylist = flattenPlaylist(playlist);
-
-  if (isFavortiteListType) {
-    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-  }
-  let tempNonFix = flattenedPlaylist?.filter((item) => !item?.isFixed);
-  const secondLastSong = tempNonFix[tempNonFix?.length - 2];
-  const lastSong = tempNonFix[tempNonFix?.length - 1];
-
-  if (status?.isApplied || lastSong?.playerName == secondLastSong?.playerName) {
-    const finalPlaylist = playlistAlgorithmV2(
-      firstFetch ?? isFirstTimeFetched,
-      flattenedPlaylist
-    );
-
-    const updatedSongs = finalPlaylist.map((song, index) => ({
-      ...song,
-      sortOrder: index,
-    }));
-
-    await Promise.all(
-      updatedSongs.map((song) =>
-        PlaylistV2.updateOne(
-          { _id: song._id },
-          {
-            $set: {
-              sortOrder: song.sortOrder,
-              isFixed:
-                song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
-              addByCustomer: false,
-            },
-          }
-        )
+async function updateSongsInDatabase(songs) {
+  await Promise.all(
+    songs.map((song) =>
+      PlaylistV2.updateOne(
+        { _id: song._id },
+        {
+          $set: {
+            sortOrder: song.sortOrder,
+            isFixed: song.isFixed,
+            addByCustomer: false,
+          },
+        }
       )
-    );
+    )
+  );
+}
 
-    const newFlattenedPlaylist = flattenPlaylist(
-      await PlaylistV2.aggregate(songFromPlaylistV2)
-    );
+export const getSongsFromPlaylistV2 = async (req, res, next) => {
+  try {
+    const firstFetch = req?.query?.isFirstTimeFetched;
 
-    const filteredPlaylist = isFavortiteListType
-      ? newFlattenedPlaylist.filter((item) => item.isFav)
-      : newFlattenedPlaylist;
+    const [playlistType, status, playlist, playlistCount] = await Promise.all([
+      PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+      AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+      PlaylistV2.aggregate(songFromPlaylistV2),
+      PlaylistV2.countDocuments({ isDeleted: false }),
+    ]);
 
-    const isFixedItems = filteredPlaylist?.filter(
-      (item) => item?.isFixed == true
-    );
+    const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
+    let flattenedPlaylist = flattenPlaylist(playlist);
 
-    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+    if (isFavortiteListType) {
+      flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+    }
 
-    res.status(200).json(
-      new ResponseModel(true, "Songs fetched successfully.", {
-        isFixedItems: isFixedItems,
-        isNotFixed: isNotFixedItems,
-        playlistCount,
-        isFavortiteListType,
-        completeList: filteredPlaylist,
-      })
-    );
-    await AlgorithmStatus.findByIdAndUpdate(
-      algoStatusId,
-      {
-        isApplied: false,
-      },
-      {
-        new: true,
-      }
-    );
-  } else {
-    const filteredPlaylist = isFavortiteListType
-      ? flattenedPlaylist?.filter((item) => item.isFav)
-      : flattenedPlaylist;
-    const isFixedItems = filteredPlaylist?.filter(
-      (item) => item?.isFixed == true
-    );
-    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+    const tempNonFix = flattenedPlaylist.filter((item) => !item.isFixed);
+    const [secondLastSong, lastSong] = tempNonFix.slice(-2);
 
-    res.status(200).json(
-      new ResponseModel(true, "Songs fetched successfully.", {
-        isFixedItems: isFixedItems,
-        isNotFixed: isNotFixedItems,
-        playlistCount,
-        isFavortiteListType,
-        completeList: filteredPlaylist,
-      })
-    );
+    if (
+      status?.isApplied ||
+      lastSong?.playerName == secondLastSong?.playerName
+    ) {
+      // const finalPlaylist = flattenedPlaylist;
+      const finalPlaylist = playlistAlgorithmV2(
+        firstFetch ?? isFirstTimeFetched,
+        flattenedPlaylist
+      );
+
+      const updatedSongs = mapSongsWithSortOrder(finalPlaylist);
+      await updateSongsInDatabase(updatedSongs);
+
+      const newFlattenedPlaylist = flattenPlaylist(
+        await PlaylistV2.aggregate(songFromPlaylistV2)
+      );
+
+      const filteredPlaylist = isFavortiteListType
+        ? newFlattenedPlaylist.filter((item) => item.isFav)
+        : newFlattenedPlaylist;
+
+      const isFixedItems = filteredPlaylist?.filter(
+        (item) => item?.isFixed == true
+      );
+
+      const isNotFixedItems = filteredPlaylist?.filter(
+        (item) => !item?.isFixed
+      );
+
+      res.status(200).json(
+        new ResponseModel(true, "Songs fetched successfully.", {
+          isFixedItems: isFixedItems,
+          isNotFixed: isNotFixedItems,
+          playlistCount,
+          isFavortiteListType,
+          completeList: filteredPlaylist,
+        })
+      );
+      await AlgorithmStatus.findByIdAndUpdate(
+        algoStatusId,
+        { isApplied: false },
+        { new: true }
+      );
+    } else {
+      const filteredPlaylist = isFavortiteListType
+        ? flattenedPlaylist?.filter((item) => item.isFav)
+        : flattenedPlaylist;
+      const isFixedItems = filteredPlaylist?.filter(
+        (item) => item?.isFixed == true
+      );
+      const isNotFixedItems = filteredPlaylist?.filter(
+        (item) => !item?.isFixed
+      );
+
+      res.status(200).json(
+        new ResponseModel(true, "Songs fetched successfully.", {
+          isFixedItems: isFixedItems,
+          isNotFixed: isNotFixedItems,
+          playlistCount,
+          isFavortiteListType,
+          completeList: filteredPlaylist,
+        })
+      );
+    }
+  } catch (error) {
+    console.log("==>", error);
   }
 };
 

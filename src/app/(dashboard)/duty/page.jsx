@@ -309,7 +309,11 @@ const DutyScreen = () => {
                 <GenericButton
                   text="Save Attendance"
                   onClick={() => {
-                    setShowModal(true);
+                    if (countTrueDuty >= 5) {
+                      setShowModal(true);
+                    } else {
+                      toast.info("At least 5 players should be on duty");
+                    }
                   }}
                 />
               </div>

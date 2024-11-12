@@ -116,18 +116,85 @@ const SelectSongModal = ({
     fetchAssignSongsList();
   }, [songLimit, playlistLength]);
 
+  function countUniquePlayers(songs) {
+    const uniquePlayerIds = new Set();
+
+    songs.forEach((song) => {
+      song?.assignedPlayers.forEach((player) => {
+        uniquePlayerIds.add(player._id);
+      });
+    });
+
+    return uniquePlayerIds.size;
+  }
+
+  function canPlayerBeSelected(playerCheckCount, playerId, maxOccurance) {
+    return (
+      playerCheckCount[playerId] === undefined ||
+      playerCheckCount[playerId] < maxOccurance
+    );
+  }
+
+  function randomlyCheckItems(data, numberOfChecks, maxOccurance) {
+    const checkedItems = [];
+    const playerCheckCount = {};
+
+    const checksToMake = Math.min(numberOfChecks, data.length);
+
+    // Shuffle data array to ensure random order
+    const shuffledData = data.sort(() => 0.5 - Math.random());
+
+    for (let item of shuffledData) {
+      // Stop if we've checked enough items
+      if (checkedItems.length >= checksToMake) break;
+
+      const playerId = item.selectedPlayers?._id;
+
+      if (
+        playerId &&
+        canPlayerBeSelected(playerCheckCount, playerId, maxOccurance) &&
+        !checkedItems.includes(item)
+      ) {
+        // Mark the item as checked and add it to the checked items array
+        checkedItems.push(item);
+
+        // Increment the check count for the player
+        playerCheckCount[playerId] = (playerCheckCount[playerId] || 0) + 1;
+
+        // Mark the item as checked
+        item.isChecked = true;
+      }
+    }
+    let index = 0;
+    while (checkedItems.length < checksToMake) {
+      const item = shuffledData[index % shuffledData.length];
+
+      if (!checkedItems.includes(item)) {
+        checkedItems.push(item);
+        item.isChecked = true;
+      }
+      index++;
+    }
+
+    return data;
+  }
+
   const fetchAssignSongsList = async () => {
     try {
       setIsLoading(true);
       let response = await getAssignSongsV2Api(null);
-      // pathname == "/playlist" || isPlaylist == "/playlist"
-      //   ? await getAssignSongsApi(null)
-      //   : await getAssignSongsV2Api(null);
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
+        const getOccurrence = 30 / countUniquePlayers(list);
+        const roundedNumber = Math.ceil(getOccurrence);
+
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
+
+        if (isDuty) {
+          tempArr = randomlyCheckItems(tempArr, 30, roundedNumber);
+        }
         setPlayersList(tempArr);
       }
       setIsLoading(false);
@@ -154,11 +221,13 @@ const SelectSongModal = ({
     let randomIndex = getRandomId(playersList?.length);
     const playerId = playersList[randomIndex]._id;
     let occurance = assignedPlayers.filter((item) => item === playerId)?.length;
+
     if (occurance > 2) {
       randomIndex = getRandomId(playersList?.length);
     }
     const selectedPlayer = playersList[randomIndex];
     assignedPlayers.push(playerId);
+
     return selectedPlayer;
   };
 
@@ -171,17 +240,13 @@ const SelectSongModal = ({
       return {
         ...item,
         selectedPlayers: selectedPlayer,
-        isChecked: isDuty ? songLimit > index : false,
       };
     });
   }
-
   const addSongsHandler = async (data) => {
     try {
       let response = await addSongToPlaylistV2Api(data);
-      // pathname == "/playlist" || isPlaylist == "/playlist"
-      //   ? await addSongToPlaylistApi(data)
-      //   : await addSongToPlaylistV2Api(data);
+
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
         localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);

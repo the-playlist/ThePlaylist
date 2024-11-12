@@ -67,152 +67,148 @@ export function applySongSequenceAlgorithmV2(songs, firstTwoSongs) {
   const comedySongs = [];
   const customerAddedSongs = [];
 
-  // // Separate comedy songs, customer-added songs, and others
-  // for (const song of songs) {
-  //   if (song.category === "Comedy") {
-  //     comedySongs.push(song);
-  //   } else if (song.addByCustomer) {
-  //     customerAddedSongs.push(song);
-  //   } else {
-  //     remainingSongs.push(song);
-  //   }
-  // }
+  // Separate comedy songs, customer-added songs, and others
+  for (const song of songs) {
+    if (song.category === "Comedy") {
+      comedySongs.push(song);
+    } else if (song.addByCustomer) {
+      customerAddedSongs.push(song);
+    } else {
+      remainingSongs.push(song);
+    }
+  }
 
-  // let lastPlayerFromFirstTwo = firstTwoSongs
-  //   ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
-  //   : null;
-  // const lastCategoryFromFirstTwo = firstTwoSongs
-  //   ? firstTwoSongs[firstTwoSongs?.length - 1]?.category
-  //   : null;
+  let lastPlayerFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
+    : null;
+  const lastCategoryFromFirstTwo = firstTwoSongs
+    ? firstTwoSongs[firstTwoSongs?.length - 1]?.category
+    : null;
 
-  // let lastCategory = lastCategoryFromFirstTwo;
+  let lastCategory = lastCategoryFromFirstTwo;
 
-  // const recentPlayers = [];
-  // if (lastPlayerFromFirstTwo) {
-  //   recentPlayers.push(lastPlayerFromFirstTwo);
-  // }
+  const recentPlayers = [];
+  if (lastPlayerFromFirstTwo) {
+    recentPlayers.push(lastPlayerFromFirstTwo);
+  }
 
-  // let nonBalladCountSinceLastBallad = 0;
+  let nonBalladCountSinceLastBallad = 0;
 
-  // while (remainingSongs?.length > 0) {
-  //   let songAdded = false;
+  while (remainingSongs?.length > 0) {
+    let songAdded = false;
 
-  //   for (let i = 0; i < remainingSongs?.length; i++) {
-  //     const song = remainingSongs[i];
+    for (let i = 0; i < remainingSongs?.length; i++) {
+      const song = remainingSongs[i];
 
-  //     const isPlayerAllowed = !recentPlayers.includes(song.playerName);
+      const isPlayerAllowed = !recentPlayers.includes(song.playerName);
 
-  //     const isBalladAllowed =
-  //       song.category !== "Ballad" || nonBalladCountSinceLastBallad >= 3;
+      const isBalladAllowed =
+        song.category !== "Ballad" || nonBalladCountSinceLastBallad >= 3;
 
-  //     if (isPlayerAllowed && isBalladAllowed) {
-  //       modifiedSongs.push(song);
+      if (isPlayerAllowed && isBalladAllowed) {
+        modifiedSongs.push(song);
 
-  //       recentPlayers.push(song.playerName);
-  //       if (recentPlayers?.length > 3) {
-  //         recentPlayers.shift();
-  //       }
+        recentPlayers.push(song.playerName);
+        if (recentPlayers?.length > 3) {
+          recentPlayers.shift();
+        }
 
-  //       if (song.category === "Ballad") {
-  //         nonBalladCountSinceLastBallad = 0;
-  //       } else {
-  //         nonBalladCountSinceLastBallad++;
-  //       }
+        if (song.category === "Ballad") {
+          nonBalladCountSinceLastBallad = 0;
+        } else {
+          nonBalladCountSinceLastBallad++;
+        }
 
-  //       lastCategory = song.category;
-  //       remainingSongs.splice(i, 1);
-  //       songAdded = true;
-  //       break;
-  //     }
-  //   }
+        lastCategory = song.category;
+        remainingSongs.splice(i, 1);
+        songAdded = true;
+        break;
+      }
+    }
 
-  //   if (!songAdded) {
-  //     // Relax player rule and try to find any non-ballad song
-  //     for (let i = 0; i < remainingSongs?.length; i++) {
-  //       const song = remainingSongs[i];
-  //       if (
-  //         song.category !== "Ballad" &&
-  //         !recentPlayers.includes(song.playerName)
-  //       ) {
-  //         modifiedSongs.push(song);
+    if (!songAdded) {
+      // Relax player rule and try to find any non-ballad song
+      for (let i = 0; i < remainingSongs?.length; i++) {
+        const song = remainingSongs[i];
+        if (
+          song.category !== "Ballad" &&
+          !recentPlayers.includes(song.playerName)
+        ) {
+          modifiedSongs.push(song);
 
-  //         // Update recent players list
-  //         recentPlayers.push(song.playerName);
-  //         if (recentPlayers?.length > 3) {
-  //           recentPlayers.shift();
-  //         }
+          // Update recent players list
+          recentPlayers.push(song.playerName);
+          if (recentPlayers?.length > 3) {
+            recentPlayers.shift();
+          }
 
-  //         nonBalladCountSinceLastBallad++;
-  //         lastCategory = song.category;
-  //         remainingSongs.splice(i, 1); // Remove the song from the remaining list
-  //         songAdded = true;
-  //         break;
-  //       }
-  //     }
-  //   }
+          nonBalladCountSinceLastBallad++;
+          lastCategory = song.category;
+          remainingSongs.splice(i, 1); // Remove the song from the remaining list
+          songAdded = true;
+          break;
+        }
+      }
+    }
 
-  //   if (!songAdded) {
-  //     // If still no song added, force add the next available song
-  //     const song = remainingSongs.shift(); // Get the first remaining song
-  //     modifiedSongs.push(song);
+    if (!songAdded) {
+      // If still no song added, force add the next available song
+      const song = remainingSongs.shift(); // Get the first remaining song
+      modifiedSongs.push(song);
 
-  //     // Update recent players list
-  //     recentPlayers.push(song.playerName);
-  //     if (recentPlayers?.length > 3) {
-  //       recentPlayers.shift();
-  //     }
+      // Update recent players list
+      recentPlayers.push(song.playerName);
+      if (recentPlayers?.length > 3) {
+        recentPlayers.shift();
+      }
 
-  //     // Update ballad tracking
-  //     if (song.category === "Ballad") {
-  //       nonBalladCountSinceLastBallad = 0;
-  //     } else {
-  //       nonBalladCountSinceLastBallad++;
-  //     }
+      // Update ballad tracking
+      if (song.category === "Ballad") {
+        nonBalladCountSinceLastBallad = 0;
+      } else {
+        nonBalladCountSinceLastBallad++;
+      }
 
-  //     lastCategory = song.category;
-  //   }
-  // }
+      lastCategory = song.category;
+    }
+  }
 
-  // const finalPlaylist = [
-  //   ...modifiedSongs,
-  //   ...comedySongs,
-  //   ...customerAddedSongs,
-  // ];
-  // finalPlaylist.sort((a, b) => b.upVote - b.downVote - (a.upVote - a.downVote));
-  // return finalPlaylist;
+  const finalPlaylist = [
+    ...modifiedSongs,
+    ...comedySongs,
+    ...customerAddedSongs,
+  ];
+  finalPlaylist.sort((a, b) => b.upVote - b.downVote - (a.upVote - a.downVote));
   const tempSongs = songs?.sort(
     (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
   );
-  // const hasVotes = finalPlaylist?.some(
-  //   (item) => item.upVote > 0 || item.downVote > 0
-  // );
+  const hasVotes = finalPlaylist?.some(
+    (item) => item.upVote > 0 || item.downVote > 0
+  );
 
   const secondSong = firstTwoSongs
     ? firstTwoSongs[firstTwoSongs?.length - 1]
     : null;
 
-  // let reCheckFinalPlaylist = [...finalPlaylist];
+  let reCheckFinalPlaylist = [...finalPlaylist];
   const checkBackToBack = hasBackToBackViolations(
-    // firstTwoSongs?.length > 0 ? tempSongs : reCheckFinalPlaylist,
-    tempSongs,
+    firstTwoSongs?.length > 0 ? tempSongs : reCheckFinalPlaylist,
     secondSong
   );
   let getRearrangeSongs;
-  // if (checkBackToBack) {
-  let tempRecentPlayer = firstTwoSongs
-    ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
-    : null;
-  // if (checkBackToBack) {
-  getRearrangeSongs = reorderSongs(tempSongs, tempRecentPlayer);
-  // }
-  // }
-  return getRearrangeSongs;
-
-  // checkBackToBack
-  //   ? getRearrangeSongs
-  //   : firstTwoSongs?.length > 0
-  //     ? tempSongs
-  //     : finalPlaylist;
+  if (checkBackToBack) {
+    let tempRecentPlayer = firstTwoSongs
+      ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
+      : null;
+    if (checkBackToBack) {
+      getRearrangeSongs = reorderSongs(reCheckFinalPlaylist, tempRecentPlayer);
+    }
+  }
+  return checkBackToBack
+    ? getRearrangeSongs
+    : firstTwoSongs?.length > 0
+      ? tempSongs
+      : finalPlaylist;
 }
 
 export function playlistAlgorithm(isFirstTimeFetched, flattenedPlaylist) {
@@ -395,6 +391,89 @@ export function applySongSequenceAlgorithm(songs, firstTwoSongs) {
   return finalPlaylist;
 }
 
+// function reorderSongs(songs, mostRecentPlayerName) {
+//   // Sort songs by voting difference in descending order
+//   let remainingSongs = songs.sort(
+//     (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
+//   );
+
+//   let orderedSongs = [];
+
+//   function placeSong() {
+//     for (let i = 0; i < remainingSongs.length; i++) {
+//       const currentSong = remainingSongs[i];
+//       const lastSong = orderedSongs[orderedSongs.length - 1];
+
+//       // Avoid Comedy as the first song
+//       if (orderedSongs.length === 0 && currentSong.category === "Comedy") {
+//         continue;
+//       }
+
+//       // Avoid placing a song from the same player as the most recent one at the start
+//       if (
+//         orderedSongs.length === 0 &&
+//         currentSong.playerName === mostRecentPlayerName
+//       ) {
+//         continue;
+//       }
+
+//       // Prioritize avoiding same-player consecutive songs
+//       if (
+//         (!lastSong || lastSong.playerName !== currentSong.playerName) &&
+//         (!lastSong ||
+//           lastSong.category !== "Ballad" ||
+//           currentSong.category !== "Ballad")
+//       ) {
+//         orderedSongs.push(currentSong);
+//         remainingSongs.splice(i, 1);
+//         return true;
+//       }
+//     }
+//     return false;
+//   }
+
+//   // Main loop
+//   while (remainingSongs.length > 0) {
+//     if (!placeSong()) {
+//       // Backtrack if no valid placement was possible without breaking priority rules
+//       if (orderedSongs.length > 1) {
+//         const lastSong = orderedSongs.pop();
+//         remainingSongs.unshift(lastSong); // Put the last placed song back at the beginning
+//       } else {
+//         // If we're at the beginning and still no valid placement, stop to avoid an infinite loop
+//         break;
+//       }
+//     }
+//   }
+
+//   return orderedSongs;
+// }
+
+function hasBackToBackViolations(playlist, firstSong = null) {
+  let previousSong = firstSong || playlist[0];
+
+  const startIndex = firstSong ? 0 : 1;
+
+  for (let i = startIndex; i < playlist.length; i++) {
+    const currentSong = playlist[i];
+
+    if (currentSong.playerName === previousSong.playerName) {
+      return true;
+    }
+
+    if (
+      previousSong.category === "Ballad" &&
+      currentSong.category === "Ballad"
+    ) {
+      return true;
+    }
+
+    previousSong = currentSong;
+  }
+
+  return false;
+}
+
 function reorderSongs(songs, mostRecentPlayerName) {
   // Sort songs by voting difference in descending order
   let remainingSongs = songs.sort(
@@ -439,41 +518,11 @@ function reorderSongs(songs, mostRecentPlayerName) {
   // Main loop
   while (remainingSongs.length > 0) {
     if (!placeSong()) {
-      // Backtrack if no valid placement was possible without breaking priority rules
-      if (orderedSongs.length > 1) {
-        const lastSong = orderedSongs.pop();
-        remainingSongs.unshift(lastSong); // Put the last placed song back at the beginning
-      } else {
-        // If we're at the beginning and still no valid placement, stop to avoid an infinite loop
-        break;
-      }
+      // If unable to place due to constraints, append remaining songs to the bottom
+      orderedSongs = orderedSongs.concat(remainingSongs);
+      break;
     }
   }
 
   return orderedSongs;
-}
-
-function hasBackToBackViolations(playlist, firstSong = null) {
-  let previousSong = firstSong || playlist[0];
-
-  const startIndex = firstSong ? 0 : 1;
-
-  for (let i = startIndex; i < playlist.length; i++) {
-    const currentSong = playlist[i];
-
-    if (currentSong.playerName === previousSong.playerName) {
-      return true;
-    }
-
-    if (
-      previousSong.category === "Ballad" &&
-      currentSong.category === "Ballad"
-    ) {
-      return true;
-    }
-
-    previousSong = currentSong;
-  }
-
-  return false;
 }
