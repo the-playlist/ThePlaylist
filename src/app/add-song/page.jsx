@@ -96,6 +96,7 @@ const Typeahead = () => {
   }, []);
 
   const fetchSongsList = async () => {
+    setSelectedSong(null);
     let response = await songsListApi();
     if (response && !response.isError) {
       const songList = response.data?.content;

@@ -1273,3 +1273,18 @@ export const addSongToPlaylistByCustomerV2 = async (req, res) => {
     return addSongHandlerV2(songId, addByCustomer, res);
   }
 };
+
+export const addMultipleSongsToPlaylistV2 = async (req, res) => {
+  const songIds = req.body;
+
+  if (!Array.isArray(songIds) || songIds.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "An array of song IDs is required" });
+  }
+
+  // Prepare an array of promises for each song addition
+  songIds.map(async (item, index) => {
+    addSongHandlerV2(item?.songId, false, res);
+  });
+};

@@ -280,7 +280,7 @@ const page = () => {
     const tempFixed = playlistWithId.filter((song) => song.isFixed);
     setFixedContent([...tempFixed]);
     setNonFixedContent([...tempNonFixed]);
-    console.log("==>", playlistWithId);
+
     setCompleteList(playlistWithId);
 
     if (!isTrashPress && tempFixed?.length > 0) {
