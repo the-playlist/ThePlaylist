@@ -164,122 +164,9 @@ const page = () => {
     await fetchPlaylistSongList();
   };
 
-  // const getRandomId = (length) => {
-  //   return Math.floor(Math.random() * length);
-  // };
-  // let assignedPlayers = [];
-  // const getRandomSelectedPlayer = (playersList) => {
-  //   let randomIndex = getRandomId(playersList?.length);
-  //   const playerId = playersList[randomIndex]._id;
-  //   let occurance = assignedPlayers.filter((item) => item === playerId)?.length;
-  //   if (occurance > 2) {
-  //     randomIndex = getRandomId(playersList?.length);
-  //   }
-  //   const selectedPlayer = playersList[randomIndex];
-  //   assignedPlayers.push(playerId);
-  //   return selectedPlayer;
-  // };
-
-  // function addSelectedPlayers(data) {
-  //   return data?.map((item, index) => {
-  //     const selectedPlayer =
-  //       item.assignedPlayers && item.assignedPlayers?.length > 0
-  //         ? getRandomSelectedPlayer(item.assignedPlayers)
-  //         : {};
-  //     return {
-  //       ...item,
-  //       selectedPlayers: selectedPlayer,
-  //     };
-  //   });
-  // }
-
-  // const fetchSongsList = async () => {
-  //   let response = await getAssignSongsV2Api(null);
-  //   if (response && !response.isError) {
-  //     const count = 30 - completeList?.length;
-  //     const songList = response.data?.content?.list;
-  //     let tempArr = addSelectedPlayers(songList);
-  //     const getSongs = getRandomSongIds(tempArr, count);
-
-  //     if (getSongs?.length > 0) {
-  //       addMultiSongsHandler(getSongs);
-  //     }
-  //   }
-  // };
-
-  // function getRandomSongIds(songsArray, count) {
-  //   const numSongs = Math.min(count, songsArray.length);
-
-  //   const shuffled = [...songsArray]
-  //     .sort(() => 0.5 - Math.random())
-  //     .slice(0, numSongs);
-
-  //   const transformedRecords = shuffled?.map((record, index) => {
-  //     return {
-  //       songData: record?._id,
-  //       assignedPlayer: record?.selectedPlayers?._id,
-  //       sortOrder: completeList?.length + index,
-  //       qualifiedPlayers: record?.assignedPlayers,
-  //     };
-  //   });
-  //   return transformedRecords;
-  // }
-
-  // const addMultiSongsHandler = async (data) => {
-  //   await addSongToPlaylistV2Api(data);
-  //   await fetchPlaylistSongList();
-  // };
-
   useEffect(() => {
     if (votingList != null) {
       fetchPlaylistSongList(null);
-
-      // const playlistSongListCopy = [...completeList];
-      // function findAndIncrementUpVote() {
-      //   const foundIndex = completeList?.findIndex(
-      //     (song) => song._id == votingList?.id
-      //   );
-      //   if (foundIndex !== -1) {
-      //     let updatedSong = { ...completeList[foundIndex] };
-      //     if (votingList?.isIncrement == true) {
-      //       updatedSong.upVote += 1;
-      //       if (updatedSong.downVote > 0) {
-      //         if (votingList?.isVoted) {
-      //           updatedSong.downVote -= 1;
-      //         }
-      //       }
-      //     } else {
-      //       updatedSong.downVote += 1;
-      //       if (updatedSong.upVote > 0) {
-      //         if (votingList?.isVoted) {
-      //           updatedSong.upVote -= 1;
-      //         }
-      //       }
-      //     }
-      //     playlistSongListCopy[foundIndex] = updatedSong;
-      //     return playlistSongListCopy;
-      //   }
-      // }
-
-      // const finalPlaylist = playlistAlgorithmV2(
-      //   votingList?.isFirst,
-      //   findAndIncrementUpVote()
-      // );
-
-      // const playlistWithId = finalPlaylist?.map((item, index) => ({
-      //   ...item,
-      //   id: index, // Add a unique id if it doesn't exist
-      // }));
-      // const tempNonFixed = playlistWithId.filter((song) => !song.isFixed);
-      // const tempFixed = playlistWithId.filter((song) => song.isFixed);
-      // setFixedContent([...tempFixed]);
-      // setNonFixedContent([...tempNonFixed]);
-      // socket.emit("wallPlayerViewReq-v2", {
-      //   isFirst: votingList?.isFirst,
-      //   playlist: finalPlaylist,
-      // });
-
-      // setCompleteList([...playlistWithId]);
     }
   }, [votingList]);
 
@@ -364,8 +251,6 @@ const page = () => {
       }
     }
     if (response && !response.error) {
-      // fetchPlaylistSongList();
-
       toast(response?.data?.description);
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");

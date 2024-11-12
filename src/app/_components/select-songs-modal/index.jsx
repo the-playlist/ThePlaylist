@@ -188,7 +188,10 @@ const SelectSongModal = ({
         closeModal();
         toast.success(response?.data?.description);
         onReload();
-        fetchList(isFirstTimeFetched);
+        setTimeout(() => {
+          fetchList(isFirstTimeFetched);
+        }, 1000);
+
         setBtnLoader(false);
       }
     } catch (error) {

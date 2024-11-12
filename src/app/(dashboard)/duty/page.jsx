@@ -325,9 +325,6 @@ const DutyScreen = () => {
                   title={"Push to Queue"}
                   openModal={selectSongModal}
                   fetchList={() => {
-                    // isPlaylist == "/playlist"
-                    //   ? router.push("/playlist")
-                    //   : router.push("/playlist-v2");
                     router.push("/playlist");
                   }}
                   closeModal={() => {
