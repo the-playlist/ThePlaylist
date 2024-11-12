@@ -113,7 +113,7 @@ const page = () => {
       setVotingList(item || {});
     });
     socket.on("songAddByCustomerRes-v2", (item) => {
-      const { song, playlistCount } = item;
+      const { playlistCount } = item;
       fetchPlaylistSongList(null);
     });
 

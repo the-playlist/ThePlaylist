@@ -245,7 +245,7 @@ const TableView = () => {
       >
         <button
           onClick={() => {
-            router.push("/add-song-v2");
+            router.push("/add-song");
           }}
           className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
         >

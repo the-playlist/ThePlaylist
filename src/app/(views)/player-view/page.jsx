@@ -23,9 +23,6 @@ const PerformerView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
-  const [seconds, setSeconds] = useState(0);
-  const [showCountDown, setShowCountDown] = useState(false);
-  const [timerRunning, setTimerRunning] = useState(false);
 
   let screenName = "Player View";
   useEffect(() => {
@@ -34,7 +31,9 @@ const PerformerView = () => {
         autoConnect: false,
       });
       socket.connect();
-      fetchPlaylistSongList(null);
+      setTimeout(() => {
+        fetchPlaylistSongList(null);
+      }, 1000);
     }
   }, [isOnline]);
 
@@ -120,31 +119,12 @@ const PerformerView = () => {
   }, []);
 
   useEffect(() => {
-    let timer;
-    if (seconds == 0) {
-      setShowCountDown(false);
-      return;
-    }
-    if (timerRunning && seconds > 0) {
-      timer = setTimeout(() => {
-        setSeconds(seconds - 1);
-      }, 1000);
-    } else {
-      setShowCountDown(false);
-    }
-
-    return () => clearTimeout(timer);
-  }, [seconds, timerRunning]);
-
-  useEffect(() => {
     getThemeByTitleHandler(screenName);
   }, []);
 
   const fetchPlaylistSongList = async (firstFetch) => {
-    let isFirst = localStorage.getItem("isFirstTimeFetched");
-
     try {
-      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
+      let response = await getPlaylistSongListApi(null);
       if (response && !response.isError) {
         const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
           response?.data?.content;
@@ -183,28 +163,6 @@ const PerformerView = () => {
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
-              {/* <div className=" float-right">
-                {!isFullScreen && (
-                  <button
-                    className="bg-transparent hidden md:block"
-                    onClick={() => {
-                      setIsFullScreen(!isFullScreen);
-                    }}
-                  >
-                    {!isFullScreen ? (
-                      <RiFullscreenFill
-                        size={30}
-                        color={themeMode ? "black" : "white"}
-                      />
-                    ) : (
-                      <MdOutlineFullscreenExit
-                        size={40}
-                        color={themeMode ? "black" : "white"}
-                      />
-                    )}
-                  </button>
-                )}
-              </div> */}
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>
@@ -262,7 +220,6 @@ const PerformerView = () => {
                             index={index}
                             performerList={performer}
                             introTimer={parseInt(item?.introSec ?? 0)}
-                            showCountDown={showCountDown}
                           />
                         </td>
                       </div>

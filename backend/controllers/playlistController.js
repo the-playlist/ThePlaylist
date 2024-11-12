@@ -705,18 +705,14 @@ export const isPlaylistEmpty = async (req, res, next) => {
 export const getSongsFromPlaylistV2 = async (req, res, next) => {
   const firstFetch = req?.query?.isFirstTimeFetched;
 
-  const { isFirst: isFirstTimeFetched, isFavortiteListType } =
-    await PlaylistType.findOne({
-      _id: SETTING_ID,
-    }).lean();
+  const [playlistType, status, playlist, playlistCount] = await Promise.all([
+    PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+    AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+    PlaylistV2.aggregate(songFromPlaylistV2),
+    PlaylistV2.countDocuments({ isDeleted: false }),
+  ]);
 
-  const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);
-  const playlistCount = await PlaylistV2.countDocuments({ isDeleted: false });
-
-  const status = await AlgorithmStatus.findById(
-    algoStatusId,
-    "isApplied"
-  ).lean();
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
 
   let flattenedPlaylist = flattenPlaylist(playlist);
 
@@ -1218,6 +1214,7 @@ const addSongHandlerV2 = async (songId, addByCustomer, res) => {
         message: `Song assigned to player ${playerToAssign.firstName} ${playerToAssign.lastName}`,
         player: playerToAssign,
         song: foundSong,
+        list: flattenedPlaylist,
         playlistCount: playlistCount,
       }
     );

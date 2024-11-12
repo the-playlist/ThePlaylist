@@ -142,12 +142,12 @@ const Typeahead = () => {
         songDetail: songDetail,
       });
       if (response && !response.error) {
-        const { song, playlistCount } = response?.data?.content;
+        const { song, playlistCount, list } = response?.data?.content;
         toast.success(response?.data?.description);
         setInputValue("");
         setSelectedSong(null);
         socket.emit("songAddByCustomerReq-v2", {
-          song: song,
+          playlist: list,
           playlistCount: playlistCount,
         });
         router.back();
@@ -212,8 +212,8 @@ const Typeahead = () => {
         </div>
       ) : filteredOptions?.length > 0 ? (
         <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">
-          {filteredOptions?.map((option) => (
-            <div className="border-b-1 border-[#323335]">
+          {filteredOptions?.map((option, index) => (
+            <div key={index} className="border-b-1 border-[#323335]">
               <button
                 className={`flex w-full items-center rounded-md px-3  py-1 my-1 bg-${
                   selectedSong == option ? "top-queue-bg" : "[#1F1F1F]"
