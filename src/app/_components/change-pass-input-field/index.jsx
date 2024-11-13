@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 function ChangePassInputField({
   title,
@@ -8,17 +9,15 @@ function ChangePassInputField({
   validate,
   type,
   ...props
-}: {
-  title: string;
-  error: any;
-  register: any;
-  name: string;
-  validate: any;
-  type: string;
 }) {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   return (
     <div className="flex flex-col flex-grow mb-3">
-      <label className="block mb-2 text-base font-medium text-black ">
+      <label
+        className={`block mb-2 text-base font-medium ${masterViewTheme ? "text-black" : "text-white"}  `}
+      >
         {title}
       </label>
       <input

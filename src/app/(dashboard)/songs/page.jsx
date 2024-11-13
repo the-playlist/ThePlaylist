@@ -17,10 +17,12 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { MdClear } from "react-icons/md";
 import { CustomLoader } from "../../_components/custom_loader";
+import { useSelector } from "react-redux";
 
 const ToggleButton = ({ isChecked, item }) => {
   const [isEnable, setIsEnable] = useState(isChecked);
   const [disableSongAPI] = useDisbaleSongFromSongBankMutation();
+
   return (
     <input
       onClick={async () => {
@@ -48,8 +50,10 @@ const SongsManagment = () => {
   const [currentSongInfo, setCurrentSongInfo] = useState(null);
   const [filteredsongs, setFilteredsongs] = useState([]);
   const [searchTerm, setSearchTerm] = useState();
-
   const [songsList, setSongsList] = useState([]);
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   useEffect(() => {
     fetchSongsList();
@@ -77,13 +81,15 @@ const SongsManagment = () => {
     <>
       {songsListResponse?.isFetching ? (
         <div className=" h-full flex items-center justify-center ">
-          <CustomLoader />
+          <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
         </div>
       ) : (
         <>
           <div className="flex justify-between mt-5 items-center mx-1">
             <div className=" w-full">
-              <div className=" text-xl font-bold mb-4 text-black">
+              <div
+                className={`text-xl font-bold mb-4 ${masterViewTheme ? "text-black" : "text-white"} `}
+              >
                 Songs list
               </div>
               <div className="relative w-1/4 mb-8 flex items-center ">
@@ -150,9 +156,11 @@ const SongsManagment = () => {
           </div>
           {filteredsongs?.length > 0 ? (
             <div className=" max-h-[80vh] pb-10 overflow-y-auto">
-              <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
-                <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-                  <tr className="text-black text-lg font-thin">
+              <table className="table border-separate border-spacing-y-5 p-1 	rounded-2xl ">
+                <thead
+                  className={`sticky top-0 z-10   ${masterViewTheme ? "bg-[#FAFAFA] text-black" : " bg-dark text-white"}`}
+                >
+                  <tr className="text-lg font-thin">
                     <th></th>
                     <th>Title</th>
                     <th>Artist</th>
@@ -166,7 +174,9 @@ const SongsManagment = () => {
                 </thead>
                 <tbody>
                   {filteredsongs?.map((item, index) => (
-                    <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
+                    <tr
+                      className={`h-20 ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"} text-lg  shadow rounded-2xl `}
+                    >
                       <th className="rounded-l-2xl">{index + 1}</th>
                       <td>{item?.title}</td>
                       <td>{item?.artist}</td>
@@ -194,7 +204,9 @@ const SongsManagment = () => {
                         item?.introSec || "N/A"
                       }`}</td>
                       <td className=" text-center">
-                        <span className="text-center font-semibold bg-option p-2 rounded-lg">
+                        <span
+                          className={`text-center font-semibold bg-option p-2 rounded-lg text-black `}
+                        >
                           {item?.category || "N/A"}
                         </span>
                       </td>

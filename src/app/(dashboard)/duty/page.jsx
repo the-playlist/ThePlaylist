@@ -11,6 +11,7 @@ import { GenericButton, SelectSongModal } from "@/app/_components";
 import _ from "lodash";
 import { useRouter } from "next/navigation";
 import { CustomLoader } from "@/app/_components/custom_loader";
+import { useSelector } from "react-redux";
 
 const DutyScreen = () => {
   const [getStaffListApi, getStaffListResponse] = useLazyGetStaffListQuery();
@@ -23,6 +24,10 @@ const DutyScreen = () => {
   const [isPlaylist, setIsPlaylist] = useState("/playlist");
   const [confirmationLoader, setConfirmationLoader] = useState(null);
   const router = useRouter();
+
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   useEffect(() => {
     if (showModal) {
@@ -106,7 +111,7 @@ const DutyScreen = () => {
   return (
     <div className="h-full  flex flex-col">
       {getStaffListResponse?.isFetching ? (
-        <CustomLoader />
+        <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
       ) : (
         <>
           <dialog ref={popUpRef} className="modal ">
@@ -167,53 +172,6 @@ const DutyScreen = () => {
                       "Yes, confirm"
                     )}
                   </button>
-                  {/* <button
-                    onClick={() => {
-                      setIsPlaylist("/playlist");
-                      setConfirmationLoader("/playlist");
-                      let payload = [];
-                      staffList?.forEach((item) => {
-                        payload.push({
-                          id: item?._id,
-                          status: item?.duty.status,
-                          startTime: item?.duty.startTime,
-                        });
-                      });
-
-                      onUpdateStatusHandler(payload);
-                    }}
-                    className="btn flex-1  bg-primary text-black "
-                  >
-                    {confirmationLoader == "/playlist" ? (
-                      <span className="loading loading-spinner loading-md"></span>
-                    ) : (
-                      "Yes, confirm V1"
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsPlaylist("/playlist-v2");
-                      setConfirmationLoader("/playlist-v2");
-
-                      let payload = [];
-                      staffList?.forEach((item) => {
-                        payload.push({
-                          id: item?._id,
-                          status: item?.duty.status,
-                          startTime: item?.duty.startTime,
-                        });
-                      });
-
-                      onUpdateStatusHandler(payload);
-                    }}
-                    className="btn flex-1 bg-primary text-black "
-                  >
-                    {confirmationLoader == "/playlist-v2" ? (
-                      <span className="loading loading-spinner loading-md"></span>
-                    ) : (
-                      "Yes, confirm V2"
-                    )}
-                  </button> */}
                 </div>
               </div>
             </div>
@@ -222,7 +180,9 @@ const DutyScreen = () => {
           {staffList?.length > 0 ? (
             <div className="flex-1 relative">
               <div className="px-2">
-                <h2 className="font-bold my-5">
+                <h2
+                  className={`font-bold my-5 ${masterViewTheme ? "text-black" : "text-white"}`}
+                >
                   On Duty Players ({countTrueDuty})
                 </h2>
                 <div className="relative w-1/4 mb-8 flex items-center">
@@ -259,7 +219,9 @@ const DutyScreen = () => {
               </div>
 
               <div className="px-2 flex-1 overflow-y-auto max-h-[calc(100vh-300px)]">
-                <div className="sticky top-0 z-10 bg-[#FAFAFA] grid grid-cols-4 text-base font-medium text-black">
+                <div
+                  className={`sticky top-0 z-10  grid grid-cols-4 text-base font-medium ${masterViewTheme ? "text-black bg-[#FAFAFA] " : "text-white bg-dark"}`}
+                >
                   <span>Players</span>
                   <span>Status</span>
                   <span className="text-center">On Duty Time</span>
@@ -270,7 +232,7 @@ const DutyScreen = () => {
                   {filteredPlayers?.map((item, index) => (
                     <div
                       key={index}
-                      className="bg-white drop-shadow rounded-2xl h-20 mt-3 p-4 grid grid-cols-4"
+                      className={`${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"}  drop-shadow rounded-2xl h-20 mt-3 p-4 grid grid-cols-4`}
                     >
                       <div className="capitalize flex items-center ">{`${item?.firstName} ${item?.lastName}`}</div>
                       <div className="flex items-center">
@@ -299,13 +261,17 @@ const DutyScreen = () => {
                 </div>
 
                 {filteredPlayers?.length == 0 && (
-                  <div className="flex justify-center text-base items-center h-[90vh] text-black w-full">
+                  <div
+                    className={`flex justify-center text-base items-center h-[90vh] ${masterViewTheme ? "text-black" : " text-white"} w-full`}
+                  >
                     No Players Found
                   </div>
                 )}
               </div>
 
-              <div className="absolute bottom-0 w-full flex justify-end py-2 bg-[#fafafa]">
+              <div
+                className={`absolute bottom-0 w-full flex justify-end py-2 ${masterViewTheme ? " bg-[#FAFAFA] " : " bg-dark"}`}
+              >
                 <GenericButton
                   text="Save Attendance"
                   onClick={() => {

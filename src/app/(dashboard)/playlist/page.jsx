@@ -69,6 +69,10 @@ const page = () => {
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
+
   const currentSongSecond = useSelector(
     (state) => state?.playlistReducer?.currentSongSecond
   );
@@ -465,7 +469,7 @@ const page = () => {
   return (
     <div className="h-full py-5 flex flex-col">
       {isLoading ? (
-        <CustomLoader />
+        <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
       ) : (
         <div className="flex-1 relative h-full ">
           <div
@@ -482,7 +486,7 @@ const page = () => {
                     true
                   );
                 }}
-                className="flex items-center bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer"
+                className={`flex items-center ${masterViewTheme ? "bg-black text-white " : "bg-white text-black"} hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
               >
                 <span className="mr-2">Advance the Queue</span>
                 <FaForward />
@@ -492,7 +496,7 @@ const page = () => {
               {!isFavSongs &&
                 (fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
                   <button
-                    className="border-black border rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105 disabled:bg-gray-400"
+                    className={`${masterViewTheme ? " border-black border" : " bg-white"} rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105 disabled:bg-gray-400`}
                     onClick={() => setIsConfirmationPopup(true)}
                   >
                     <span className="flex items-center">
@@ -509,7 +513,9 @@ const page = () => {
                     disabled={playingState}
                     onClick={toggleFavSongs}
                     className={`flex items-center hover:cursor-pointer border ${
-                      !isFavSongs ? "border-black" : "border-top-queue-bg"
+                      !isFavSongs
+                        ? `${masterViewTheme ? "border-black" : "bg-white"} `
+                        : "border-top-queue-bg"
                     }  ${
                       !isFavSongs
                         ? "hover:bg-black hover:text-white text-black"
@@ -529,14 +535,18 @@ const page = () => {
             nonFixedContent?.length === 0 &&
             !getPlaylistSongListResponse.isFetching && (
               <div className="flex items-center justify-center h-[calc(100vh-170px)] ">
-                <span className="text-black font-semibold">
+                <span
+                  className={`${masterViewTheme ? "text-black" : "text-white"}  font-semibold`}
+                >
                   Currently, there are no songs available in the playlist
                 </span>
               </div>
             )}
 
           {fixedContent?.length > 0 && (
-            <div className="text-base font-medium text-black text-center flex mt-10 mb-5 px-5">
+            <div
+              className={`text-base font-medium ${!masterViewTheme ? "text-white" : "text-black"} text-center flex mt-10 mb-5 px-5`}
+            >
               <div className="w-1/12"></div>
               <div className="w-2/12">Title</div>
               <div className="w-1/12"></div>
@@ -568,7 +578,7 @@ const page = () => {
                   </div>
                 </div>
                 <div className="w-2/12 pr-10">
-                  <EllipsisText text={title} length={15} />
+                  <EllipsisText text={title} isFixed={true} length={15} />
                 </div>
                 <div className="w-1/12"></div>
                 <div className="w-3/12">{playerName}</div>
@@ -651,7 +661,7 @@ const page = () => {
             </div>
           )}
           {!isFavSongs && (
-            <div className="sticky bottom-0 w-full flex z-10 items-center justify-center bg-[#fafafa] gap-3">
+            <div className="sticky bottom-0 w-full flex z-10 items-center justify-center bg-[#fafafa] gap-3 rounded-md">
               <button
                 onClick={() => setSelectSongModal(true)}
                 className="flex w-full items-center bg-top-queue-bg hover:bg-yellow-500 hover:text-black text-black font-bold py-3 px-4 rounded-md justify-center"
