@@ -110,7 +110,7 @@ const StreamResponse = () => {
   return (
     <div className="min-h-screen py-10 ">
       {loading ? (
-        <CustomLoader />
+        <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
       ) : (
         <div className=" h-[90vh] overflow-y-scroll pb-10">
           <Togglebutton
@@ -147,7 +147,11 @@ const StreamResponse = () => {
           )}
           {streamContent?.length > 0 ? (
             <>
-              <span className=" text-lg font-semibold mb-4">Requests</span>
+              <span
+                className={` text-lg font-semibold mb-4  ${masterViewTheme ? "text-black" : "text-white"}`}
+              >
+                Requests
+              </span>
               <div className="flex flex-wrap items-center justify-start ">
                 {streamContent.map((item, index) => {
                   return (
@@ -172,7 +176,9 @@ const StreamResponse = () => {
               }`}
             >
               {streamAcceptedContent && (
-                <span className=" text-lg font-semibold mb-4 mt-2">
+                <span
+                  className={` text-lg font-semibold mb-4 mt-2 ${masterViewTheme ? "text-black" : "text-white"}`}
+                >
                   Requests
                 </span>
               )}
