@@ -65,7 +65,7 @@ const page = () => {
   const [votingList, setVotingList] = useState(null);
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
-
+  const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
@@ -230,6 +230,7 @@ const page = () => {
   };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
+    setIsAdvanceButtonDisable(true);
     dispatch(setIsAdvanceTheQueeDisable(true));
     const res = await removeItemById(id, isTrashPress);
 
@@ -255,6 +256,7 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
+    setIsAdvanceButtonDisable(false);
     socket.emit("RemoveSongFromPlaylistRequest-v2", {
       isFirst: false,
       playlist: res,
@@ -475,6 +477,7 @@ const page = () => {
           >
             {(fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
               <button
+                disabled={isAdvanceButtonDisable}
                 onClick={async () => {
                   await deleteSongFromPlaylistHandler(
                     fixedContent[0]?._id,
