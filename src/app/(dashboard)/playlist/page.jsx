@@ -591,6 +591,7 @@ const page = () => {
                   <div className="flex items-center justify-end">
                     {index === 0 && (
                       <SongCountdownTimer
+                        socket={socket}
                         orignalSongDuration={songDuration}
                         duration={currentSongSecond}
                         advanceTheQueue={() => {
