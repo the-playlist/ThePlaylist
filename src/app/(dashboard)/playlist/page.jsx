@@ -485,7 +485,7 @@ const page = () => {
                     true
                   );
                 }}
-                className="flex items-center bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer"
+                className="flex items-center bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer disabled:text-gray-200"
               >
                 <span className="mr-2">Advance the Queue</span>
                 <FaForward />
