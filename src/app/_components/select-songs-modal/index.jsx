@@ -186,14 +186,14 @@ const SelectSongModal = ({
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
-        const getOccurrence = 30 / countUniquePlayers(list);
+        const getOccurrence = songLimit / countUniquePlayers(list);
         const roundedNumber = Math.ceil(getOccurrence);
 
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
 
         if (isDuty) {
-          tempArr = randomlyCheckItems(tempArr, 30, roundedNumber);
+          tempArr = randomlyCheckItems(tempArr, songLimit, roundedNumber);
         }
         setPlayersList(tempArr);
       }
