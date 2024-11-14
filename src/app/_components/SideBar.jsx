@@ -145,9 +145,9 @@ const SideBar = () => {
 
   const startTimer = () => {
     if (currentSong?.duration == currentSongSecond) {
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
+      // socket.emit("bufferTimeReq", {
+      //   time: 10,
+      // });
       dispatch(setIsAdvanceTheQueeDisable(true));
 
       if (initialSongPlaylist) {

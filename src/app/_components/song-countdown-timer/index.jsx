@@ -97,10 +97,10 @@ const SongCountdownTimer = ({
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration && playingState) {
       dispatch(setPlayingState(false));
-      setShowCountDown(true);
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
+      // setShowCountDown(true);
+      // socket.emit("bufferTimeReq", {
+      //   time: 10,
+      // });
       if (initialSongPlaylist) {
         socket.emit("startIntroSecondsRequest", {
           time: 10,
@@ -130,10 +130,10 @@ const SongCountdownTimer = ({
     dispatch(setInitialSongPlaylist(false));
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration) {
-      setShowCountDown(true);
-      socket.emit("bufferTimeReq", {
-        time: 10,
-      });
+      // setShowCountDown(true);
+      // socket.emit("bufferTimeReq", {
+      //   time: 10,
+      // });
       if (initialSongPlaylist) {
         socket.emit("startIntroSecondsRequest", {
           time: 10,
