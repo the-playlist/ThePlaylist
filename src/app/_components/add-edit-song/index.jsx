@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { Select, Option } from "@mui/base";
 import { useAddUpdateSongMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
   const [addUpdateSongAPI, addUpdateSongResponse] = useAddUpdateSongMutation();
@@ -70,14 +71,19 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       !regex.test(value) || "Spaces are not allowed at the beginning or end"
     );
   };
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-11/12 max-w-2xl">
+        <div
+          className={`modal-box  w-11/12 max-w-2xl ${masterViewTheme ? " bg-light" : "bg-dark"}`}
+        >
           <form
             method="dialog"
-            className="flex  items-center justify-between flex-1 "
+            className={`flex  items-center justify-between flex-1 ${masterViewTheme ? " text-black" : "text-white"}`}
           >
             <div className=" font-bold text-lg ">
               {currentInfo ? `Edit Song` : `Add New Song`}
@@ -118,13 +124,15 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
             />
           </div>
 
-          <div className="flex ">
+          <div
+            className={`flex ${masterViewTheme ? " text-black" : "text-white"}`}
+          >
             <div className="flex w-1/2 ">
               <div className="w-1/2 flex flex-col flex-grow mx-1 ">
                 <label htmlFor="">{"Song Duration *"}</label>
                 <div className="flex">
-                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  mr-1 ">
-                    <label htmlFor="" className="text-[10px]">
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  mr-1 bg-light ">
+                    <label htmlFor="" className="text-[10px] text-black">
                       {"Min"}
                     </label>
                     <input
@@ -145,8 +153,8 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                     />
                   </div>
 
-                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 ml-1  ">
-                    <label htmlFor="" className="text-[10px]">
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 ml-1 bg-light  ">
+                    <label htmlFor="" className="text-[10px] text-black">
                       {"Sec"}
                     </label>
                     <input
@@ -177,10 +185,10 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                   </span>
                 )}
               </div>
-              <div className="w-1/2 flex flex-col flex-grow mx-1 ">
+              <div className="w-1/2 flex flex-col flex-grow mx-1  ">
                 <label htmlFor="">{"Intro Seconds "}</label>
-                <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  ">
-                  <label htmlFor="" className="text-[10px]">
+                <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 bg-light  ">
+                  <label htmlFor="" className="text-[10px] text-black">
                     {"Sec"}
                   </label>
                   <input
@@ -192,7 +200,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                       min: {
                         value: 1,
                         message: "Intro seconds must be greater than 0",
-                      }
+                      },
                     })}
                   />
                 </div>
@@ -212,7 +220,7 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                     required: "Please select category of song",
                   })}
                   className="select border-[#D9D9D9] border-[1px] my-1 rounded-
-lg focus:outline-none "
+lg focus:outline-none  text-black"
                   style={{
                     height: "57px",
                   }}

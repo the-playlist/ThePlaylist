@@ -43,10 +43,15 @@ const AssignedSongsDropdown = ({ item }) => {
         setSelectedId(value._id);
         item.selectedPlayers = value;
       }}
-      className="select select-bordered w-full max-w-xs focus:outline-none"
+      className="select select-bordered w-full max-w-xs focus:outline-none text-black"
     >
       {item?.assignedPlayers?.map((item) => {
-        return <option value={item?._id}>{`${item.playerName}`}</option>;
+        return (
+          <option
+            value={item?._id}
+            className=" text-black"
+          >{`${item.playerName}`}</option>
+        );
       })}
     </select>
   );
@@ -71,6 +76,9 @@ const SelectSongModal = ({
   const storedSeconds = parseInt(currentSongSecond);
   const playlistLength = useSelector(
     (state) => state?.playlistReducer?.playlistLength
+  );
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
   );
 
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
@@ -284,7 +292,9 @@ const SelectSongModal = ({
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-1/2 max-w-4xl min-h-1.5 pb-4  p-0 bg-[#fafafafa]">
+        <div
+          className={`modal-box  w-1/2 max-w-4xl min-h-1.5 pb-4  p-0 ${masterViewTheme ? " bg-light" : "bg-dark"}`}
+        >
           {isLoading ? (
             <div className=" h-96 flex items-center justify-center pt-4  ">
               <Loader />
@@ -300,11 +310,18 @@ const SelectSongModal = ({
                 </div>
               )} */}
 
-              <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
-                <div className="flex justify-between items-center">
+              <div
+                className={`sticky z-10 ${masterViewTheme ? " bg-light" : "bg-dark"} lg:p-4 px-4 py-2 top-0`}
+              >
+                <div
+                  className={`flex justify-between items-center ${masterViewTheme ? " text-black" : "text-white"}`}
+                >
                   <div>{`${title} (${activeSongsCount}) `}</div>
                   <button onClick={closeModal}>
-                    <MdClear size={20} />
+                    <MdClear
+                      className={masterViewTheme ? "text-black" : "text-white"}
+                      size={20}
+                    />
                   </button>
                 </div>
                 {playersList?.length > 0 && (
@@ -341,7 +358,9 @@ const SelectSongModal = ({
                   </div>
                 )}
 
-                <div className=" text-base font-medium text-black text-center flex mt-10 mb-5  px-5 ">
+                <div
+                  className={` text-base font-medium ${masterViewTheme ? "text-black" : "text-white"} text-center flex mt-10 mb-5  px-5 `}
+                >
                   <div className="w-3/12 ">
                     <div className="flex items-center">Title</div>
                   </div>
@@ -363,7 +382,9 @@ const SelectSongModal = ({
                       item.assignedPlayers?.length > 0)
                   );
                 }).length === 0 ? (
-                  <div className="text-center text-black h-52 flex items-center justify-center ">
+                  <div
+                    className={`text-center  ${masterViewTheme ? "text-black" : " text-white"} h-52 flex items-center justify-center `}
+                  >
                     No records found
                   </div>
                 ) : (
@@ -385,7 +406,7 @@ const SelectSongModal = ({
                       return (
                         <div
                           key={index}
-                          className="text-base bg-white font-medium text-black items-center flex mb-2 p-5 rounded-lg"
+                          className={`text-base ${masterViewTheme ? "bg-white text-black " : "bg-light-tile text-white"} font-medium items-center flex mb-2 p-5 rounded-lg`}
                         >
                           <div className="w-3/12 text-center">
                             <div className="flex items-start">
@@ -430,7 +451,7 @@ const SelectSongModal = ({
                           </div>
                           <div className="w-3/12">
                             <div className="flex items-center justify-center">
-                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7] text-black">
                                 {item.category}
                               </div>
                             </div>
@@ -447,7 +468,9 @@ const SelectSongModal = ({
                 )}
               </div>
 
-              <div className="sticky -bottom-5 w-full   px-4 pb-4  bg-[#fafafa]">
+              <div
+                className={`sticky -bottom-5 w-full   px-4 pb-4  ${masterViewTheme ? "bg-light" : "bg-dark"}`}
+              >
                 <GenericButton
                   disabled={btnLoader || activeSongsCount == 0}
                   loading={btnLoader}

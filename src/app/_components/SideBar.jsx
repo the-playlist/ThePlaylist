@@ -200,7 +200,9 @@ const SideBar = () => {
         </ul>
         {pathname != "/playlist" && playlistLength > 0 && (
           <div className=" absolute bottom-0  p-4  w-full ">
-            <span className="text-black font-semibold text-lg">
+            <span
+              className={`text-black font-semibold text-lg ${masterViewTheme ? "text-black" : "text-white"}`}
+            >
               Current Song
             </span>
             <div className="bg-primary rounded-lg mt-2 p-4">

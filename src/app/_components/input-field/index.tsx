@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 function InputField({
   title,
@@ -7,6 +8,7 @@ function InputField({
   name,
   validate,
   isPhone,
+  isLight,
   ...props
 }: {
   title: string;
@@ -15,11 +17,12 @@ function InputField({
   name: string;
   validate: any;
   isPhone: boolean;
+  isLight?: boolean;
 }) {
   return (
-    <div className="flex flex-col flex-grow mx-1">
-      <label htmlFor="">{title}</label>
-      <div className="border-[#D9D9D9] border-[1px] my-1 px-2 py-3 rounded-lg">
+    <div className="flex flex-col flex-grow mx-1 ">
+      <label className={isLight ? " text-black" : "text-white"}>{title}</label>
+      <div className="border-[#D9D9D9] border-[1px] my-1 px-2 py-3 rounded-lg bg-white">
         {isPhone && (
           <span className="bg-gray-2 text-gray-3 rounded p-1 mr-1 ">+1</span>
         )}

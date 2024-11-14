@@ -115,12 +115,14 @@ const DutyScreen = () => {
       ) : (
         <>
           <dialog ref={popUpRef} className="modal ">
-            <div className="modal-box  pt-10 rounded-md">
+            <div
+              className={`modal-box  pt-10 rounded-md ${!masterViewTheme ? "bg-black" : "bg-white"}`}
+            >
               <button
                 onClick={() => {
                   setShowModal(false);
                 }}
-                className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                className={`btn btn-sm btn-circle btn-ghost absolute right-2 top-2 ${masterViewTheme ? "text-black" : "text-white"} `}
               >
                 ✕
               </button>
@@ -150,7 +152,6 @@ const DutyScreen = () => {
 
                   <button
                     onClick={() => {
-                      // setIsPlaylist("/playlist-v2");
                       setConfirmationLoader("/playlist-v2");
 
                       let payload = [];
@@ -164,7 +165,7 @@ const DutyScreen = () => {
 
                       onUpdateStatusHandler(payload);
                     }}
-                    className="btn flex-1 bg-primary text-black "
+                    className="btn flex-1 bg-primary text-black border-none "
                   >
                     {confirmationLoader == "/playlist-v2" ? (
                       <span className="loading loading-spinner loading-md"></span>
@@ -304,7 +305,9 @@ const DutyScreen = () => {
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+            <div
+              className={`flex items-center justify-center h-[90vh] ${masterViewTheme ? "text-black" : "text-white"}  font-semibold text-lg`}
+            >
               No Players found
             </div>
           )}
