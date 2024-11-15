@@ -312,7 +312,7 @@ const DutyScreen = () => {
                     if (countTrueDuty >= 3) {
                       setShowModal(true);
                     } else {
-                      toast.info("At least 5 players should be on duty");
+                      toast.info("At least 3 players should be on duty");
                     }
                   }}
                 />
