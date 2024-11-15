@@ -504,7 +504,7 @@ export function PlaylistSongItemV2({
 
             <button
               onClick={() => {
-                deleteSongFromPlaylistHandler(item?._id, true);
+                deleteSongFromPlaylistHandler(item?._id, true, false);
               }}
               className=" hover:cursor-pointer ml-5"
             >
