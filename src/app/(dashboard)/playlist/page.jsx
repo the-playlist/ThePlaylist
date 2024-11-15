@@ -196,6 +196,8 @@ const page = () => {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
         if (currentSong?.title == "" && isFixedItems?.length > 0) {
+          console.log("called");
+
           const { playerName, title, _id } = isFixedItems[0];
           dispatch(
             setCurrentSong({
@@ -211,7 +213,6 @@ const page = () => {
             )
           );
         }
-
         setFixedContent([...isFixedItems] || []);
         setNonFixedContent([...playlistWithId] || []);
         setIsFavSongs(isFavortiteListType);
@@ -230,7 +231,6 @@ const page = () => {
   };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
-    console.log("==>", hideSong);
     setIsAdvanceButtonDisable(true);
     dispatch(setIsAdvanceTheQueeDisable(true));
     const res = await removeItemById(id, isTrashPress);
