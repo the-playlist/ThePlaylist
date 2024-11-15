@@ -307,15 +307,15 @@ const page = () => {
       );
     } else {
       setIsLoading(true);
-      dispatch(setCurrentSongSecond(0));
-      dispatch(
-        setCurrentSong({
-          title: "",
-          player: "",
-          id: 0,
-          duration: 0,
-        })
-      );
+      // dispatch(setCurrentSongSecond(0));
+      // dispatch(
+      //   setCurrentSong({
+      //     title: "",
+      //     player: "",
+      //     id: 0,
+      //     duration: 0,
+      //   })
+      // );
     }
     return playlistWithId;
   };
