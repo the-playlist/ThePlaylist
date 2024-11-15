@@ -195,9 +195,11 @@ const page = () => {
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
-        if (currentSong?.title == "" && isFixedItems?.length > 0) {
-          console.log("called");
-
+        if (
+          currentSong?.title == "" &&
+          isFixedItems?.length > 0 &&
+          currentSongSecond == 0
+        ) {
           const { playerName, title, _id } = isFixedItems[0];
           dispatch(
             setCurrentSong({
