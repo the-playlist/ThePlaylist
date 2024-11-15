@@ -229,7 +229,8 @@ const page = () => {
     }
   };
 
-  const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
+  const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
+    console.log("==>", hideSong);
     setIsAdvanceButtonDisable(true);
     dispatch(setIsAdvanceTheQueeDisable(true));
     const res = await removeItemById(id, isTrashPress);
@@ -241,7 +242,8 @@ const page = () => {
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
-      auto: !isTrashPress,
+      auto: isTrashPress,
+      hideSong: hideSong,
     });
     dispatch(setIsAdvanceTheQueeDisable(false));
     if (playingState == true && !isTrashPress) {
@@ -482,7 +484,7 @@ const page = () => {
                   await deleteSongFromPlaylistHandler(
                     fixedContent[0]?._id,
                     false,
-                    true
+                    false
                   );
                 }}
                 className="flex items-center bg-black hover:bg-primary hover:text-black text-white font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer disabled:text-gray-200"
@@ -598,7 +600,11 @@ const page = () => {
                         orignalSongDuration={songDuration}
                         duration={currentSongSecond}
                         advanceTheQueue={() => {
-                          deleteSongFromPlaylistHandler(fixedContent[0]?._id);
+                          deleteSongFromPlaylistHandler(
+                            fixedContent[0]?._id,
+                            false,
+                            true
+                          );
                         }}
                         playlistSongList={fixedContent}
                         isStart={playingState}

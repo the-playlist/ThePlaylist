@@ -1083,7 +1083,9 @@ export const revertMasterCheckV2 = async (req, res, next) => {
 export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
   const id = req.query.id;
   const isDeleted = req.query.isDeleted;
-  const isAuto = req?.query.auto || false;
+  const isAuto = req?.query.auto == "true" || false;
+  const hideSong = req?.query.hideSong === "true";
+  const dateTime = new Date();
   if (isAuto) {
     await AlgorithmStatus.findByIdAndUpdate(
       algoStatusId,
@@ -1101,7 +1103,11 @@ export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
 
   await PlaylistV2.findByIdAndUpdate(
     id,
-    { isDeleted: isDeleted, isFixed: false },
+    {
+      isDeleted: isDeleted,
+      isFixed: false,
+      songAddedAt: hideSong ? dateTime : null,
+    },
     { new: true }
   );
   const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);

@@ -50,7 +50,7 @@ const WallView = () => {
     });
     socket.connect();
 
-    socket.on("wallViewJumbotronResponse-v2", (item) => {
+    socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
       setCurrentActive(screenName);
       localStorage.setItem("currentActive", screenName);

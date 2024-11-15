@@ -334,7 +334,7 @@ export const emptySplitApi = createApi({
     }),
     deleteSongFromPlaylistByIdV2: builder.mutation({
       query: (body) => ({
-        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto} `,
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto}&hideSong=${body.hideSong} `,
         method: "DELETE",
       }),
     }),
