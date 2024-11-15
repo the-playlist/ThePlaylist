@@ -71,7 +71,8 @@ export const addSongsToPlaylist = async (req, res, next) => {
     const duration = convertTimeToSeconds(item?.songData?.songDuration);
     const introSec =
       item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
-    const totalDuration = formatTime(duration + introSec);
+    // const totalDuration = formatTime(duration + introSec);
+    const totalDuration = formatTime(duration);
     return {
       _id: item._id,
       playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
@@ -132,8 +133,8 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     playlist.map((item) => {
       const duration = convertTimeToSeconds(item?.songData?.songDuration);
       const introSec = item?.songData?.introSec || 0;
-      const totalDuration = formatTime(duration + parseInt(introSec));
-
+      // const totalDuration = formatTime(duration + parseInt(introSec));
+      const totalDuration = formatTime(duration);
       return {
         _id: item._id,
         playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
