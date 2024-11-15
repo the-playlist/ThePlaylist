@@ -166,53 +166,6 @@ const DutyScreen = () => {
                       "Yes, confirm"
                     )}
                   </button>
-                  {/* <button
-                    onClick={() => {
-                      setIsPlaylist("/playlist");
-                      setConfirmationLoader("/playlist");
-                      let payload = [];
-                      staffList?.forEach((item) => {
-                        payload.push({
-                          id: item?._id,
-                          status: item?.duty.status,
-                          startTime: item?.duty.startTime,
-                        });
-                      });
-
-                      onUpdateStatusHandler(payload);
-                    }}
-                    className="btn flex-1  bg-primary text-black "
-                  >
-                    {confirmationLoader == "/playlist" ? (
-                      <span className="loading loading-spinner loading-md"></span>
-                    ) : (
-                      "Yes, confirm V1"
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsPlaylist("/playlist-v2");
-                      setConfirmationLoader("/playlist-v2");
-
-                      let payload = [];
-                      staffList?.forEach((item) => {
-                        payload.push({
-                          id: item?._id,
-                          status: item?.duty.status,
-                          startTime: item?.duty.startTime,
-                        });
-                      });
-
-                      onUpdateStatusHandler(payload);
-                    }}
-                    className="btn flex-1 bg-primary text-black "
-                  >
-                    {confirmationLoader == "/playlist-v2" ? (
-                      <span className="loading loading-spinner loading-md"></span>
-                    ) : (
-                      "Yes, confirm V2"
-                    )}
-                  </button> */}
                 </div>
               </div>
             </div>
