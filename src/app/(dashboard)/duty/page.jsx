@@ -145,7 +145,6 @@ const DutyScreen = () => {
 
                   <button
                     onClick={() => {
-                      // setIsPlaylist("/playlist-v2");
                       setConfirmationLoader("/playlist-v2");
 
                       let payload = [];
