@@ -639,54 +639,6 @@ export const getOnDutyPlayerSongsForCustomer = async (req, res, next) => {
       ];
 
       data = await Songs.aggregate(pipeline);
-      // const { isFavortiteListType } = await PlaylistType.findOne({
-      //   _id: SETTING_ID,
-      // }).lean();
-      // const playlist = await Playlist.aggregate(songFromPlaylist);
-      // const flattenPlaylist = (playlist) =>
-      //   playlist.map((item) => {
-      //     const duration = convertTimeToSeconds(item?.songData?.songDuration);
-      //     const introSec = item?.songData?.introSec || 0;
-      //     const totalDuration = formatTime(duration + parseInt(introSec));
-
-      //     return {
-      //       _id: item._id,
-      //       playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
-      //       assignedPlayerId: item.assignedPlayer?._id,
-      //       qualifiedPlayers: item?.qualifiedPlayers,
-      //       songId: item.songData._id,
-      //       title: item.songData.title,
-      //       artist: item.songData.artist,
-      //       introSec,
-      //       songDuration: totalDuration,
-      //       isFav: item.songData.isFav,
-      //       dutyStatus: item?.assignedPlayer?.duty?.status,
-      //       category: item.songData.category,
-      //       tableUpVote: item.upVote,
-      //       tableDownVote: item.downVote,
-      //       upVote: item.upVoteCount,
-      //       downVote: item.downVoteCount,
-      //       sortOrder: item.sortOrder,
-      //       sortByMaster: item?.sortByMaster,
-      //       addByCustomer: item.addByCustomer,
-      //     };
-      //   });
-
-      // let flattenedPlaylist = flattenPlaylist(playlist);
-
-      // if (isFavortiteListType) {
-      //   flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-      // }
-
-      // const firstTwoSongs = flattenedPlaylist?.filter(
-      //   (song, index) =>
-      //     song.sortOrder === 0 ||
-      //     song.sortOrder === 1 ||
-      //     index == 0 ||
-      //     index == 1
-      // );
-      // const titlesToRemove = firstTwoSongs?.map((song) => song.title);
-      // data = data?.filter((song) => !titlesToRemove.includes(song.title));
     }
 
     const response = new ResponseModel(
@@ -830,101 +782,6 @@ export const getOnDutyPlayerSongsForCustomerV2 = async (req, res, next) => {
 
     // Get the time threshold for songs added within the last hour
     const oneHourAgo = new Date(Date.now() - 3600 * 1000);
-
-    // if (keyword) {
-    //   data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
-    // } else {
-    //   let pipeline = [
-    //     // Lookup players and unwind
-    //     {
-    //       $lookup: {
-    //         from: "players",
-    //         localField: "_id",
-    //         foreignField: "assignSongs",
-    //         as: "player_info",
-    //       },
-    //     },
-    //     {
-    //       $unwind: "$player_info",
-    //     },
-    //     // Add fields for player duty status
-    //     {
-    //       $addFields: {
-    //         duty: "$player_info.duty",
-    //       },
-    //     },
-    //     // Filter only on-duty players
-    //     {
-    //       $match: {
-    //         "duty.status": true,
-    //         $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
-    //       },
-    //     },
-    //     // Group by song and count the total players
-    //     {
-    //       $group: {
-    //         _id: "$_id",
-    //         songName: { $first: "$songName" },
-    //         artist: { $first: "$artist" },
-    //         title: { $first: "$title" },
-    //         totalPlayers: { $sum: 1 },
-    //       },
-    //     },
-    //     // Lookup playlist information
-    //     {
-    //       $lookup: {
-    //         from: "playlistv2",
-    //         localField: "_id",
-    //         foreignField: "songData",
-    //         as: "playlist_info",
-    //       },
-    //     },
-    //     // Add a field to count playlist entries where isDeleted is false
-    //     {
-    //       $addFields: {
-    //         playlistPlayers: {
-    //           $size: {
-    //             $filter: {
-    //               input: "$playlist_info",
-    //               as: "playlistItem",
-    //               cond: { $eq: ["$$playlistItem.isDeleted", false] },
-    //             },
-    //           },
-    //         },
-    //       },
-    //     },
-    //     // If playlist is not empty, filter out songs where playlistPlayers is greater than 0
-    //     {
-    //       $match: {
-    //         playlistPlayers: { $eq: 0 }, // Only songs that are not in the playlist
-    //         // $or: [
-    //         //   { playlistPlayers: { $gt: 0 } }, // Songs in the playlist
-    //         //   { playlistPlayers: { $eq: 0 }, totalPlayers: { $gt: 0 } }, // Songs not in the playlist but have other players who can sing
-    //         // ],
-    //       },
-    //     },
-    //     // Project the final fields
-    //     {
-    //       $project: {
-    //         _id: 1,
-    //         songName: 1,
-    //         artist: 1,
-    //         title: 1,
-    //         totalPlayers: 1,
-    //         playlistPlayers: 1,
-    //         difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
-    //       },
-    //     },
-    //     // If difference is not 0, show the song
-    //     {
-    //       $match: {
-    //         difference: { $ne: 0 },
-    //       },
-    //     },
-    //   ];
-
-    //   data = await Songs.aggregate(pipeline);
-    // }
     if (keyword) {
       data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
     } else {
@@ -962,6 +819,18 @@ export const getOnDutyPlayerSongsForCustomerV2 = async (req, res, next) => {
             artist: { $first: "$artist" },
             title: { $first: "$title" },
             totalPlayers: { $sum: 1 },
+            assignedPlayers: {
+              $push: {
+                _id: "$player_info._id",
+                playerName: {
+                  $concat: [
+                    "$player_info.firstName",
+                    " ",
+                    "$player_info.lastName",
+                  ],
+                },
+              },
+            },
           },
         },
         // Lookup playlist information
@@ -1015,6 +884,7 @@ export const getOnDutyPlayerSongsForCustomerV2 = async (req, res, next) => {
             totalPlayers: 1,
             playlistPlayers: 1,
             songAddedAt: 1,
+            assignedPlayers: 1,
             difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
           },
         },

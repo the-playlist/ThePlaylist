@@ -105,7 +105,7 @@ const Typeahead = () => {
     }
   };
 
-  const handleSong = (id) => {
+  const handleSong = (id, song) => {
     const currentTime = new Date().getTime();
     const prevSongTime = parseInt(localStorage.getItem("prevSongTime"), 10);
     const songCount = parseInt(localStorage.getItem("songCount"), 10) || 0;
@@ -115,18 +115,18 @@ const Typeahead = () => {
     if (!prevSongTime) {
       localStorage.setItem("prevSongTime", currentTime);
       localStorage.setItem("songCount", 1);
-      addSongsHandler(id);
+      addSongsHandler(id, song);
       return;
     }
     const timeDifference = currentTime - prevSongTime;
     if (timeDifference > timeLimit) {
       localStorage.setItem("prevSongTime", currentTime);
       localStorage.setItem("songCount", 1);
-      addSongsHandler(id);
+      addSongsHandler(id, song);
     } else {
       if (songCount < songCountLimit) {
         localStorage.setItem("songCount", songCount + 1);
-        addSongsHandler(id);
+        addSongsHandler(id, song);
       } else {
         toast.error(
           songLimit?.message ?? "Song limit reached. Please try again later."
@@ -135,12 +135,13 @@ const Typeahead = () => {
     }
   };
 
-  const addSongsHandler = async (id) => {
+  const addSongsHandler = async (id, song) => {
     try {
       let response = await addSongToPlaylistByUserApi({
         songId: id,
         addByCustomer: true,
         songDetail: songDetail,
+        qualifiedPlayers: song?.assignedPlayers,
       });
       if (response && !response.error) {
         const { song, playlistCount, list } = response?.data?.content;
@@ -277,7 +278,7 @@ const Typeahead = () => {
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
-            handleSong(selectedSong?._id);
+            handleSong(selectedSong?._id, selectedSong);
           }}
           className={`flex w-full items-center ml-4 ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
