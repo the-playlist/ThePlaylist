@@ -120,9 +120,7 @@ const page = () => {
     socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
       fetchPlaylistSongList(null);
     });
-    // socket.on("wallViewRes-v2", (item) => {
-    //   fetchPlaylistSongList(null);
-    // });
+
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
@@ -142,9 +140,9 @@ const page = () => {
     if (response && !response.isError) {
       const count = 30 - completeList?.length;
       const songList = response.data?.content;
-      const getIds = getRandomSongIds(songList, count);
-      if (getIds?.length > 0) {
-        addMultiSongsHandler(getIds);
+      const getData = getRandomSongIds(songList, count);
+      if (getData?.length > 0) {
+        addMultiSongsHandler(getData);
       }
     }
   };
@@ -155,8 +153,10 @@ const page = () => {
     const shuffled = [...songsArray]
       .sort(() => 0.5 - Math.random())
       .slice(0, numSongs);
-
-    return shuffled.map((song) => ({ songId: song._id }));
+    return shuffled.map((song) => ({
+      songId: song._id,
+      qualifiedPlayers: song?.assignedPlayers,
+    }));
   }
 
   const addMultiSongsHandler = async (data) => {

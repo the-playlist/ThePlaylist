@@ -291,15 +291,6 @@ const SelectSongModal = ({
             </div>
           ) : (
             <>
-              {/* {playersList?.length == 0 && (
-                <div className="p-4">
-                  <span>
-                    There is no currently Active Player, Please Go the Duty
-                    Screen and mark attandance.
-                  </span>
-                </div>
-              )} */}
-
               <div className="sticky z-10 bg-[#fafafafa] lg:p-4 px-4 py-2 top-0">
                 <div className="flex justify-between items-center">
                   <div>{`${title} (${activeSongsCount}) `}</div>
