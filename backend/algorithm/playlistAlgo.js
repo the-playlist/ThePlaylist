@@ -365,7 +365,6 @@ function reorderSongs(songs, mostRecentPlayerName) {
         // Perform the swap
         array[index + 1] = song;
         array[index] = nextSong;
-
         // Mark the swapped song to prevent further swaps
         song.applySwap = false;
 
