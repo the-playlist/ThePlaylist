@@ -199,7 +199,8 @@ const TableView = () => {
       let response = await getPlaylistSongTableView(payload);
 
       if (response && !response.isError) {
-        const { list, isFirstTimeFetched } = response?.data?.content || {};
+        const { list } = response?.data?.content || {};
+
         setPerformers(list || []);
         setVotingLoader(false);
       }

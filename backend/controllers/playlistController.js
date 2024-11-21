@@ -713,6 +713,7 @@ function mapSongsWithSortOrder(songs) {
     sortOrder: index,
     isFixed: index < 2,
     addByCustomer: false,
+    applySwap: false,
   }));
 }
 
@@ -726,6 +727,7 @@ async function updateSongsInDatabase(songs) {
             sortOrder: song.sortOrder,
             isFixed: song.isFixed,
             addByCustomer: false,
+            applySwap: false,
           },
         }
       )
@@ -864,6 +866,7 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
         sortByMaster: item.sortByMaster,
         addByCustomer: item.addByCustomer,
         isFixed: item?.isFixed,
+        applySwap: item?.applySwap,
       };
     });
 
@@ -888,6 +891,7 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
               isFixed:
                 song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
               addByCustomer: false,
+              applySwap: false,
             },
           }
         )

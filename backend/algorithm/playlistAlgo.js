@@ -62,155 +62,20 @@ export function playlistAlgorithmV2(isFirstTimeFetched, flattenedPlaylist) {
 }
 
 export function applySongSequenceAlgorithmV2(songs, firstTwoSongs) {
-  // const modifiedSongs = [];
-  // const remainingSongs = [];
-  // const comedySongs = [];
-  // const customerAddedSongs = [];
-
-  // // Separate comedy songs, customer-added songs, and others
-  // for (const song of songs) {
-  //   if (song.category === "Comedy") {
-  //     comedySongs.push(song);
-  //   } else if (song.addByCustomer) {
-  //     customerAddedSongs.push(song);
-  //   } else {
-  //     remainingSongs.push(song);
-  //   }
-  // }
-
-  // let lastPlayerFromFirstTwo = firstTwoSongs
-  //   ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
-  //   : null;
-  // const lastCategoryFromFirstTwo = firstTwoSongs
-  //   ? firstTwoSongs[firstTwoSongs?.length - 1]?.category
-  //   : null;
-
-  // let lastCategory = lastCategoryFromFirstTwo;
-
-  // const recentPlayers = [];
-  // if (lastPlayerFromFirstTwo) {
-  //   recentPlayers.push(lastPlayerFromFirstTwo);
-  // }
-
-  // let nonBalladCountSinceLastBallad = 0;
-
-  // while (remainingSongs?.length > 0) {
-  //   let songAdded = false;
-
-  //   for (let i = 0; i < remainingSongs?.length; i++) {
-  //     const song = remainingSongs[i];
-
-  //     const isPlayerAllowed = !recentPlayers.includes(song.playerName);
-
-  //     const isBalladAllowed =
-  //       song.category !== "Ballad" || nonBalladCountSinceLastBallad >= 3;
-
-  //     if (isPlayerAllowed && isBalladAllowed) {
-  //       modifiedSongs.push(song);
-
-  //       recentPlayers.push(song.playerName);
-  //       if (recentPlayers?.length > 3) {
-  //         recentPlayers.shift();
-  //       }
-
-  //       if (song.category === "Ballad") {
-  //         nonBalladCountSinceLastBallad = 0;
-  //       } else {
-  //         nonBalladCountSinceLastBallad++;
-  //       }
-
-  //       lastCategory = song.category;
-  //       remainingSongs.splice(i, 1);
-  //       songAdded = true;
-  //       break;
-  //     }
-  //   }
-
-  //   if (!songAdded) {
-  //     // Relax player rule and try to find any non-ballad song
-  //     for (let i = 0; i < remainingSongs?.length; i++) {
-  //       const song = remainingSongs[i];
-  //       if (
-  //         song.category !== "Ballad" &&
-  //         !recentPlayers.includes(song.playerName)
-  //       ) {
-  //         modifiedSongs.push(song);
-
-  //         // Update recent players list
-  //         recentPlayers.push(song.playerName);
-  //         if (recentPlayers?.length > 3) {
-  //           recentPlayers.shift();
-  //         }
-
-  //         nonBalladCountSinceLastBallad++;
-  //         lastCategory = song.category;
-  //         remainingSongs.splice(i, 1); // Remove the song from the remaining list
-  //         songAdded = true;
-  //         break;
-  //       }
-  //     }
-  //   }
-
-  //   if (!songAdded) {
-  //     // If still no song added, force add the next available song
-  //     const song = remainingSongs.shift(); // Get the first remaining song
-  //     modifiedSongs.push(song);
-
-  //     // Update recent players list
-  //     recentPlayers.push(song.playerName);
-  //     if (recentPlayers?.length > 3) {
-  //       recentPlayers.shift();
-  //     }
-
-  //     // Update ballad tracking
-  //     if (song.category === "Ballad") {
-  //       nonBalladCountSinceLastBallad = 0;
-  //     } else {
-  //       nonBalladCountSinceLastBallad++;
-  //     }
-
-  //     lastCategory = song.category;
-  //   }
-  // }
-
-  // const finalPlaylist = [
-  //   ...modifiedSongs,
-  //   ...comedySongs,
-  //   ...customerAddedSongs,
-  // ];
-  // finalPlaylist.sort((a, b) => b.upVote - b.downVote - (a.upVote - a.downVote));
-  const tempSongs = songs?.sort(
-    (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
-  );
-  // const hasVotes = finalPlaylist?.some(
-  //   (item) => item.upVote > 0 || item.downVote > 0
-  // );
-
   const secondSong = firstTwoSongs
     ? firstTwoSongs[firstTwoSongs?.length - 1]
     : null;
 
-  // let reCheckFinalPlaylist = [...finalPlaylist];
-  const checkBackToBack = hasBackToBackViolations(
-    // firstTwoSongs?.length > 0 ? tempSongs : reCheckFinalPlaylist,
-    tempSongs,
-    secondSong
-  );
+  const checkBackToBack = hasBackToBackViolations(songs, secondSong);
 
   let getRearrangeSongs;
-  // if (checkBackToBack) {
+
   let tempRecentPlayer = firstTwoSongs
     ? firstTwoSongs[firstTwoSongs?.length - 1]?.playerName
     : null;
-  // if (checkBackToBack) {
-  getRearrangeSongs = reorderSongs(tempSongs, tempRecentPlayer);
-  // }
-  // }
-  // return checkBackToBack
-  //   ? getRearrangeSongs
-  //   : firstTwoSongs?.length > 0
-  //     ? tempSongs
-  //     : finalPlaylist;
+
+  getRearrangeSongs = reorderSongs(songs, tempRecentPlayer);
+
   return getRearrangeSongs;
 }
 
@@ -479,9 +344,37 @@ function hasBackToBackViolations(playlist, firstSong = null) {
 
 function reorderSongs(songs, mostRecentPlayerName) {
   // Sort songs by voting difference in descending order
-  let remainingSongs = songs.sort(
+  const filterUpVotes = songs?.filter(
+    (item) => item.upVote - item?.downVote > 0
+  );
+  const filterRemainigSongs = songs?.filter(
+    (item) => item.upVote - item?.downVote <= 0
+  );
+  let sortUpVote = filterUpVotes.sort(
     (a, b) => b.upVote - b.downVote - (a.upVote - a.downVote)
   );
+  let mergedSongs = [...sortUpVote, ...filterRemainigSongs];
+  // let remainingSongs = [...sortUpVote, ...filterRemainigSongs];
+  const remainingSongs = mergedSongs.map((song, index, array) => {
+    if (song.applySwap) {
+      const nextSong = array[index + 1];
+      const secondNextSong = array[index + 2];
+
+      // Check if second next song exists and playerName doesn't match
+      if (secondNextSong && song.playerName !== secondNextSong.playerName) {
+        // Perform the swap
+        array[index + 1] = song;
+        array[index] = nextSong;
+
+        // Mark the swapped song to prevent further swaps
+        song.applySwap = false;
+
+        return nextSong; // The song being swapped out
+      }
+    }
+
+    return song;
+  });
 
   let orderedSongs = [];
 

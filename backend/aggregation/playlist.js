@@ -296,6 +296,7 @@ export const songFromPlaylistV2 = [
       addByCustomer: 1,
       qualifiedPlayers: 1,
       isFixed: 1,
+      applySwap: 1,
     },
   },
   {
@@ -393,6 +394,7 @@ export const songsForTableViewV2 = [
       sortByMaster: 1,
       addByCustomer: 1,
       isFixed: 1,
+      applySwap: 1,
     },
   },
   {

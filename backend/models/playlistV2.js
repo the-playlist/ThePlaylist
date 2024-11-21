@@ -47,6 +47,10 @@ const playlistSchemaV2 = new mongoose.Schema(
       type: Date, // Track when the song was added to the playlist
       default: null,
     },
+    applySwap: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt

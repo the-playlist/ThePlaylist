@@ -31,10 +31,7 @@ import {
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
-import {
-  playlistAlgorithm,
-  playlistAlgorithmV2,
-} from "../../../../backend/algorithm/playlistAlgo";
+import { playlistAlgorithmV2 } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import DraggableList from "react-draggable-list";
 import { PlaylistSongItemV2 } from "./songItem";
