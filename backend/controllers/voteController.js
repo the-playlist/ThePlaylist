@@ -82,11 +82,7 @@ export const addUpdateVoteV2 = async (req, res, next) => {
   const delay = songDetail?.duration + 1;
   const timeout = delay * 1000;
 
-  if (
-    isEqual &&
-    songDetail?.playingState == true &&
-    songDetail?.duration < delay
-  ) {
+  if (songDetail?.playingState == true && songDetail?.duration < delay) {
     setTimeout(() => {
       return voteHandlerV2(
         customerId,
