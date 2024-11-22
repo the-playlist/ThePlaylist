@@ -23,6 +23,7 @@ const PerformerView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   let screenName = "Player View";
   useEffect(() => {
@@ -42,7 +43,10 @@ const PerformerView = () => {
       autoConnect: false,
     });
     socket.connect();
-
+    socket.on("connect", () => {
+      console.log("Connected to server");
+      setIsConnected(true); // Set to green (connected)
+    });
     socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
       const { playlist } = item;
       setPerformers([...playlist]);
@@ -92,6 +96,8 @@ const PerformerView = () => {
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
+      setIsConnected(false); // Set to red (disconnected)
+
       socket.connect();
       await fetchPlaylistSongList(null);
     });
@@ -116,6 +122,10 @@ const PerformerView = () => {
         "Connection timed out socket connection test, possibly due to Wi-Fi disconnection."
       );
     });
+    // Clean up the socket connection on unmount
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -163,6 +173,14 @@ const PerformerView = () => {
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
+              <div className=" flex flex-row gap-3 items-center">
+                <div
+                  className={` ${isConnected ? "bg-green-700" : "bg-red-700"} h-5 w-5 rounded-full`}
+                />
+                <span className={themeMode ? "text-black" : "text-white"}>
+                  {isConnected ? "Connected" : "Disconnected"}
+                </span>
+              </div>
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>

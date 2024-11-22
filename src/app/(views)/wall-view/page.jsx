@@ -16,7 +16,7 @@ import { EllipsisText } from "@/app/_components/ellipsis-text";
 
 const WallView = () => {
   const handle = useFullScreenHandle();
-
+  const [isConnected, setIsConnected] = useState(false);
   const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const isOnline = useOnlineStatus();
@@ -50,6 +50,10 @@ const WallView = () => {
     });
     socket.connect();
 
+    socket.on("connect", () => {
+      console.log("Connected to server");
+      setIsConnected(true); // Set to green (connected)
+    });
     socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
       setCurrentActive(screenName);
@@ -105,9 +109,15 @@ const WallView = () => {
     socket.on("disconnect", async (reason) => {
       socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
+      setIsConnected(false); // Set to red (disconnected)
+
       socket.connect();
       await fetchPlaylistSongList(null);
     });
+    // Clean up the socket connection on unmount
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
@@ -166,6 +176,14 @@ const WallView = () => {
 
               `}
               >
+                <div className=" flex flex-row gap-3 items-center">
+                  <div
+                    className={` ${isConnected ? "bg-green-700" : "bg-red-700"} h-5 w-5 rounded-full`}
+                  />
+                  <span className={themeMode ? "text-black" : "text-white"}>
+                    {isConnected ? "Connected" : "Disconnected"}
+                  </span>
+                </div>
                 <div className=" float-right">
                   <button
                     className=" bg-transparent"
