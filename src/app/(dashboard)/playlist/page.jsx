@@ -545,7 +545,7 @@ const page = () => {
               <div className="w-2/12">Title</div>
               <div className="w-1/12"></div>
               <div className="w-3/12">Player</div>
-              <div className="w-2/12">Intro</div>
+              <div className="w-2/12">Location</div>
               <div className="w-2/12">Category</div>
               <div className="w-1/12"></div>
             </div>
@@ -556,6 +556,7 @@ const page = () => {
               title,
               playerName,
               introSec,
+              location,
               category,
               isFav,
               songDuration,
@@ -578,16 +579,15 @@ const page = () => {
                 <div className="w-3/12">{playerName}</div>
 
                 <div className="w-2/12 flex items-center justify-center">
-                  <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                    {introSec || 0}
+                  {/* <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                    {location || 0}
+                  </div> */}
+                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+                    {location || "N/A"}
                   </div>
                 </div>
                 <div className="w-2/12 flex items-center justify-center">
-                  <div
-                    className={`${
-                      index > 1 ? "bg-[#F7F7F7]" : "bg-white"
-                    } rounded-3xl px-5 py-2`}
-                  >
+                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
                     {category}
                   </div>
                 </div>

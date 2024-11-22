@@ -81,6 +81,7 @@ export const getAllSongs = async (req, res, next) => {
           category: 1,
           introSec: 1,
           songDuration: 1,
+          location: 1,
           isDisabled: { $ifNull: ["$isDisabled", false] },
           qualifiedPlayers: {
             $map: {
@@ -688,6 +689,7 @@ export const getOnDutyAssignSongsV2 = async (req, res, next) => {
           title: { $first: "$title" },
           artist: { $first: "$artist" },
           introSec: { $first: "$introSec" },
+          location: { $first: "$location" },
           songDuration: { $first: "$songDuration" },
           category: { $first: "$category" },
           assignedPlayers: {

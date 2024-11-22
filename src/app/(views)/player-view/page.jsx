@@ -186,18 +186,54 @@ const PerformerView = () => {
               </div>
               {performer.length === 0 && (
                 <div
-                  className={`flex items-center justify-center flex-1 min-h-52 font-semibold sm:text-sm text-lg ${
+                  className={`flex items-center justify-center flex-1 min-h-52 font-semibold sm:text-sm text-lg  ${
                     themeMode ? "text-black" : "text-white"
                   }`}
                 >
                   The playlist is empty.
                 </div>
               )}
-
-              <table className="table table-lg border-separate border-spacing-y-4  ">
+              <div className=" flex flex-col gap-5">
+                {performer?.map((item, index) => (
+                  <div
+                    className={`flex items-center justify-between flex-row md:p-11 font-semibold rounded-lg ${
+                      index < 2
+                        ? "bg-yellow-400 text-black"
+                        : `
+                    ${
+                      themeMode
+                        ? "bg-[#F0F0F0] text-black"
+                        : "bg-[#303134] text-white"
+                    }
+                    `
+                    }`}
+                  >
+                    <div className="capitalize text-base  md:text-[50px]   text-left w-1/3">
+                      {getElipsisText(item.title, 15)}
+                    </div>
+                    <div className=" w-1/3">
+                      <span
+                        className={
+                          "text-base md:text-[35px]  capitalize text-left   "
+                        }
+                      >
+                        {getElipsisText(item.playerName, 10)}
+                      </span>
+                    </div>
+                    <div className="">
+                      <div
+                        className={`bg-[#F7F7F7] rounded-full min-w-32 px-5 py-2 text-black text-center text-2xl`}
+                      >
+                        {item?.location || "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* <table className="table table-lg border-separate border-spacing-y-4  ">
                 {performer?.map((item, index) => (
                   <tbody className={`text-base rounded-tl-lg font-medium`}>
-                    <tr className="bg-[#4d4b4b]">
+                    <tr className="">
                       <div
                         className={`flex items-center justify-center flex-row md:p-3  rounded-lg ${
                           index < 2
@@ -233,18 +269,16 @@ const PerformerView = () => {
                             {getElipsisText(item.playerName, 10)}
                           </span>
                         </td>
-                        <td className="text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
-                          <IntroCounter
-                            index={index}
-                            performerList={performer}
-                            introTimer={parseInt(item?.introSec ?? 0)}
-                          />
+                        <td className=" text-black rounded-r-lg text-end  m-0 p-2 pl-3 flex items-center ">
+                          <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+                            {item?.location || "N/A"}
+                          </div>
                         </td>
                       </div>
                     </tr>
                   </tbody>
                 ))}
-              </table>
+              </table> */}
               {/* {showCountDown && (
                 <CountDown openModal={showCountDown} timer={seconds} />
               )} */}
