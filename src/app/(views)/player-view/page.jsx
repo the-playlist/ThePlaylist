@@ -41,6 +41,8 @@ const PerformerView = () => {
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
     });
     socket.connect();
     socket.on("connect", () => {
@@ -94,11 +96,9 @@ const PerformerView = () => {
     });
 
     socket.on("disconnect", async (reason) => {
-      socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
       setIsConnected(false); // Set to red (disconnected)
 
-      socket.connect();
       await fetchPlaylistSongList(null);
     });
 

@@ -47,6 +47,8 @@ const WallView = () => {
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
+      reconnection: true,
+      reconnectionAttempts: Infinity,
     });
     socket.connect();
 
@@ -54,6 +56,14 @@ const WallView = () => {
       console.log("Connected to server");
       setIsConnected(true); // Set to green (connected)
     });
+
+    socket.on("heartbeat", (data) => {
+      console.log("Heartbeat received from server:", data.message);
+
+      // Optionally respond back to the server
+      socket.emit("heartbeat-ack", { message: "pong" });
+    });
+
     socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
       setCurrentActive(screenName);
@@ -107,17 +117,15 @@ const WallView = () => {
       setSongList([...playlist]);
     });
     socket.on("disconnect", async (reason) => {
-      socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
       setIsConnected(false); // Set to red (disconnected)
 
-      socket.connect();
       await fetchPlaylistSongList(null);
     });
     // Clean up the socket connection on unmount
-    return () => {
-      socket.disconnect();
-    };
+    // return () => {
+    //   socket.disconnect();
+    // };
   }, []);
 
   useEffect(() => {
