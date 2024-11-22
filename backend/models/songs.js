@@ -24,7 +24,7 @@ const songsSchema = new mongoose.Schema(
     },
     location: {
       type: String,
-      required: [true, "Please enter location"],
+      required: [false, "Please enter location"],
     },
     qualifiedPlayer: Boolean,
     isFav: { type: Boolean, default: false },

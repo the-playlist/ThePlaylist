@@ -496,7 +496,7 @@ export function PlaylistSongItemV2({
             {introSec || 0}
           </div> */}
           <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
-            {location || "N/A"}
+            {location || introSec}
           </div>
         </div>
         <div className={`w-2/12 flex items-center justify-center `}>
