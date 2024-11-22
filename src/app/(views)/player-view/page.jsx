@@ -224,7 +224,7 @@ const PerformerView = () => {
                       <div
                         className={`bg-[#F7F7F7] rounded-full min-w-32 px-5 py-2 text-black text-center text-2xl`}
                       >
-                        {location || introSec}
+                        {item?.location || item?.introSec}
                       </div>
                     </div>
                   </div>

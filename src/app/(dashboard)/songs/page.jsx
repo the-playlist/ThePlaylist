@@ -191,7 +191,7 @@ const SongsManagment = () => {
                         />
                       </td>
                       <td className=" text-center">
-                        {item?.location || "N/A"}
+                        {item?.location || item?.introSec}
                       </td>
                       <td className=" text-center">
                         <span className="text-center font-semibold bg-option p-2 rounded-lg">
