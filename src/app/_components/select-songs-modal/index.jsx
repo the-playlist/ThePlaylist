@@ -338,7 +338,7 @@ const SelectSongModal = ({
                   </div>
                   <div className="w-3/12">Player</div>
                   <div className="w-3/12">Category</div>
-                  <div className="w-3/12">Intro Seconds</div>
+                  <div className="w-3/12">Location</div>
                 </div>
               </div>
 
@@ -426,8 +426,12 @@ const SelectSongModal = ({
                               </div>
                             </div>
                           </div>
-                          <div className="w-3/12 text-center">
-                            {item.introSec}
+                          <div className="w-3/12 ">
+                            <div className="flex items-center justify-center">
+                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                                {location || introSec}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );

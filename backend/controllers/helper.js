@@ -29,5 +29,6 @@ export const flattenPlaylist = (playlist) =>
       addByCustomer: item.addByCustomer,
       isFixed: item?.isFixed,
       applySwap: item?.applySwap,
+      location: item?.songData?.location,
     };
   });

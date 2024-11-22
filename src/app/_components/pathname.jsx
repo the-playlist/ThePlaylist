@@ -41,4 +41,11 @@ export const navlinks = [
       <LiveRequestIcon color={isActive ? "#EFC440" : "#000"} />
     ),
   },
+  {
+    name: "Location",
+    href: "/location",
+    icon: (isActive) => (
+      <LiveRequestIcon color={isActive ? "#EFC440" : "#000"} />
+    ),
+  },
 ];

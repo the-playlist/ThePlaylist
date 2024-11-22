@@ -158,7 +158,7 @@ const SongsManagment = () => {
                     <th>Artist</th>
                     <th className=" text-center">Online</th>
                     <th className=" text-center">Qualified</th>
-                    <th className=" text-center">Intro Sec</th>
+                    <th className=" text-center">Location</th>
                     <th className=" text-center">Category</th>
                     <th className=" text-center"> Mark as Fav</th>
                     <th></th>
@@ -190,9 +190,9 @@ const SongsManagment = () => {
                           count={item?.qualifiedCount}
                         />
                       </td>
-                      <td className=" text-center">{`:${
-                        item?.introSec || "N/A"
-                      }`}</td>
+                      <td className=" text-center">
+                        {item?.location || "N/A"}
+                      </td>
                       <td className=" text-center">
                         <span className="text-center font-semibold bg-option p-2 rounded-lg">
                           {item?.category || "N/A"}

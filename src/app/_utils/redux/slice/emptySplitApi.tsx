@@ -59,6 +59,7 @@ const endPoints = {
   ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
   ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2:
     "api/playlist/addSongToPlaylistByCustomer-v2",
+  GET_LOCATION_LIST: "api/location/getLocationList",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -392,6 +393,9 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    getLocationList: builder.query({
+      query: () => `${endPoints.GET_LOCATION_LIST}`,
+    }),
   }),
 
   // tag use for invalidate api
@@ -454,4 +458,5 @@ export const {
   useUpdateSortOrderOfSongsV2Mutation,
   useLazyGetAssignSongsWithPlayersV2Query,
   useGetTableViewSongsV2Mutation,
+  useLazyGetLocationListQuery,
 } = emptySplitApi;
