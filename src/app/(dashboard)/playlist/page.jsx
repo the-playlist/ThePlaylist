@@ -119,9 +119,8 @@ const page = () => {
     });
 
     socket.on("disconnect", async (reason) => {
-      socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
-      socket.connect();
+
       await fetchPlaylistSongList(null);
     });
   }, []);
@@ -193,8 +192,8 @@ const page = () => {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
         if (
-          currentSong?.title == "" &&
           isFixedItems?.length > 0 &&
+          currentSong?.title == "" &&
           currentSongSecond == 0
         ) {
           const { playerName, title, _id } = isFixedItems[0];
