@@ -196,7 +196,7 @@ const PerformerView = () => {
               <div className=" flex flex-col gap-5">
                 {performer?.map((item, index) => (
                   <div
-                    className={`flex items-center justify-between flex-row md:p-11 font-semibold rounded-lg ${
+                    className={`flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg ${
                       index < 2
                         ? "bg-yellow-400 text-black"
                         : `
@@ -208,13 +208,15 @@ const PerformerView = () => {
                     `
                     }`}
                   >
-                    <div className="capitalize text-base  md:text-[50px]   text-left w-1/3">
-                      {getElipsisText(item.title, 15)}
+                    <div className=" w-1/2  text-left capitalize ">
+                      <span className="text-base  md:text-[40px] leading-snug     ">
+                        {getElipsisText(item.title, 15)}
+                      </span>
                     </div>
-                    <div className=" w-1/3">
+                    <div className=" ">
                       <span
                         className={
-                          "text-base md:text-[35px]  capitalize text-left   "
+                          "text-base md:text-[35px]  capitalize text-left leading-snug    "
                         }
                       >
                         {getElipsisText(item.playerName, 10)}
