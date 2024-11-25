@@ -134,22 +134,79 @@ const page = () => {
   const fetchSongsList = async () => {
     let response = await songsListApi();
     if (response && !response.isError) {
+      console.log("==>", completeList);
       const count = 30 - completeList?.length;
       const songList = response.data?.content;
-      const getData = getRandomSongIds(songList, count);
+      console.log("==>", songList);
+      const getData = getRandomSongIds(
+        songList,
+        count,
+        completeList[completeList?.length - 1]?.playerName
+      );
       if (getData?.length > 0) {
         addMultiSongsHandler(getData);
       }
     }
   };
 
-  function getRandomSongIds(songsArray, count) {
+  function getRandomSongIds(songsArray, count, lastPlayername) {
+    debugger;
     const numSongs = Math.min(count, songsArray.length);
 
-    const shuffled = [...songsArray]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numSongs);
-    return shuffled.map((song) => ({
+    // Separate songs into prioritized and non-prioritized groups
+    const prioritized = [];
+    const nonPrioritized = [];
+
+    songsArray.forEach((song) => {
+      // Check if lastPlayername is in assignedPlayers
+      if (
+        song.assignedPlayers &&
+        song.assignedPlayers.some(
+          (player) => player.playerName === lastPlayername
+        )
+      ) {
+        nonPrioritized.push(song);
+      } else {
+        prioritized.push(song);
+      }
+    });
+
+    // Shuffle each group
+    const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+    const shuffledPrioritized = shuffle(prioritized);
+    const shuffledNonPrioritized = shuffle(nonPrioritized);
+
+    // Modify non-prioritized songs as per requirements
+    const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+      // Create a shallow copy of the song object to avoid direct mutation
+      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+      if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+        // Filter out the player with lastPlayername
+        const players = songCopy.assignedPlayers.filter(
+          (player) => player.playerName !== lastPlayername
+        );
+
+        // If there are any remaining players, move the first one to the start
+        if (players.length > 0) {
+          const newFirstPlayer = players[0]; // Pick the first eligible player
+          const remainingPlayers = songCopy.assignedPlayers.filter(
+            (player) => player !== newFirstPlayer
+          );
+          songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+        }
+      }
+      return songCopy;
+    });
+
+    // Combine the groups, prioritizing songs where lastPlayername is not in assignedPlayers
+    const finalSongs = [
+      ...shuffledPrioritized,
+      ...modifiedNonPrioritized,
+    ].slice(0, numSongs);
+
+    // Format the result
+    return finalSongs.map((song) => ({
       songId: song._id,
       qualifiedPlayers: song?.assignedPlayers,
     }));
