@@ -134,22 +134,180 @@ const page = () => {
   const fetchSongsList = async () => {
     let response = await songsListApi();
     if (response && !response.isError) {
+      const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
+
       const count = 30 - completeList?.length;
       const songList = response.data?.content;
-      const getData = getRandomSongIds(songList, count);
+
+      const getData = getRandomSongIds(
+        songList,
+        count,
+        completeList[completeList?.length - 1]?.playerName,
+        mostRepeatedPlayer
+      );
       if (getData?.length > 0) {
         addMultiSongsHandler(getData);
       }
     }
   };
+  function getMostRepeatedPlayer(data) {
+    // Step 1: Count occurrences of each player
+    const playerCount = {};
+    data.forEach((item) => {
+      const playerName = item.playerName;
+      playerCount[playerName] = (playerCount[playerName] || 0) + 1;
+    });
 
-  function getRandomSongIds(songsArray, count) {
+    // Step 2: Find the player with the maximum count
+    let mostRepeatedPlayer = "";
+    let maxCount = 0;
+
+    for (const [playerName, count] of Object.entries(playerCount)) {
+      if (count > maxCount) {
+        mostRepeatedPlayer = playerName;
+        maxCount = count;
+      }
+    }
+    if (mostRepeatedPlayer.length === 1) {
+      return mostRepeatedPlayer[0];
+    }
+
+    return mostRepeatedPlayer;
+  }
+
+  // function getRandomSongIds(
+  //   songsArray,
+  //   count,
+  //   lastPlayername,
+  //   mostRepeatedPlayer
+  // ) {
+  //   const numSongs = Math.min(count, songsArray.length);
+
+  //   // Separate songs into prioritized and non-prioritized groups
+  //   const prioritized = [];
+  //   const nonPrioritized = [];
+
+  //   songsArray.forEach((song) => {
+  //     // Check if lastPlayername is in assignedPlayers
+  //     if (
+  //       song.assignedPlayers &&
+  //       song.assignedPlayers.some(
+  //         (player) => player.playerName === lastPlayername
+  //       )
+  //     ) {
+  //       nonPrioritized.push(song);
+  //     } else {
+  //       prioritized.push(song);
+  //     }
+  //   });
+
+  //   // Shuffle each group
+  //   const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+  //   const shuffledPrioritized = shuffle(prioritized);
+  //   const shuffledNonPrioritized = shuffle(nonPrioritized);
+
+  //   // Modify non-prioritized songs as per requirements
+  //   const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+  //     // Create a shallow copy of the song object to avoid direct mutation
+  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+  //     if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+  //       // Filter out the player with lastPlayername
+  //       const players = songCopy.assignedPlayers.filter(
+  //         (player) => player.playerName !== lastPlayername
+  //       );
+
+  //       // If there are any remaining players, move the first one to the start
+  //       if (players.length > 0) {
+  //         const newFirstPlayer = players[0]; // Pick the first eligible player
+  //         const remainingPlayers = songCopy.assignedPlayers.filter(
+  //           (player) => player !== newFirstPlayer
+  //         );
+  //         songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+  //       }
+  //     }
+  //     return songCopy;
+  //   });
+
+  //   // Combine the groups, prioritizing songs where lastPlayername is not in assignedPlayers
+  //   const finalSongs = [
+  //     ...shuffledPrioritized,
+  //     ...modifiedNonPrioritized,
+  //   ].slice(0, numSongs);
+
+  //   // Format the result
+  //   return finalSongs.map((song) => ({
+  //     songId: song._id,
+  //     qualifiedPlayers: song?.assignedPlayers,
+  //   }));
+  // }
+
+  function getRandomSongIds(
+    songsArray,
+    count,
+    lastPlayername,
+    mostRepeatedPlayer
+  ) {
     const numSongs = Math.min(count, songsArray.length);
 
-    const shuffled = [...songsArray]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numSongs);
-    return shuffled.map((song) => ({
+    // Separate songs into prioritized and non-prioritized groups
+    const prioritized = [];
+    const nonPrioritized = [];
+
+    songsArray.forEach((song) => {
+      // Check if the song contains the mostRepeatedPlayer
+      const hasMostRepeatedPlayer = song.assignedPlayers?.some(
+        (player) => player.playerName === mostRepeatedPlayer
+      );
+
+      // Check if lastPlayername is in assignedPlayers
+      const hasLastPlayername = song.assignedPlayers?.some(
+        (player) => player.playerName === lastPlayername
+      );
+
+      if (hasMostRepeatedPlayer || hasLastPlayername) {
+        nonPrioritized.push(song); // Move to non-prioritized
+      } else {
+        prioritized.push(song);
+      }
+    });
+
+    // Shuffle each group
+    const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+    const shuffledPrioritized = shuffle(prioritized);
+    const shuffledNonPrioritized = shuffle(nonPrioritized);
+
+    // Modify non-prioritized songs as per requirements
+    const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+      // Create a shallow copy of the song object to avoid direct mutation
+      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+      if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+        // Filter out the player with lastPlayername
+        const players = songCopy.assignedPlayers.filter(
+          (player) => player.playerName !== lastPlayername
+        );
+
+        // If there are any remaining players, move the first one to the start
+        if (players.length > 0) {
+          const newFirstPlayer = players[0]; // Pick the first eligible player
+          const remainingPlayers = songCopy.assignedPlayers.filter(
+            (player) => player !== newFirstPlayer
+          );
+          songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+        }
+      }
+      return songCopy;
+    });
+
+    // Combine the groups, prioritizing songs where lastPlayername and mostRepeatedPlayer are not in assignedPlayers
+    const finalSongs = [
+      ...shuffledPrioritized,
+      ...modifiedNonPrioritized,
+    ].slice(0, numSongs);
+
+    // Format the result
+    return finalSongs.map((song) => ({
       songId: song._id,
       qualifiedPlayers: song?.assignedPlayers,
     }));
