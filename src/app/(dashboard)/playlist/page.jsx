@@ -373,13 +373,13 @@ const page = () => {
         setNonFixedContent([...playlistWithId] || []);
         setIsFavSongs(isFavortiteListType);
         dispatch(setPlaylistLength(isFixedItems?.length));
-        setIsAdvanceButtonDisable(false);
 
         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
           playlist: completeList,
           isInsert: false,
         });
       }
+      setIsAdvanceButtonDisable(false);
 
       setIsLoading(false);
     } catch (error) {
