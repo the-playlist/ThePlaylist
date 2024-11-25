@@ -373,6 +373,7 @@ const page = () => {
         setNonFixedContent([...playlistWithId] || []);
         setIsFavSongs(isFavortiteListType);
         dispatch(setPlaylistLength(isFixedItems?.length));
+        setIsAdvanceButtonDisable(false);
 
         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
           playlist: completeList,
@@ -414,7 +415,6 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
-    setIsAdvanceButtonDisable(false);
     socket.emit("RemoveSongFromPlaylistRequest-v2", {
       isFirst: false,
       playlist: res,
