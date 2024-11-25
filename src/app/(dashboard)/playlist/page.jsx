@@ -137,6 +137,7 @@ const page = () => {
       const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
 
       const count = 30 - completeList?.length;
+
       const songList = response.data?.content;
 
       const getData = getRandomSongIds(

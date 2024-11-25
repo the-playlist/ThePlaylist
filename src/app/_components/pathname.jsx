@@ -6,6 +6,7 @@ import {
   SettingIcon,
   LiveRequestIcon,
 } from "../svgs";
+import LocationIcon from "../svgs/location";
 
 export const navlinks = [
   {
@@ -44,8 +45,6 @@ export const navlinks = [
   {
     name: "Location",
     href: "/location",
-    icon: (isActive) => (
-      <LiveRequestIcon color={isActive ? "#EFC440" : "#000"} />
-    ),
+    icon: (isActive) => <LocationIcon color={isActive ? "#EFC440" : "#000"} />,
   },
 ];
