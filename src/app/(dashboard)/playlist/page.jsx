@@ -150,7 +150,6 @@ const page = () => {
   };
 
   function getRandomSongIds(songsArray, count, lastPlayername) {
-    debugger;
     const numSongs = Math.min(count, songsArray.length);
 
     // Separate songs into prioritized and non-prioritized groups
