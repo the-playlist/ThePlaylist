@@ -129,11 +129,11 @@ const page = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (completeList?.length != 0 && completeList?.length < 30) {
-      fetchSongsList();
-    }
-  }, [completeList]);
+  // useEffect(() => {
+  //   if (completeList?.length != 0 && completeList?.length < 30) {
+  //     fetchSongsList();
+  //   }
+  // }, [completeList]);
 
   const fetchSongsList = async () => {
     let response = await songsListApi();
@@ -179,73 +179,6 @@ const page = () => {
 
     return mostRepeatedPlayer;
   }
-
-  // function getRandomSongIds(
-  //   songsArray,
-  //   count,
-  //   lastPlayername,
-  //   mostRepeatedPlayer
-  // ) {
-  //   const numSongs = Math.min(count, songsArray.length);
-
-  //   // Separate songs into prioritized and non-prioritized groups
-  //   const prioritized = [];
-  //   const nonPrioritized = [];
-
-  //   songsArray.forEach((song) => {
-  //     // Check if lastPlayername is in assignedPlayers
-  //     if (
-  //       song.assignedPlayers &&
-  //       song.assignedPlayers.some(
-  //         (player) => player.playerName === lastPlayername
-  //       )
-  //     ) {
-  //       nonPrioritized.push(song);
-  //     } else {
-  //       prioritized.push(song);
-  //     }
-  //   });
-
-  //   // Shuffle each group
-  //   const shuffle = (array) => array.sort(() => 0.5 - Math.random());
-  //   const shuffledPrioritized = shuffle(prioritized);
-  //   const shuffledNonPrioritized = shuffle(nonPrioritized);
-
-  //   // Modify non-prioritized songs as per requirements
-  //   const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
-  //     // Create a shallow copy of the song object to avoid direct mutation
-  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
-
-  //     if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
-  //       // Filter out the player with lastPlayername
-  //       const players = songCopy.assignedPlayers.filter(
-  //         (player) => player.playerName !== lastPlayername
-  //       );
-
-  //       // If there are any remaining players, move the first one to the start
-  //       if (players.length > 0) {
-  //         const newFirstPlayer = players[0]; // Pick the first eligible player
-  //         const remainingPlayers = songCopy.assignedPlayers.filter(
-  //           (player) => player !== newFirstPlayer
-  //         );
-  //         songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
-  //       }
-  //     }
-  //     return songCopy;
-  //   });
-
-  //   // Combine the groups, prioritizing songs where lastPlayername is not in assignedPlayers
-  //   const finalSongs = [
-  //     ...shuffledPrioritized,
-  //     ...modifiedNonPrioritized,
-  //   ].slice(0, numSongs);
-
-  //   // Format the result
-  //   return finalSongs.map((song) => ({
-  //     songId: song._id,
-  //     qualifiedPlayers: song?.assignedPlayers,
-  //   }));
-  // }
 
   function getRandomSongIds(
     songsArray,
@@ -750,12 +683,16 @@ const page = () => {
                   {/* <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
                     {location || 0}
                   </div> */}
-                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+                  <div
+                    className={`bg-[#F7F7F7] rounded-3xl px-5 py-2 font-semibold`}
+                  >
                     {location || introSec}
                   </div>
                 </div>
                 <div className="w-2/12 flex items-center justify-center">
-                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+                  <div
+                    className={`bg-[#F7F7F7] rounded-3xl px-5 py-2 font-semibold`}
+                  >
                     {category}
                   </div>
                 </div>

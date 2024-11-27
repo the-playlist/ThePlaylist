@@ -838,6 +838,9 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
         addByCustomer: item.addByCustomer,
         isFixed: item?.isFixed,
         applySwap: item?.applySwap,
+        location: item?.songData?.location,
+        requestToPerform: item?.requestToPerform,
+        tableNo: item?.tableNo,
       };
     });
 
@@ -1242,13 +1245,6 @@ export const addSongToPlaylistByCustomerV2 = async (req, res) => {
   const { songId, addByCustomer, songDetail, qualifiedPlayers } = req.body;
   const list = await PlaylistV2.aggregate(songFromPlaylistV2);
   const flattenedPlaylist = flattenPlaylist(list);
-  const songAtTop = flattenedPlaylist
-    ?.filter((song, index) => index == 0)
-    .map((song) => song.songId);
-  if (!songId) {
-    return res.status(400).json({ message: "Song ID is required" });
-  }
-  const isEqual = songAtTop.toString() === songId;
 
   const delay = songDetail?.duration + 1;
   const timeout = delay * 1000;
@@ -1271,8 +1267,51 @@ export const addMultipleSongsToPlaylistV2 = async (req, res) => {
       .json({ message: "An array of song IDs is required" });
   }
 
-  // Prepare an array of promises for each song addition
   payload?.map(async (item, index) => {
     addSongHandlerV2(item?.songId, false, res, item?.qualifiedPlayers);
   });
+};
+
+export const requestToPerformSong = async (req, res) => {
+  const { songId, requestToPerform, tableNo } = req.body;
+
+  const lastPerformRequestItem = await PlaylistV2.findOne({
+    requestToPerform: true,
+  })
+    .sort({ sortOrder: -1 })
+    .exec();
+  const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
+  const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+
+  const maxSortOrderItem = await PlaylistV2.find()
+    .sort({ sortOrder: -1 })
+    .limit(1)
+    .exec();
+  const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
+  const finalSortOrder =
+    nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
+
+  await PlaylistV2.updateMany(
+    { sortOrder: { $gte: nextSortOrder } },
+    { $inc: { sortOrder: 1 } }
+  );
+
+  let payload = {
+    assignedPlayer: null,
+    songData: new mongoose.Types.ObjectId(songId),
+    addByCustomer: false,
+    sortOrder: finalSortOrder,
+    qualifiedPlayers: null,
+    requestToPerform: requestToPerform,
+    tableNo: tableNo,
+  };
+
+  await PlaylistV2.create(payload);
+
+  const response = new ResponseModel(
+    true,
+    "Song added and playlist updated successfully",
+    { lastPerformRequestItem }
+  );
+  res.status(200).json(response);
 };

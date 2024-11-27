@@ -5,17 +5,28 @@ import {
   useAddSongToPlaylistByCustomerV2Mutation,
   useLazyGetLimitByTitleQuery,
   useLazyGetAddSongListForCustomerV2Query,
+  useLazyGetSongsListQuery,
+  useRequestToPerformMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
+import { useSearchParams } from "next/navigation";
 
 const Typeahead = () => {
+  const searchParams = useSearchParams();
+  const request_to_perform = searchParams.get("request_perform");
+  const table_no = searchParams.get("table_no");
+
   let limitTitle = "Song Limit";
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
     useAddSongToPlaylistByCustomerV2Mutation();
+  const [getAllSongsListApi] = useLazyGetSongsListQuery();
+  const [requestToPerformApi, { isLoading: btnLoader }] =
+    useRequestToPerformMutation();
+
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -90,10 +101,26 @@ const Typeahead = () => {
     setFilteredOptions(songList);
   };
   useEffect(() => {
-    fetchSongsList();
+    if (request_to_perform == "true") {
+      fetchAllSongsList();
+    } else {
+      fetchSongsList();
+    }
+    // request_to_perform ? fetchAllSongsList() : fetchSongsList();
 
     getLimitByTitleHandler(limitTitle);
-  }, []);
+  }, [request_to_perform]);
+
+  const fetchAllSongsList = async () => {
+    setSelectedSong(null);
+    let response = await getAllSongsListApi();
+
+    if (response && !response.isError) {
+      const songList = response.data?.content;
+      setFilteredOptions(songList);
+      setSongList(songList);
+    }
+  };
 
   const fetchSongsList = async () => {
     setSelectedSong(null);
@@ -144,6 +171,36 @@ const Typeahead = () => {
         qualifiedPlayers: song?.assignedPlayers,
       });
       if (response && !response.error) {
+        toast.success(response?.data?.description);
+        setInputValue("");
+        setSelectedSong(null);
+        socket.emit("songAddByCustomerReq-v2", {});
+        router.back();
+      } else {
+        toast.error(response?.error?.data?.description);
+        localStorage.setItem("prevSongTime", null);
+        localStorage.setItem("songCount", 0);
+      }
+    } catch (error) {
+      toast.success(error?.message || "Something went wrong.");
+      localStorage.setItem("prevSongTime", null);
+      localStorage.setItem("songCount", 0);
+    }
+  };
+
+  const requestToPerformApiHandler = async (
+    songId,
+    tableNo,
+    requestToPerform
+  ) => {
+    try {
+      let payload = {
+        songId: songId,
+        requestToPerform: requestToPerform,
+        tableNo: tableNo,
+      };
+      const response = await requestToPerformApi(payload);
+      if (response && !response.error) {
         const { song, playlistCount, list } = response?.data?.content;
         toast.success(response?.data?.description);
         setInputValue("");
@@ -158,11 +215,7 @@ const Typeahead = () => {
         localStorage.setItem("prevSongTime", null);
         localStorage.setItem("songCount", 0);
       }
-    } catch (error) {
-      toast.success(error?.message || "Something went wrong.");
-      localStorage.setItem("prevSongTime", null);
-      localStorage.setItem("songCount", 0);
-    }
+    } catch (error) {}
   };
 
   const getLimitByTitleHandler = async (title) => {
@@ -177,7 +230,7 @@ const Typeahead = () => {
     <>
       <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
         <div className="mb-2 text-base font-medium text-white">
-          Select a Song
+          {request_to_perform ? "Select a Song to Perform" : "Select a Song"}
         </div>
         <div className="relative flex  bg-[#303134]  w-full rounded-lg">
           <input
@@ -243,7 +296,7 @@ const Typeahead = () => {
                   className="pl-4 py-2 capitalize cursor-pointer flex w-full justify-between  items-center"
                 >
                   <span
-                    className={`text-sm text-${
+                    className={`text-sm text-start text-${
                       selectedSong?._id == option?._id ? "black" : "white"
                     } font-bold`}
                   >
@@ -278,7 +331,15 @@ const Typeahead = () => {
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
-            handleSong(selectedSong?._id, selectedSong);
+            if (request_to_perform == "true") {
+              requestToPerformApiHandler(
+                selectedSong?._id,
+                table_no,
+                request_to_perform
+              );
+            } else {
+              handleSong(selectedSong?._id, selectedSong);
+            }
           }}
           className={`flex w-full items-center ml-4 ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
@@ -289,7 +350,7 @@ const Typeahead = () => {
               inputValue?.length > 0 ? "black" : "white"
             }`}
           >
-            {isLoading ? (
+            {isLoading || btnLoader ? (
               <span className="loading loading-spinner loading-md"></span>
             ) : (
               "Add"

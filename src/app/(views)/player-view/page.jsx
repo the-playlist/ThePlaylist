@@ -74,10 +74,10 @@ const PerformerView = () => {
       fetchPlaylistSongList(isFirst);
     });
 
-    socket.on("songAddByCustomerRes-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
-    });
+    // socket.on("songAddByCustomerRes-v2", (item) => {
+    //   const { playlist, isFirst } = item;
+    //   setPerformers([...playlist]);
+    // });
 
     socket.on("handleDragRes-v2", (item) => {
       const { playlist } = item;

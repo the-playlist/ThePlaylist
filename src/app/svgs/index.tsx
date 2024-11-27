@@ -15,6 +15,9 @@ import LiveRequestIcon from "./liveRequest";
 import AppearenceIcon from "./appearence";
 import SortByMasterIcon from "./sortByMasterIcon";
 import RevertMasterIcon from "./revertMasterIcon";
+import RequestToPerfromIcon from "./requestToPerform";
+import AddSongIcon from "./addSong";
+import LiveVideoIcon from "./liveVideo";
 export {
   Logo,
   DashboardLogo,
@@ -33,4 +36,5 @@ export {
   AppearenceIcon,
   SortByMasterIcon,
   RevertMasterIcon,
+  RequestToPerfromIcon,
 };

@@ -60,6 +60,7 @@ const endPoints = {
   ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2:
     "api/playlist/addSongToPlaylistByCustomer-v2",
   GET_LOCATION_LIST: "api/location/getLocationList",
+  REUEST_TO_PERFORM: "api/songs/requestToPerformSong",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -396,6 +397,13 @@ export const emptySplitApi = createApi({
     getLocationList: builder.query({
       query: () => `${endPoints.GET_LOCATION_LIST}`,
     }),
+    requestToPerform: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.REUEST_TO_PERFORM,
+        method: "POST",
+        body: body,
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -459,4 +467,5 @@ export const {
   useLazyGetAssignSongsWithPlayersV2Query,
   useGetTableViewSongsV2Mutation,
   useLazyGetLocationListQuery,
+  useRequestToPerformMutation,
 } = emptySplitApi;

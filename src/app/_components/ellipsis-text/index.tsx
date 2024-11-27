@@ -6,12 +6,14 @@ interface EllipsisTextProps {
   length: number;
   tooltip?: boolean; // Optional: Show full text in a tooltip on hover
   isFixed?: boolean;
+  color?: string;
 }
 
 export const EllipsisText: React.FC<EllipsisTextProps> = ({
   text,
   length,
   isFixed,
+  color,
   ...props
 }) => {
   const masterViewTheme = useSelector(
@@ -22,7 +24,7 @@ export const EllipsisText: React.FC<EllipsisTextProps> = ({
 
   return (
     <span
-      className={`${isFixed ? "text-stone-800" : masterViewTheme ? "text-stone-800" : "text-white"}  text-base font-normal`}
+      className={`${color ? color : isFixed ? "text-stone-800" : masterViewTheme ? "text-stone-800" : "text-white"}  text-base font-normal`}
       style={{
         whiteSpace: "nowrap",
         overflow: "hidden",

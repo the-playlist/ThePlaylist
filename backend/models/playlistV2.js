@@ -57,6 +57,10 @@ const playlistSchemaV2 = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    tableNo: {
+      type: Number,
+      default: null,
+    },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt

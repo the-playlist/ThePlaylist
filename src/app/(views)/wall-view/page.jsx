@@ -104,10 +104,10 @@ const WallView = () => {
         getThemeByTitleHandler(title);
       }
     });
-    socket.on("songAddByCustomerRes-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setSongList([...playlist]);
-    });
+    // socket.on("songAddByCustomerRes-v2", (item) => {
+    //   const { playlist, isFirst } = item;
+    //   setSongList([...playlist]);
+    // });
     socket.on("undoFavRes-v2", (item) => {
       const { isFirst } = item;
       fetchPlaylistSongList(isFirst);
