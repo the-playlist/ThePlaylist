@@ -154,9 +154,8 @@ const TableView = () => {
     });
 
     socket.on("disconnect", async (reason) => {
-      socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
-      socket.connect();
+
       await fetchPlaylistSongList(null);
     });
   }, []);
@@ -197,7 +196,8 @@ const TableView = () => {
       let response = await getPlaylistSongTableView(payload);
 
       if (response && !response.isError) {
-        const { list, isFirstTimeFetched } = response?.data?.content || {};
+        const { list } = response?.data?.content || {};
+
         setPerformers(list || []);
         setVotingLoader(false);
       }

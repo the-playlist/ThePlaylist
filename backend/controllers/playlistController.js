@@ -71,7 +71,8 @@ export const addSongsToPlaylist = async (req, res, next) => {
     const duration = convertTimeToSeconds(item?.songData?.songDuration);
     const introSec =
       item?.songData?.introSec == "" ? 0 : parseInt(item?.songData?.introSec);
-    const totalDuration = formatTime(duration + introSec);
+    // const totalDuration = formatTime(duration + introSec);
+    const totalDuration = formatTime(duration);
     return {
       _id: item._id,
       playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
@@ -132,8 +133,8 @@ export const getSongsFromPlaylist = async (req, res, next) => {
     playlist.map((item) => {
       const duration = convertTimeToSeconds(item?.songData?.songDuration);
       const introSec = item?.songData?.introSec || 0;
-      const totalDuration = formatTime(duration + parseInt(introSec));
-
+      // const totalDuration = formatTime(duration + parseInt(introSec));
+      const totalDuration = formatTime(duration);
       return {
         _id: item._id,
         playerName: `${item?.assignedPlayer?.firstName} ${item?.assignedPlayer?.lastName}`,
@@ -712,6 +713,7 @@ function mapSongsWithSortOrder(songs) {
     sortOrder: index,
     isFixed: index < 2,
     addByCustomer: false,
+    applySwap: false,
   }));
 }
 
@@ -725,6 +727,7 @@ async function updateSongsInDatabase(songs) {
             sortOrder: song.sortOrder,
             isFixed: song.isFixed,
             addByCustomer: false,
+            applySwap: false,
           },
         }
       )
@@ -863,6 +866,7 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
         sortByMaster: item.sortByMaster,
         addByCustomer: item.addByCustomer,
         isFixed: item?.isFixed,
+        applySwap: item?.applySwap,
       };
     });
 
@@ -887,6 +891,7 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
               isFixed:
                 song.sortOrder === 0 || song.sortOrder === 1 ? true : false,
               addByCustomer: false,
+              applySwap: false,
             },
           }
         )
@@ -1083,7 +1088,9 @@ export const revertMasterCheckV2 = async (req, res, next) => {
 export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
   const id = req.query.id;
   const isDeleted = req.query.isDeleted;
-  const isAuto = req?.query.auto || false;
+  const isAuto = req?.query.auto == "true" || false;
+  const hideSong = req?.query.hideSong === "true";
+  const dateTime = new Date();
   if (isAuto) {
     await AlgorithmStatus.findByIdAndUpdate(
       algoStatusId,
@@ -1101,7 +1108,11 @@ export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
 
   await PlaylistV2.findByIdAndUpdate(
     id,
-    { isDeleted: isDeleted, isFixed: false },
+    {
+      isDeleted: isDeleted,
+      isFixed: false,
+      songAddedAt: hideSong ? dateTime : null,
+    },
     { new: true }
   );
   const playlist = await PlaylistV2.aggregate(songFromPlaylistV2);
@@ -1140,7 +1151,12 @@ export const deleteSongFromPlaylistByIdV2 = async (req, res, next) => {
   res.status(200).json(response);
 };
 
-const addSongHandlerV2 = async (songId, addByCustomer, res) => {
+const addSongHandlerV2 = async (
+  songId,
+  addByCustomer,
+  res,
+  qualifiedPlayers
+) => {
   const players = await Players.aggregate([
     {
       $match: {
@@ -1212,11 +1228,16 @@ const addSongHandlerV2 = async (songId, addByCustomer, res) => {
     playlistCount = await PlaylistV2.countDocuments({
       isDeleted: false,
     });
+
     const newPlaylistEntry = new PlaylistV2({
       assignedPlayer: playerToAssign._id,
       songData: new mongoose.Types.ObjectId(songId),
       addByCustomer: addByCustomer,
       sortOrder: playlistCount,
+      qualifiedPlayers: qualifiedPlayers.map((player) => ({
+        id: player?._id,
+        name: player?.playerName,
+      })),
     });
     await newPlaylistEntry.save();
     const list = await PlaylistV2.aggregate(songFromPlaylistV2);
@@ -1247,7 +1268,7 @@ const addSongHandlerV2 = async (songId, addByCustomer, res) => {
 };
 
 export const addSongToPlaylistByCustomerV2 = async (req, res) => {
-  const { songId, addByCustomer, songDetail } = req.body;
+  const { songId, addByCustomer, songDetail, qualifiedPlayers } = req.body;
   const list = await PlaylistV2.aggregate(songFromPlaylistV2);
   const flattenedPlaylist = flattenPlaylist(list);
   const songAtTop = flattenedPlaylist
@@ -1261,30 +1282,26 @@ export const addSongToPlaylistByCustomerV2 = async (req, res) => {
   const delay = songDetail?.duration + 1;
   const timeout = delay * 1000;
 
-  if (
-    isEqual &&
-    songDetail?.playingState == true &&
-    songDetail?.duration < delay
-  ) {
+  if (songDetail?.playingState == true && songDetail?.duration < delay) {
     setTimeout(() => {
-      return addSongHandlerV2(songId, addByCustomer, res);
+      return addSongHandlerV2(songId, addByCustomer, res, qualifiedPlayers);
     }, timeout);
   } else {
-    return addSongHandlerV2(songId, addByCustomer, res);
+    return addSongHandlerV2(songId, addByCustomer, res, qualifiedPlayers);
   }
 };
 
 export const addMultipleSongsToPlaylistV2 = async (req, res) => {
-  const songIds = req.body;
+  let payload = req.body;
 
-  if (!Array.isArray(songIds) || songIds.length === 0) {
+  if (!Array.isArray(payload) || payload.length === 0) {
     return res
       .status(400)
       .json({ message: "An array of song IDs is required" });
   }
 
   // Prepare an array of promises for each song addition
-  songIds.map(async (item, index) => {
-    addSongHandlerV2(item?.songId, false, res);
+  payload?.map(async (item, index) => {
+    addSongHandlerV2(item?.songId, false, res, item?.qualifiedPlayers);
   });
 };

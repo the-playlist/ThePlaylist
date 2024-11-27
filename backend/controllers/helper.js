@@ -4,7 +4,8 @@ export const flattenPlaylist = (playlist) =>
   playlist.map((item) => {
     const duration = convertTimeToSeconds(item?.songData?.songDuration);
     const introSec = item?.songData?.introSec || 0;
-    const totalDuration = formatTime(duration + parseInt(introSec));
+    // const totalDuration = formatTime(duration + parseInt(introSec));
+    const totalDuration = formatTime(duration);
 
     return {
       _id: item._id,
@@ -27,5 +28,7 @@ export const flattenPlaylist = (playlist) =>
       sortByMaster: item?.sortByMaster,
       addByCustomer: item.addByCustomer,
       isFixed: item?.isFixed,
+      applySwap: item?.applySwap,
+      location: item?.songData?.location,
     };
   });

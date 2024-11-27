@@ -6,6 +6,7 @@ import {
   SettingIcon,
   LiveRequestIcon,
 } from "../svgs";
+import LocationIcon from "../svgs/location";
 
 export const navlinks = [
   {
@@ -59,6 +60,15 @@ export const navlinks = [
     href: "/live-video-requests",
     icon: (isActive, masterViewTheme) => (
       <LiveRequestIcon
+        color={isActive ? "#EFC440" : !masterViewTheme ? "#fff" : "#000"}
+      />
+    ),
+  },
+  {
+    name: "Location",
+    href: "/location",
+    icon: (isActive, masterViewTheme) => (
+      <LocationIcon
         color={isActive ? "#EFC440" : !masterViewTheme ? "#fff" : "#000"}
       />
     ),

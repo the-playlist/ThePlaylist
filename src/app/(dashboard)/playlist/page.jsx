@@ -31,10 +31,7 @@ import {
 import { useSelector } from "react-redux";
 import { convertTimeToSeconds, useOnlineStatus } from "../../_utils/helper";
 import ConfirmationPopup from "@/app/_components/confirmation-popup";
-import {
-  playlistAlgorithm,
-  playlistAlgorithmV2,
-} from "../../../../backend/algorithm/playlistAlgo";
+import { playlistAlgorithmV2 } from "../../../../backend/algorithm/playlistAlgo";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import DraggableList from "react-draggable-list";
 import { PlaylistSongItemV2 } from "./songItem";
@@ -65,7 +62,7 @@ const page = () => {
   const [votingList, setVotingList] = useState(null);
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
-
+  const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
@@ -124,13 +121,10 @@ const page = () => {
     socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
       fetchPlaylistSongList(null);
     });
-    // socket.on("wallViewRes-v2", (item) => {
-    //   fetchPlaylistSongList(null);
-    // });
+
     socket.on("disconnect", async (reason) => {
-      socket.disconnect();
       console.log(`Socket disconnected socket connection test: ${reason}`);
-      socket.connect();
+
       await fetchPlaylistSongList(null);
     });
   }, []);
@@ -144,23 +138,184 @@ const page = () => {
   const fetchSongsList = async () => {
     let response = await songsListApi();
     if (response && !response.isError) {
+      const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
+
       const count = 30 - completeList?.length;
+
       const songList = response.data?.content;
-      const getIds = getRandomSongIds(songList, count);
-      if (getIds?.length > 0) {
-        addMultiSongsHandler(getIds);
+
+      const getData = getRandomSongIds(
+        songList,
+        count,
+        completeList[completeList?.length - 1]?.playerName,
+        mostRepeatedPlayer
+      );
+      if (getData?.length > 0) {
+        addMultiSongsHandler(getData);
       }
     }
   };
+  function getMostRepeatedPlayer(data) {
+    // Step 1: Count occurrences of each player
+    const playerCount = {};
+    data.forEach((item) => {
+      const playerName = item.playerName;
+      playerCount[playerName] = (playerCount[playerName] || 0) + 1;
+    });
 
-  function getRandomSongIds(songsArray, count) {
+    // Step 2: Find the player with the maximum count
+    let mostRepeatedPlayer = "";
+    let maxCount = 0;
+
+    for (const [playerName, count] of Object.entries(playerCount)) {
+      if (count > maxCount) {
+        mostRepeatedPlayer = playerName;
+        maxCount = count;
+      }
+    }
+    if (mostRepeatedPlayer.length === 1) {
+      return mostRepeatedPlayer[0];
+    }
+
+    return mostRepeatedPlayer;
+  }
+
+  // function getRandomSongIds(
+  //   songsArray,
+  //   count,
+  //   lastPlayername,
+  //   mostRepeatedPlayer
+  // ) {
+  //   const numSongs = Math.min(count, songsArray.length);
+
+  //   // Separate songs into prioritized and non-prioritized groups
+  //   const prioritized = [];
+  //   const nonPrioritized = [];
+
+  //   songsArray.forEach((song) => {
+  //     // Check if lastPlayername is in assignedPlayers
+  //     if (
+  //       song.assignedPlayers &&
+  //       song.assignedPlayers.some(
+  //         (player) => player.playerName === lastPlayername
+  //       )
+  //     ) {
+  //       nonPrioritized.push(song);
+  //     } else {
+  //       prioritized.push(song);
+  //     }
+  //   });
+
+  //   // Shuffle each group
+  //   const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+  //   const shuffledPrioritized = shuffle(prioritized);
+  //   const shuffledNonPrioritized = shuffle(nonPrioritized);
+
+  //   // Modify non-prioritized songs as per requirements
+  //   const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+  //     // Create a shallow copy of the song object to avoid direct mutation
+  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+  //     if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+  //       // Filter out the player with lastPlayername
+  //       const players = songCopy.assignedPlayers.filter(
+  //         (player) => player.playerName !== lastPlayername
+  //       );
+
+  //       // If there are any remaining players, move the first one to the start
+  //       if (players.length > 0) {
+  //         const newFirstPlayer = players[0]; // Pick the first eligible player
+  //         const remainingPlayers = songCopy.assignedPlayers.filter(
+  //           (player) => player !== newFirstPlayer
+  //         );
+  //         songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+  //       }
+  //     }
+  //     return songCopy;
+  //   });
+
+  //   // Combine the groups, prioritizing songs where lastPlayername is not in assignedPlayers
+  //   const finalSongs = [
+  //     ...shuffledPrioritized,
+  //     ...modifiedNonPrioritized,
+  //   ].slice(0, numSongs);
+
+  //   // Format the result
+  //   return finalSongs.map((song) => ({
+  //     songId: song._id,
+  //     qualifiedPlayers: song?.assignedPlayers,
+  //   }));
+  // }
+
+  function getRandomSongIds(
+    songsArray,
+    count,
+    lastPlayername,
+    mostRepeatedPlayer
+  ) {
     const numSongs = Math.min(count, songsArray.length);
 
-    const shuffled = [...songsArray]
-      .sort(() => 0.5 - Math.random())
-      .slice(0, numSongs);
+    // Separate songs into prioritized and non-prioritized groups
+    const prioritized = [];
+    const nonPrioritized = [];
 
-    return shuffled.map((song) => ({ songId: song._id }));
+    songsArray.forEach((song) => {
+      // Check if the song contains the mostRepeatedPlayer
+      const hasMostRepeatedPlayer = song.assignedPlayers?.some(
+        (player) => player.playerName === mostRepeatedPlayer
+      );
+
+      // Check if lastPlayername is in assignedPlayers
+      const hasLastPlayername = song.assignedPlayers?.some(
+        (player) => player.playerName === lastPlayername
+      );
+
+      if (hasMostRepeatedPlayer || hasLastPlayername) {
+        nonPrioritized.push(song); // Move to non-prioritized
+      } else {
+        prioritized.push(song);
+      }
+    });
+
+    // Shuffle each group
+    const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+    const shuffledPrioritized = shuffle(prioritized);
+    const shuffledNonPrioritized = shuffle(nonPrioritized);
+
+    // Modify non-prioritized songs as per requirements
+    const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+      // Create a shallow copy of the song object to avoid direct mutation
+      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+      if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+        // Filter out the player with lastPlayername
+        const players = songCopy.assignedPlayers.filter(
+          (player) => player.playerName !== lastPlayername
+        );
+
+        // If there are any remaining players, move the first one to the start
+        if (players.length > 0) {
+          const newFirstPlayer = players[0]; // Pick the first eligible player
+          const remainingPlayers = songCopy.assignedPlayers.filter(
+            (player) => player !== newFirstPlayer
+          );
+          songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+        }
+      }
+      return songCopy;
+    });
+
+    // Combine the groups, prioritizing songs where lastPlayername and mostRepeatedPlayer are not in assignedPlayers
+    const finalSongs = [
+      ...shuffledPrioritized,
+      ...modifiedNonPrioritized,
+    ].slice(0, numSongs);
+
+    // Format the result
+    return finalSongs.map((song) => ({
+      songId: song._id,
+      qualifiedPlayers: song?.assignedPlayers,
+    }));
   }
 
   const addMultiSongsHandler = async (data) => {
@@ -199,7 +354,11 @@ const page = () => {
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
-        if (currentSong?.title == "" && isFixedItems?.length > 0) {
+        if (
+          isFixedItems?.length > 0 &&
+          currentSong?.title == "" &&
+          currentSongSecond == 0
+        ) {
           const { playerName, title, _id } = isFixedItems[0];
           dispatch(
             setCurrentSong({
@@ -215,7 +374,6 @@ const page = () => {
             )
           );
         }
-
         setFixedContent([...isFixedItems] || []);
         setNonFixedContent([...playlistWithId] || []);
         setIsFavSongs(isFavortiteListType);
@@ -226,6 +384,7 @@ const page = () => {
           isInsert: false,
         });
       }
+      setIsAdvanceButtonDisable(false);
 
       setIsLoading(false);
     } catch (error) {
@@ -233,7 +392,8 @@ const page = () => {
     }
   };
 
-  const deleteSongFromPlaylistHandler = async (id, isTrashPress) => {
+  const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
+    setIsAdvanceButtonDisable(true);
     dispatch(setIsAdvanceTheQueeDisable(true));
     const res = await removeItemById(id, isTrashPress);
 
@@ -244,7 +404,8 @@ const page = () => {
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
-      auto: !isTrashPress,
+      auto: isTrashPress,
+      hideSong: hideSong,
     });
     dispatch(setIsAdvanceTheQueeDisable(false));
     if (playingState == true && !isTrashPress) {
@@ -305,15 +466,15 @@ const page = () => {
       );
     } else {
       setIsLoading(true);
-      dispatch(setCurrentSongSecond(0));
-      dispatch(
-        setCurrentSong({
-          title: "",
-          player: "",
-          id: 0,
-          duration: 0,
-        })
-      );
+      // dispatch(setCurrentSongSecond(0));
+      // dispatch(
+      //   setCurrentSong({
+      //     title: "",
+      //     player: "",
+      //     id: 0,
+      //     duration: 0,
+      //   })
+      // );
     }
     return playlistWithId;
   };
@@ -479,11 +640,12 @@ const page = () => {
           >
             {(fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
               <button
+                disabled={isAdvanceButtonDisable}
                 onClick={async () => {
                   await deleteSongFromPlaylistHandler(
                     fixedContent[0]?._id,
                     false,
-                    true
+                    false
                   );
                 }}
                 className={`flex items-center ${masterViewTheme ? "bg-black text-white " : "bg-white text-black"} hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
@@ -551,7 +713,7 @@ const page = () => {
               <div className="w-2/12">Title</div>
               <div className="w-1/12"></div>
               <div className="w-3/12">Player</div>
-              <div className="w-2/12">Intro</div>
+              <div className="w-2/12">Location</div>
               <div className="w-2/12">Category</div>
               <div className="w-1/12"></div>
             </div>
@@ -562,6 +724,7 @@ const page = () => {
               title,
               playerName,
               introSec,
+              location,
               category,
               isFav,
               songDuration,
@@ -584,16 +747,15 @@ const page = () => {
                 <div className="w-3/12">{playerName}</div>
 
                 <div className="w-2/12 flex items-center justify-center">
-                  <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-                    {introSec || 0}
+                  {/* <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+                    {location || 0}
+                  </div> */}
+                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+                    {location || introSec}
                   </div>
                 </div>
                 <div className="w-2/12 flex items-center justify-center">
-                  <div
-                    className={`${
-                      index > 1 ? "bg-[#F7F7F7]" : "bg-white"
-                    } rounded-3xl px-5 py-2`}
-                  >
+                  <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
                     {category}
                   </div>
                 </div>
@@ -601,10 +763,15 @@ const page = () => {
                   <div className="flex items-center justify-end">
                     {index === 0 && (
                       <SongCountdownTimer
+                        socket={socket}
                         orignalSongDuration={songDuration}
                         duration={currentSongSecond}
                         advanceTheQueue={() => {
-                          deleteSongFromPlaylistHandler(fixedContent[0]?._id);
+                          deleteSongFromPlaylistHandler(
+                            fixedContent[0]?._id,
+                            false,
+                            true
+                          );
                         }}
                         playlistSongList={fixedContent}
                         isStart={playingState}

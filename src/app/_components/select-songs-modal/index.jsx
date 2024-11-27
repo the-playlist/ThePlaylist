@@ -194,14 +194,14 @@ const SelectSongModal = ({
 
       if (response && !response.isError) {
         const { list, playlistCount } = response?.data?.content;
-        const getOccurrence = 30 / countUniquePlayers(list);
+        const getOccurrence = songLimit / countUniquePlayers(list);
         const roundedNumber = Math.ceil(getOccurrence);
 
         setPlaylistCount(playlistCount);
         let tempArr = addSelectedPlayers(list);
 
         if (isDuty) {
-          tempArr = randomlyCheckItems(tempArr, 30, roundedNumber);
+          tempArr = randomlyCheckItems(tempArr, songLimit, roundedNumber);
         }
         setPlayersList(tempArr);
       }
@@ -366,7 +366,7 @@ const SelectSongModal = ({
                   </div>
                   <div className="w-3/12">Player</div>
                   <div className="w-3/12">Category</div>
-                  <div className="w-3/12">Intro Seconds</div>
+                  <div className="w-3/12">Location</div>
                 </div>
               </div>
 
@@ -456,8 +456,12 @@ const SelectSongModal = ({
                               </div>
                             </div>
                           </div>
-                          <div className="w-3/12 text-center">
-                            {item.introSec}
+                          <div className="w-3/12 ">
+                            <div className="flex items-center justify-center">
+                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                                {item?.location || item?.introSec}
+                              </div>
+                            </div>
                           </div>
                         </div>
                       );

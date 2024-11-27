@@ -318,6 +318,7 @@ export function PlaylistSongItem({
           <div className="flex items-center justify-end ">
             {index === 0 && (
               <SongCountdownTimer
+                socket={socket}
                 orignalSongDuration={songDuration}
                 setShowCountDown={(value) => {
                   if (initialSongPlaylist) {
@@ -377,6 +378,7 @@ export function PlaylistSongItemV2({
     sortOrder,
     sortByMaster,
     songDuration,
+    location,
     id: index,
   } = item || {};
   const masterViewTheme = useSelector(
@@ -503,8 +505,11 @@ export function PlaylistSongItemV2({
           )}
         </div>
         <div className="w-2/12 flex items-center justify-center">
-          <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
+          {/* <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
             {introSec || 0}
+          </div> */}
+          <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+            {location || introSec}
           </div>
         </div>
         <div className={`w-2/12 flex items-center justify-center `}>
@@ -516,7 +521,7 @@ export function PlaylistSongItemV2({
 
             <button
               onClick={() => {
-                deleteSongFromPlaylistHandler(item?._id, true);
+                deleteSongFromPlaylistHandler(item?._id, true, false);
               }}
               className=" hover:cursor-pointer ml-5"
             >

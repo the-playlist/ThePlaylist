@@ -280,6 +280,7 @@ export const songFromPlaylistV2 = [
       "songData.title": 1,
       "songData.artist": 1,
       "songData.introSec": 1,
+      "songData.location": 1,
       "songData.songDuration": 1,
       "songData.category": 1,
       "songData.isFav": 1,
@@ -296,6 +297,7 @@ export const songFromPlaylistV2 = [
       addByCustomer: 1,
       qualifiedPlayers: 1,
       isFixed: 1,
+      applySwap: 1,
     },
   },
   {
@@ -378,6 +380,7 @@ export const songsForTableViewV2 = [
       "songData.title": 1,
       "songData.artist": 1,
       "songData.introSec": 1,
+      "songData.location": 1,
       "songData.songDuration": 1,
       "songData.category": 1,
       "songData.isFav": 1,
@@ -393,6 +396,7 @@ export const songsForTableViewV2 = [
       sortByMaster: 1,
       addByCustomer: 1,
       isFixed: 1,
+      applySwap: 1,
     },
   },
   {

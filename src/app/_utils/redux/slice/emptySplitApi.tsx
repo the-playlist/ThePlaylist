@@ -59,6 +59,7 @@ const endPoints = {
   ADD_SONGS_TO_PLAYLIST_V2: "api/playlist/addSongsToPlaylist-v2",
   ADD_SONG_TO_PLAYLIST_BY_CUSTOMER_V2:
     "api/playlist/addSongToPlaylistByCustomer-v2",
+  GET_LOCATION_LIST: "api/location/getLocationList",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -334,7 +335,7 @@ export const emptySplitApi = createApi({
     }),
     deleteSongFromPlaylistByIdV2: builder.mutation({
       query: (body) => ({
-        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto} `,
+        url: `${endPoints.DELETE_SONG_FROM_PLAYLISTV2}${body.id}&isDeleted=${body.isDeleted}&auto=${body.auto}&hideSong=${body.hideSong} `,
         method: "DELETE",
       }),
     }),
@@ -391,6 +392,9 @@ export const emptySplitApi = createApi({
         method: "POST",
         body: body,
       }),
+    }),
+    getLocationList: builder.query({
+      query: () => `${endPoints.GET_LOCATION_LIST}`,
     }),
   }),
 
@@ -454,4 +458,5 @@ export const {
   useUpdateSortOrderOfSongsV2Mutation,
   useLazyGetAssignSongsWithPlayersV2Query,
   useGetTableViewSongsV2Mutation,
+  useLazyGetLocationListQuery,
 } = emptySplitApi;

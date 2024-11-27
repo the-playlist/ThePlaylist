@@ -50,6 +50,17 @@ const voteHandlerV2 = async (
       isUpVote: isUpVote,
     });
   }
+  const count = await Vote.countDocuments({
+    playlistItemId: playlistItemId,
+    isUpVote: false,
+  });
+
+  if (count != 0 && count % 3 == 0) {
+    await PlaylistV2.findByIdAndUpdate(playlistItemId, {
+      applySwap: true,
+    });
+  }
+
   let response = new ResponseModel(true, "Vote added Successfully", null);
   res.status(200).json(response);
 };
@@ -60,6 +71,7 @@ export const addUpdateVoteV2 = async (req, res, next) => {
 
   const list = await PlaylistV2.aggregate(songFromPlaylistV2);
   const flattenedPlaylist = flattenPlaylist(list);
+
   const songAtTop = flattenedPlaylist
     ?.filter((song, index) => index == 0)
     .map((song) => song.songId);
@@ -70,11 +82,7 @@ export const addUpdateVoteV2 = async (req, res, next) => {
   const delay = songDetail?.duration + 1;
   const timeout = delay * 1000;
 
-  if (
-    isEqual &&
-    songDetail?.playingState == true &&
-    songDetail?.duration < delay
-  ) {
+  if (songDetail?.playingState == true && songDetail?.duration < delay) {
     setTimeout(() => {
       return voteHandlerV2(
         customerId,
