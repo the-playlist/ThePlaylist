@@ -1,9 +1,15 @@
 import { StreamRequests } from "@/app/_components/stream-requests";
 import React, { memo } from "react";
+import { useSelector } from "react-redux";
 
 export const VideoStreamUI = memo(({ item, socket, changeStatusHandler }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   return (
-    <div className="card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5">
+    <div
+      className={`card  w-[32%] bg-base-100 shadow-xl mr-4  mb-4 p-5 ${masterViewTheme ? "bg-light text-black" : "bg-light-tile text-white"} `}
+    >
       <div className="flex justify-between items-center mb-3 ">
         <h2 className="card-title">Table no:{item?.tableno}</h2>
       </div>

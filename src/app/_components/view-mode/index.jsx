@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 const CustomToggleButton = ({
   onLightModePress,
@@ -8,8 +9,13 @@ const CustomToggleButton = ({
   btnText1,
   btnText2,
 }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   return (
-    <div className="w-full  bg-white drop-shadow rounded-lg px-4 py-8 ">
+    <div
+      className={`w-full ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"}   drop-shadow rounded-lg px-4 py-8 `}
+    >
       <div className="flex justify-between items-center ">
         <h3 className="font-bold text-lg">{title}</h3>
         <div className=" w-1/5 bg-gray-300 flex items-center rounded-full relative">

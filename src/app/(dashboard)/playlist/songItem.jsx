@@ -381,6 +381,9 @@ export function PlaylistSongItemV2({
     location,
     id: index,
   } = item || {};
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
   const isMoreThanOneQualifiedPlayers = item?.qualifiedPlayers.length > 1;
@@ -391,7 +394,7 @@ export function PlaylistSongItemV2({
     <div>
       <div
         key={index}
-        className={` text-center bg-white shadow rounded-2xl h-20 flex items-center  px-5`}
+        className={` text-center ${masterViewTheme ? "bg-white" : "bg-light-tile"} shadow rounded-2xl h-20 flex items-center  px-5`}
       >
         <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
           <div className=" flex items-center justify-center  cursor-pointer">
@@ -463,13 +466,19 @@ export function PlaylistSongItemV2({
         </div>
         <div className="w-1/12">
           <div className="flex items-center justify-center">
-            <div className="bg-[#f1f7ee] px-5 mr-2 py-3 flex items-center rounded-3xl">
-              <div className="flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2">
+            <div
+              className={`${masterViewTheme ? "bg-[#f1f7ee]" : "bg-white"}  px-5 mr-2 py-3 flex items-center rounded-3xl`}
+            >
+              <div
+                className={`flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2`}
+              >
                 <IoIosArrowUp size={18} color={"white"} />
               </div>
               {upVote}
             </div>
-            <div className="bg-[#FCEDED] px-5 py-3 flex items-center rounded-3xl">
+            <div
+              className={`${masterViewTheme ? "bg-[#FCEDED]" : "bg-white"}  px-5 py-3 flex items-center rounded-3xl`}
+            >
               <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
                 <IoIosArrowDown size={18} color={"white"} />
               </div>
@@ -488,7 +497,11 @@ export function PlaylistSongItemV2({
               onUpdateItem={onUpdateItem}
             />
           ) : (
-            playerName
+            <div
+              className={`${masterViewTheme ? "text-black" : "text-white"}  capitalize`}
+            >
+              {playerName}
+            </div>
           )}
         </div>
         <div className="w-2/12 flex items-center justify-center">

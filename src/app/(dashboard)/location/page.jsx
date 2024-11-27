@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useLazyGetLocationListQuery } from "../../_utils/redux/slice/emptySplitApi";
 import { CustomLoader } from "@/app/_components/custom_loader";
+import { useSelector } from "react-redux";
 
 const Location = () => {
   const [locationListApi, { isLoading }] = useLazyGetLocationListQuery();
@@ -18,6 +19,9 @@ const Location = () => {
       setLocationContent(content || []);
     }
   };
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   return isLoading ? (
     <div className=" h-[80vh] flex items-center justify-center">
@@ -30,7 +34,7 @@ const Location = () => {
         {locationContent?.map((item, index) => (
           <div
             key={index}
-            className=" bg-white drop-shadow rounded-lg p-4 flex flex-col gap-4 items-center "
+            className={`${masterViewTheme ? " bg-white text-black" : "bg-light-tile text-white"}  drop-shadow rounded-lg p-4 flex flex-col gap-4 items-center `}
           >
             <div className=" py-2 px-5 bg-primary w-full text-center rounded-md font-semibold text-2xl">
               {item?.symbol || ""}

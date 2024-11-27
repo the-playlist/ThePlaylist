@@ -1,12 +1,22 @@
+"use client";
+import { useSelector } from "react-redux";
 import { SideBar, NavBar } from "../_components";
 
+interface ThemeReducer {
+  masterViewTheme: boolean;
+}
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const masterViewTheme = useSelector(
+    (state: any) => state?.playlistReducer?.masterViewTheme
+  );
   return (
-    <div className="p-4 flex h-screen">
+    <div
+      className={`p-4 flex h-screen ${masterViewTheme ? " bg-light" : "bg-dark"}`}
+    >
       <SideBar />
       <div className="flex flex-col flex-1">
         <NavBar />

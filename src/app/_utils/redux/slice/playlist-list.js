@@ -22,6 +22,7 @@ const initialState = {
   isAdvanceTheQueeDisable: false,
   streamContent: [],
   initialSongPlaylist: true,
+  masterViewTheme: false,
 };
 
 const playlistSlice = createSlice({
@@ -67,6 +68,9 @@ const playlistSlice = createSlice({
     setInitialSongPlaylist: (state, { payload }) => {
       state.initialSongPlaylist = payload;
     },
+    setMasterViewTheme: (state, { payload }) => {
+      state.masterViewTheme = payload;
+    },
   },
 });
 
@@ -82,6 +86,7 @@ const persistConfig = {
     "isFirstTimeFetched",
     "isWallViewOrJumbotron",
     "initialSongPlaylist",
+    "masterViewTheme",
   ], // Only persist the 'playingState' slice
   blacklist: [
     "isStart",
@@ -106,6 +111,7 @@ export const {
   setIsAdvanceTheQueeDisable,
   setStreamContent,
   setInitialSongPlaylist,
+  setMasterViewTheme,
 } = playlistSlice.actions;
 
 export const persistedReducer = persistReducer(

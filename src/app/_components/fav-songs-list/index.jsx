@@ -5,10 +5,14 @@ import React, { useEffect, useState } from "react";
 import SongIcon from "../song-icon";
 import ShowQualifiedList from "../qualified";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const FavSongList = () => {
   const [getAllFavSongsListApi, getAllSongsListRes] =
     useLazyGetFavSongListQuery();
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const [favSongsList, setFavSongsList] = useState([]);
   const [currentSongInfo, setCurrentSongInfo] = useState(null);
 
@@ -28,8 +32,10 @@ const FavSongList = () => {
       {favSongsList?.length > 0 ? (
         <div className=" max-h-[80vh] overflow-y-auto">
           <table className="table border-separate border-spacing-y-5 p-1	rounded-2xl ">
-            <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-              <tr className="text-black text-lg font-thin">
+            <thead
+              className={`${masterViewTheme ? "text-black bg-[#FAFAFA] " : "text-white bg-dark"} sticky top-0 z-10 `}
+            >
+              <tr className=" text-lg font-thin">
                 <th></th>
                 <th>Title</th>
                 <th>Artist</th>
@@ -41,7 +47,10 @@ const FavSongList = () => {
             </thead>
             <tbody>
               {favSongsList?.map((item, index) => (
-                <tr className="h-20 text-black text-lg bg-white shadow rounded-2xl ">
+                <tr
+                  key={index}
+                  className={`h-20 text-black text-lg ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"} shadow rounded-2xl `}
+                >
                   <th className="rounded-l-2xl">{index + 1}</th>
                   <td>{item?.title}</td>
                   <td>{item?.artist}</td>
@@ -61,7 +70,7 @@ const FavSongList = () => {
                     item?.introSec || "N/A"
                   }`}</td>
                   <td className=" text-center">
-                    <span className="text-center font-semibold bg-option p-2 rounded-lg">
+                    <span className="text-center font-semibold bg-option p-2 rounded-lg text-black">
                       {item?.category || "N/A"}
                     </span>
                   </td>

@@ -13,6 +13,7 @@ import {
   useLazyGetSongsListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { MdClear } from "react-icons/md";
+import { useSelector } from "react-redux";
 
 function AddEditPlayer({
   openModal,
@@ -20,6 +21,9 @@ function AddEditPlayer({
   currentInfo,
   fetchPlayerList,
 }) {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const { _id, firstName, lastName, email, phone, assignSongs } =
     currentInfo || {};
   const {
@@ -105,24 +109,27 @@ function AddEditPlayer({
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-11/12 max-w-2xl">
+        <div
+          className={`modal-box  w-11/12 max-w-2xl ${masterViewTheme ? " bg-light" : "bg-dark"}`}
+        >
           <form
             method="dialog"
-            className="flex  items-center justify-between flex-1 "
+            className={`flex  items-center justify-between flex-1 ${masterViewTheme ? "text-black" : "text-white"}`}
           >
-            <div className=" font-bold text-lg ">
+            <div className={` font-bold text-lg  `}>
               {currentInfo ? "Edit Player" : "Add New Player"}
             </div>
-            {/* if there is a button in form, it will close the modal */}
+
             <button
               onClick={closeModal}
-              className="btn btn-sm btn-circle btn-ghost  absolute top-1 right-1"
+              className={`btn btn-sm btn-circle btn-ghost  absolute top-1 right-1 `}
             >
               ✕
             </button>
           </form>
           <div className=" flex flex-row justify-evenly flex-wrap ">
             <InputField
+              isLight={masterViewTheme}
               title="First Name"
               placeholder="Enter First Name"
               register={register}
@@ -131,6 +138,7 @@ function AddEditPlayer({
               validate={{ required: "First name is required" }}
             />
             <InputField
+              isLight={masterViewTheme}
               placeholder="Enter Last Name"
               validate={{ required: "Last name is required" }}
               title="Last Name"
@@ -139,6 +147,7 @@ function AddEditPlayer({
               error={errors.lName}
             />
             <InputField
+              isLight={masterViewTheme}
               placeholder="Enter Email"
               validate={{
                 required: "Email is required",
@@ -154,6 +163,7 @@ function AddEditPlayer({
               error={errors.email}
             />
             <InputField
+              isLight={masterViewTheme}
               title="Phone"
               register={register}
               name="phone"
@@ -162,12 +172,14 @@ function AddEditPlayer({
               onChange={handleNumberChange}
             />
           </div>
-          <div className="font-semibold my-1 text-lg ">{`Assign Songs (${selectedSongsList?.length})`}</div>
-          <div className="border rounded mt-2 p-1">
-            <div className="flex  flex-row items-center border-2 border-gray-300 shadow-md bg-white m-2 p-2 rounded">
+          <div
+            className={`font-semibold my-1 text-lg ${masterViewTheme ? " text-black" : " text-white"} `}
+          >{`Assign Songs (${selectedSongsList?.length})`}</div>
+          <div className="border rounded mt-2 px-3 pt-3">
+            <div className="flex  flex-row items-center border-2  shadow-md bg-white p-2 rounded">
               <IoSearchOutline />
               <input
-                className="ml-2 outline-none  w-full"
+                className="ml-2 outline-none  w-full border-none"
                 placeholder="Search Songs"
                 value={searchTerm}
                 onChange={(e) => {
@@ -193,8 +205,9 @@ function AddEditPlayer({
               )}
             </div>
             <div
-              className={`flex flex-wrap ${
-                selectedSongsList?.length > 0 && "bg-[#F4F4F4] mb-5 mt-3"
+              className={`flex flex-wrap   ${
+                selectedSongsList?.length > 0 &&
+                `${masterViewTheme ? "bg-light" : " bg-black"} mb-5 mt-3`
               }  rounded-md p-2 max-h-20 overflow-y-auto`}
             >
               {selectedSongsList.map((i, index) => {
@@ -239,16 +252,15 @@ function AddEditPlayer({
                     }`}
                   >
                     <span
-                      className={`font-semibold text-black ${
-                        !isInclude && `text-white`
-                      }`}
+                      className={`font-semibold
+                        ${!isInclude && masterViewTheme ? "text-white" : "text-black "}`}
                     >
                       {i?.title}
                     </span>
                     <span
-                      className={` text-black ${!isInclude && `text-white`}`}
+                      className={` text-black  ${!isInclude && masterViewTheme ? "text-white" : "text-black "}`}
                     >
-                      {i?.artist}{" "}
+                      {i?.artist}
                     </span>
                   </div>
                 );

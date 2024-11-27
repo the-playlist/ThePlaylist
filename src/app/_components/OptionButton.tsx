@@ -14,8 +14,10 @@ const OptionButton = ({ item, index, onDeletePress, onEditPeess }: any) => {
         align={"center"}
         position={"auto"}
         menuButton={
-          <MenuButton className=" w-10 h-10 rounded-full bg-option flex items-center justify-center ">
-            <BsThreeDots />
+          <MenuButton
+            className={` w-10 h-10 rounded-full bg-option flex items-center justify-center `}
+          >
+            <BsThreeDots className=" text-black" />
           </MenuButton>
         }
         transition

@@ -1,18 +1,24 @@
 import React from "react";
 import { FaUser } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const SongIcon = ({ count, isUser, onClick }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   return (
     <div className="w-15 h-15">
       <div
         onClick={onClick}
         className="bg-primary w-10 h-10  rounded-full flex relative items-center justify-center cursor-pointer"
       >
-        <span className="bg-white absolute -top-1 -right-1   text-xs rounded-full px-[5px] shadow ">
+        <span className="bg-white absolute -top-1 -right-1   text-xs rounded-full px-[5px] shadow text-black ">
           {count}
         </span>
         {isUser ? (
-          <FaUser className="text-white cursor-pointer" />
+          <FaUser
+            className={`${masterViewTheme ? "text-white" : " text-black"}  cursor-pointer`}
+          />
         ) : (
           <div className="cursor-pointer">
             <svg

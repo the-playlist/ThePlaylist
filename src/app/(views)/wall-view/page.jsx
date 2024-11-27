@@ -98,7 +98,7 @@ const WallView = () => {
       const { playlist, isFirst } = item;
       fetchPlaylistSongList(isFirst);
     });
-    socket.on("themeChangeByMasterRes", (item) => {
+    socket.on("themeChangeByMasterRes-v2", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);

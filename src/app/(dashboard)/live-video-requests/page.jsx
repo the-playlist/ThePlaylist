@@ -6,7 +6,6 @@ import {
   useLazyGetStreamRequestQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { CurrentLiveVideo } from "@/app/_components";
-import { toast } from "react-toastify";
 import { Togglebutton } from "./toggle-button";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
@@ -20,7 +19,9 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 
 const StreamResponse = () => {
   const dispatch = useDispatch();
-
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const viewMode_ = useSelector(
     (state) => state?.playlistReducer?.isWallViewOrJumbotron
   );
@@ -109,7 +110,7 @@ const StreamResponse = () => {
   return (
     <div className="min-h-screen py-10 ">
       {loading ? (
-        <CustomLoader />
+        <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
       ) : (
         <div className=" h-[90vh] overflow-y-scroll pb-10">
           <Togglebutton
@@ -146,7 +147,11 @@ const StreamResponse = () => {
           )}
           {streamContent?.length > 0 ? (
             <>
-              <span className=" text-lg font-semibold mb-4">Requests</span>
+              <span
+                className={` text-lg font-semibold mb-4  ${masterViewTheme ? "text-black" : "text-white"}`}
+              >
+                Requests
+              </span>
               <div className="flex flex-wrap items-center justify-start ">
                 {streamContent.map((item, index) => {
                   return (
@@ -171,11 +176,15 @@ const StreamResponse = () => {
               }`}
             >
               {streamAcceptedContent && (
-                <span className=" text-lg font-semibold mb-4 mt-2">
+                <span
+                  className={` text-lg font-semibold mb-4 mt-2 ${masterViewTheme ? "text-black" : "text-white"}`}
+                >
                   Requests
                 </span>
               )}
-              <div className="text-black text-lg flex flex-1 items-center justify-center font-semibold">
+              <div
+                className={`${masterViewTheme ? "text-black" : "text-white"} text-lg flex flex-1 items-center justify-center font-semibold`}
+              >
                 {"No stream requests yet"}
               </div>
             </div>

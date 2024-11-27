@@ -1,4 +1,5 @@
 import React from "react";
+import { useSelector } from "react-redux";
 
 export const Togglebutton = ({
   onLightModePress,
@@ -7,9 +8,14 @@ export const Togglebutton = ({
   btnText2,
   isLight,
 }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   return (
     <div className="flex flex-row items-center ">
-      <div className="font-bold text-black text-xl mr-2">
+      <div
+        className={`font-bold ${masterViewTheme ? "text-black" : "text-white"} text-xl mr-2`}
+      >
         {" "}
         Change View Mode :{" "}
       </div>
