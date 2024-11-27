@@ -2,13 +2,16 @@
 import { useSelector } from "react-redux";
 import { SideBar, NavBar } from "../_components";
 
+interface ThemeReducer {
+  masterViewTheme: boolean;
+}
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const masterViewTheme = useSelector(
-    (state) => state?.playlistReducer?.masterViewTheme
+    (state: any) => state?.playlistReducer?.masterViewTheme
   );
   return (
     <div

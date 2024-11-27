@@ -5,6 +5,7 @@ interface EllipsisTextProps {
   text: string;
   length: number;
   tooltip?: boolean; // Optional: Show full text in a tooltip on hover
+  isFixed?: boolean;
 }
 
 export const EllipsisText: React.FC<EllipsisTextProps> = ({
@@ -14,7 +15,7 @@ export const EllipsisText: React.FC<EllipsisTextProps> = ({
   ...props
 }) => {
   const masterViewTheme = useSelector(
-    (state) => state?.playlistReducer?.masterViewTheme
+    (state: any) => state?.playlistReducer?.masterViewTheme
   );
   const truncatedText =
     text?.length > length ? `${text.slice(0, length)}...` : text;
