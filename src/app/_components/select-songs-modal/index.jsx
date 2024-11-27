@@ -458,7 +458,7 @@ const SelectSongModal = ({
                           </div>
                           <div className="w-3/12 ">
                             <div className="flex items-center justify-center">
-                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7] text-black">
                                 {item?.location || item?.introSec}
                               </div>
                             </div>
