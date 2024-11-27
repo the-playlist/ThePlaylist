@@ -6,6 +6,7 @@ import GenericButton from "../generic-button";
 import { useSession } from "next-auth/react";
 import { useChangeUserPasswordMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { signOut } from "next-auth/react";
+import { useSelector } from "react-redux";
 
 const ChangePassword = () => {
   const {
@@ -21,6 +22,9 @@ const ChangePassword = () => {
       newPass: "",
     },
   });
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const [changePasswordApi, changePasswordResponse] =
     useChangeUserPasswordMutation();
 
@@ -54,7 +58,11 @@ const ChangePassword = () => {
     <div className="flex items-center justify-center  mt-20 p-5">
       <div className="  w-2/5">
         <div className="  pb-3">
-          <h1 className="text-xl font-bold mb-2 ">Change Password</h1>
+          <h1
+            className={`text-xl font-bold mb-2 ${masterViewTheme ? "text-black" : "text-white"} `}
+          >
+            Change Password
+          </h1>
           <span className=" text-[#989B9E] text-sm font-normal">
             To change your password, please complete the fields below. Remember
             not to use your previous password for the new one.

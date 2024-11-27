@@ -20,6 +20,8 @@ const config: Config = {
       colors: {
         primary: "#EFC440",
         "dashbord-bg": "#FCFCFC",
+        'light':'#fafafa',
+        'light-tile':'#303134',
         option: "#F7F7F7",
         "top-queue-bg": "#EFC440",
         "active-tab": "#fdf7ea",
@@ -29,6 +31,7 @@ const config: Config = {
         "gray-2": "#EFEFEF",
         "gray-3": "#939393",
         "gray-4": "#D9D9D9",
+        'dark':'#1F1F1F'
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

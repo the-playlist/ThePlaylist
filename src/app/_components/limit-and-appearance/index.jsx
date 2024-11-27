@@ -14,6 +14,7 @@ import { IoMdAdd, IoIosRemove } from "react-icons/io";
 import { Tooltip, Button } from "@nextui-org/react";
 import { FaCircleInfo } from "react-icons/fa6";
 import { CustomLoader } from "../custom_loader";
+import { useSelector } from "react-redux";
 
 const LimitAndAppearence = () => {
   const [getThemeListApi, getThemeListRes] = useLazyGetThemeListQuery();
@@ -22,7 +23,9 @@ const LimitAndAppearence = () => {
   const [addUpdateLimitApi] = useAddUpdateLimitMutation();
   const [activeTab, setActiveTab] = useState(1);
   const [btnLoader, setBtnLoader] = useState(null);
-
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const handleTabClick = (tabNumber) => {
     setActiveTab(tabNumber);
   };
@@ -99,7 +102,7 @@ const LimitAndAppearence = () => {
     let response = await addUpdateThemeApi(payload);
     if (response && !response.isError) {
       toast.success(response?.data?.description);
-      socket.emit("themeChangeByMasterApi", { title: payload?.title });
+      socket.emit("themeChangeByMasterApi-v2", { title: payload?.title });
       getThemeApiHandler();
     }
   };
@@ -150,10 +153,12 @@ const LimitAndAppearence = () => {
 
   return (
     <div className="container mx-auto  py-8 ">
-      <div className="flex mb-4 w-full relative bg-white drop-shadow rounded-3xl px-4 py-3">
+      <div
+        className={`flex mb-4 w-full relative  ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"} drop-shadow rounded-3xl px-4 py-3`}
+      >
         <button
           onClick={() => handleTabClick(1)}
-          className={`p-3 w-1/2 rounded-xl text-black font-bold`}
+          className={`p-3 w-1/2 rounded-xl font-bold`}
         >
           Customer Limits
         </button>
@@ -166,7 +171,7 @@ const LimitAndAppearence = () => {
         </div>
         <button
           onClick={() => handleTabClick(2)}
-          className={`p-3 w-1/2 rounded-xl text-black font-bold`}
+          className={`p-3 w-1/2 rounded-xl  font-bold`}
         >
           Appearance
         </button>
@@ -178,11 +183,13 @@ const LimitAndAppearence = () => {
           } transition-opacity duration-500`}
         >
           {getLimitListRes?.isFetching ? (
-            <CustomLoader />
+            <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
           ) : (
             limitList?.map((item, index) => {
               return (
-                <div className=" bg-white py-4 px-3 rounded-lg drop-shadow mb-5">
+                <div
+                  className={`${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"}  py-4 px-3 rounded-lg drop-shadow mb-5`}
+                >
                   <div className="flex items-center">
                     <span className="text-lg font-semibold">
                       {item?.heading}
@@ -218,9 +225,7 @@ const LimitAndAppearence = () => {
                   <div className=" flex justify-between items-center mt-3">
                     <div className="  w-3/4">
                       <div className=" flex items-center w-full">
-                        <span className="font-semibold text-black">
-                          {item?.title}:
-                        </span>
+                        <span className="font-semibold ">{item?.title}:</span>
                         <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  ml-2 mr-5 h-12  ">
                           <button
                             disabled={item?.value == 1}
@@ -234,10 +239,10 @@ const LimitAndAppearence = () => {
                             }}
                             className="p-3   border-r text-center text-lg"
                           >
-                            <IoIosRemove />
+                            <IoIosRemove className=" text-black" />
                           </button>
                           <input
-                            className="w-full disabled:bg-inherit  text-center m-auto focus:outline-none"
+                            className="w-full disabled:bg-inherit  text-center m-auto focus:outline-none text-black"
                             value={item?.value}
                             disabled={true}
                           />
@@ -252,19 +257,19 @@ const LimitAndAppearence = () => {
                             }}
                             className="p-3  border-l  text-center text-lg"
                           >
-                            <IoMdAdd />
+                            <IoMdAdd className=" text-black" />
                           </button>
                         </div>
 
                         {item?.subTitle && (
                           <>
-                            <span className="font-semibold text-black">
+                            <span className="font-semibold ">
                               {item?.subTitle}:
                             </span>
                             <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  mx-2 h-12 p-1 mr-5 ">
                               <input
                                 type="number"
-                                className="w-full px-3 disabled:bg-inherit focus:outline-none"
+                                className="w-full px-3 disabled:bg-inherit focus:outline-none text-black"
                                 value={item?.time}
                                 min="1"
                                 onChange={(e) => {
@@ -291,14 +296,12 @@ const LimitAndAppearence = () => {
                   <div className="flex items-end justify-between mt-3">
                     {item?.isMessage && (
                       <div className=" w-full items-center">
-                        <span className=" font-semibold text-black ">
-                          Alert Message:
-                        </span>
+                        <span className=" font-semibold  ">Alert Message:</span>
 
-                        <div className="  rounded-md  border-[1.5px] border-[#D4D4D4]  w-[57%] flex mt-1 h-11 p-1 mr-5 ">
+                        <div className="  rounded-md     w-[57%] flex mt-1 h-11 p-1 mr-5 ">
                           <input
                             type="text"
-                            className="w-full px-3 text-sm text-black disabled:bg-inherit focus:outline-none"
+                            className="w-full px-3 text-sm rounded-md text-black disabled:bg-inherit focus:outline-none"
                             onChange={(e) => {
                               const value = e.target.value;
                               changeLimitHandler(

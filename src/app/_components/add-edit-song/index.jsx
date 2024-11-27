@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { Select, Option } from "@mui/base";
 import { useAddUpdateSongMutation } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
 
 const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
   const [addUpdateSongAPI, addUpdateSongResponse] = useAddUpdateSongMutation();
@@ -72,14 +73,19 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
       !regex.test(value) || "Spaces are not allowed at the beginning or end"
     );
   };
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
 
   return (
     <>
       <dialog ref={reff} onClose={closeModal} className="modal">
-        <div className="modal-box  w-11/12 max-w-2xl">
+        <div
+          className={`modal-box  w-11/12 max-w-2xl ${masterViewTheme ? " bg-light" : "bg-dark"}`}
+        >
           <form
             method="dialog"
-            className="flex  items-center justify-between flex-1 "
+            className={`flex  items-center justify-between flex-1 ${masterViewTheme ? " text-black" : "text-white"}`}
           >
             <div className=" font-bold text-lg ">
               {currentInfo ? `Edit Song` : `Add New Song`}
@@ -120,19 +126,21 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
             />
           </div>
 
-          <div className="flex ">
+          <div
+            className={`flex ${masterViewTheme ? " text-black" : "text-white"}`}
+          >
             <div className="flex w-1/2 ">
               <div className="w-1/2 flex flex-col flex-grow mx-1 ">
                 <label htmlFor="">{"Song Duration *"}</label>
                 <div className="flex">
-                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  mr-1 ">
-                    <label htmlFor="" className="text-[10px]">
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0  mr-1 bg-light ">
+                    <label htmlFor="" className="text-[10px] text-black">
                       {"Min"}
                     </label>
                     <input
                       type="number"
                       placeholder="00"
-                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
+                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full text-black "
                       {...register("minutes", {
                         required: "Song Duration is required",
                         min: {
@@ -147,14 +155,14 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
                     />
                   </div>
 
-                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 ml-1  ">
-                    <label htmlFor="" className="text-[10px]">
+                  <div className=" border-[#D9D9D9] border-[1px] my-1 p-2 rounded-lg pt-0 ml-1 bg-light  ">
+                    <label htmlFor="" className="text-[10px] text-black">
                       {"Sec"}
                     </label>
                     <input
                       type="number"
                       placeholder="00"
-                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full "
+                      className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal  w-full text-black "
                       {...register("seconds", {
                         min: {
                           value: 0,
@@ -182,10 +190,10 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
             </div>
             <div className="w-1/2 flex flex-col flex-grow mx-1 ">
               <label htmlFor="">{"Location "}</label>
-              <div className=" border-[#D9D9D9] border-[1px] my-1 px-2 rounded-lg h-14  flex items-center ">
+              <div className=" border-[#D9D9D9] border-[1px] my-1 px-2 rounded-lg h-14  flex items-center bg-light text-black ">
                 <input
                   placeholder="Enter Location"
-                  className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal w-full "
+                  className="focus:outline-none placeholder:text-[#C4C4C4] placeholder:font-normal w-full  "
                   {...register("location", {
                     required: "Location is required",
                     pattern: {
@@ -204,7 +212,9 @@ const AddEditSong = ({ openModal, closeModal, fetchList, currentInfo }) => {
           </div>
           <div className="flex w-1/2">
             <div className="flex flex-col flex-grow mx-1  w-full">
-              <label>Category *</label>
+              <label className={masterViewTheme ? " text-black" : "text-white"}>
+                Category *
+              </label>
               <select
                 name="category"
                 {...register("category", {

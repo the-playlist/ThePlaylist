@@ -97,13 +97,11 @@ const TableView = () => {
     setSocket(socket);
     socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
       const { playlist, isFirst } = item;
-      // setPerformers([...playlist]);
+
       fetchPlaylistSongList(isFirst);
     });
-    // socket.on("voteCastingResponse-v2", (item) => {
-    //   fetchPlaylistSongList(false);
-    // });
-    socket.on("themeChangeByMasterRes", (item) => {
+
+    socket.on("themeChangeByMasterRes-v2", (item) => {
       const { title } = item;
       if (screenName == title) {
         getThemeByTitleHandler(title);

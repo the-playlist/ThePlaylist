@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from "react";
 import { FaQuestion } from "react-icons/fa";
 import { BsTrash } from "react-icons/bs";
 import { Loader } from "../loader";
+import { useSelector } from "react-redux";
 
 const ConfirmationPopup = ({
   openModal,
@@ -12,6 +13,9 @@ const ConfirmationPopup = ({
   isDelete,
   isLoading,
 }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const reff = useRef();
   useEffect(() => {
     if (openModal) {
@@ -22,7 +26,9 @@ const ConfirmationPopup = ({
   }, [openModal]);
   return (
     <dialog ref={reff} onClose={closeModal} className="modal ">
-      <div className="modal-box  pt-10 rounded-md">
+      <div
+        className={`modal-box  pt-10 rounded-md  ${masterViewTheme ? "bg-white text-black" : "bg-black text-white"}`}
+      >
         <form method="dialog">
           <button
             onClick={closeModal}
@@ -60,7 +66,7 @@ const ConfirmationPopup = ({
             <button
               onClick={onYesPress}
               disabled={isLoading}
-              className="btn w-[49%] bg-primary text-black "
+              className="btn w-[49%] bg-primary text-black border-none "
             >
               {isLoading ? <Loader /> : "Yes, confirm"}
             </button>

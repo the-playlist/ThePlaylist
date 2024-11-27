@@ -15,7 +15,7 @@ const GenericButton = ({
     <button
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full btn bg-primary text-black"
+      className="flex w-full btn bg-primary text-black border-none"
     >
       {loading ? (
         <span className="loading loading-spinner loading-md"></span>

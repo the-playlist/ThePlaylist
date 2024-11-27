@@ -14,6 +14,7 @@ import {
 } from "@/app/_components";
 import { SessionProvider } from "next-auth/react";
 import { NextUIProvider } from "@nextui-org/react";
+import { useSelector } from "react-redux";
 
 const SelectedItemContent =
   (WrappedComponent) =>
@@ -23,29 +24,30 @@ const SelectedItemContent =
       setSelectedItemId(itemId);
     };
     const selectedItem = items?.find((item) => item.id === selectedItemId);
-
+    const masterViewTheme = useSelector(
+      (state) => state?.playlistReducer?.masterViewTheme
+    );
     return (
-      <div>
-        <div className=" container mx-auto flex lg:flex-row mt-5 overflow-x-scroll">
-          {items?.map((item) => {
-            return (
+      <div className="container mx-auto flex flex-col   ">
+        <div className="flex-grow-0 overflow-x-scroll ">
+          <div className="flex lg:flex-row space-x-4 p-3">
+            {items?.map((item) => (
               <button
-                onClick={() => {
-                  handleItemClick(item?.id);
-                }}
+                key={item?.id}
+                onClick={() => handleItemClick(item?.id)}
                 className={`p-3 border hover:cursor-pointer ${
                   selectedItem?.id == item.id
-                    ? "border-[#EFC440] "
-                    : " border-[#F1F1F1]"
-                } bg-white rounded-lg w-1/4 mr-4`}
+                    ? "border-[#EFC440]"
+                    : "border-[#F1F1F1]"
+                } bg-white rounded-lg w-1/4`}
               >
-                <div className="flex justify-between w-full items-center ">
+                <div className="flex justify-between items-center">
                   <span
                     className={`${
                       selectedItem?.id == item.id
                         ? "text-[#EFC440]"
                         : "text-black"
-                    } font-semibold `}
+                    } font-semibold`}
                   >
                     {item?.title}
                   </span>
@@ -67,10 +69,12 @@ const SelectedItemContent =
                   </span>
                 </div>
               </button>
-            );
-          })}
+            ))}
+          </div>
         </div>
-        {selectedItem && <WrappedComponent item={selectedItem} />}
+        <div className="flex-grow overflow-y-auto px-3 max-h-[calc(100vh-300px)]">
+          {selectedItem && <WrappedComponent item={selectedItem} />}
+        </div>
       </div>
     );
   };
@@ -120,7 +124,7 @@ const page = () => {
   return (
     <SessionProvider>
       <NextUIProvider>
-        <div className="  overflow-y-auto max-h-screen pb-24 ">
+        <div className="  overflow-y-auto  ">
           <SelectableItemContent items={settingArray} />
         </div>
       </NextUIProvider>

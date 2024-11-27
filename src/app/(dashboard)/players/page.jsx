@@ -14,6 +14,7 @@ import {
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
+import { useSelector } from "react-redux";
 
 const Players = () => {
   const [addModalOpens, setAddModalOpens] = useState(false);
@@ -22,15 +23,13 @@ const Players = () => {
   const [deletePlayerAPI, deletePlayerResponse] = useDeletePlayerByIdMutation();
   const [playersList, setPlayersList] = useState([]);
   const [getAllPlayersApi, getAllPlayersResponse] = useLazyGetAllPlayersQuery();
-
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   useEffect(() => {
     fetchPlayers();
   }, []);
 
-  // useEffect(() => {
-  //   throw new Error("Simulated error for testing ErrorBoundary");
-  // }, []);
-  
   const fetchPlayers = async (second) => {
     try {
       const result = await getAllPlayersApi();
@@ -55,13 +54,19 @@ const Players = () => {
   return (
     <div>
       {getAllPlayersResponse?.isFetching ? (
-        <div className="h-full flex items-center justify-center  bg-white">
-          <CustomLoader />
+        <div
+          className={`h-full flex items-center justify-center ${masterViewTheme ? "bg-white" : " bg-dark"} `}
+        >
+          <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
         </div>
       ) : (
         <div className="overflow-x-auto">
           <div className="flex mt-5 justify-between items-center mx-1">
-            <div className="text-xl font-bold text-black">Players list</div>
+            <div
+              className={`text-xl font-bold ${masterViewTheme ? "text-black" : "text-white"} `}
+            >
+              Players list
+            </div>
             <AddPlayerButton
               onClick={() => {
                 setCurrentPlayerInfo(null);
@@ -72,8 +77,10 @@ const Players = () => {
           {playersList?.length > 0 ? (
             <div className=" max-h-[80vh] overflow-y-auto">
               <table className="table table-auto w-full  border-separate border-spacing-y-5 rounded-2xl px-1 ">
-                <thead className="sticky top-0 z-10 bg-[#FAFAFA]">
-                  <tr className="text-black text-lg font-thin sticky absolute">
+                <thead
+                  className={`sticky top-0 z-10 ${masterViewTheme ? "bg-[#FAFAFA] text-black" : " bg-dark text-white"} `}
+                >
+                  <tr className="text-lg font-thin sticky ">
                     <th></th>
                     <th>First Name</th>
                     <th>Last Name</th>
@@ -85,7 +92,9 @@ const Players = () => {
                 </thead>
                 <tbody>
                   {playersList?.map((item, index) => (
-                    <tr className="h-20 text-black text-lg  bg-white shadow rounded-2xl ">
+                    <tr
+                      className={`h-20  text-lg  ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"}  shadow rounded-2xl `}
+                    >
                       <th className="rounded-l-2xl">{index + 1}</th>
                       <td>{item?.firstName}</td>
                       <td>{item?.lastName}</td>
@@ -124,7 +133,9 @@ const Players = () => {
               </table>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+            <div
+              className={`flex items-center justify-center h-[90vh] ${masterViewTheme ? "text-black" : " text-white"}  font-semibold text-lg`}
+            >
               No Players found
             </div>
           )}

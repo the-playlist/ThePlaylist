@@ -46,6 +46,10 @@ const SideBar = () => {
   const initialSongPlaylist_ = useSelector(
     (state) => state?.playlistReducer?.initialSongPlaylist
   );
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
+
   const initialSongPlaylist = JSON.parse(initialSongPlaylist_);
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdMutation();
 
@@ -138,9 +142,6 @@ const SideBar = () => {
   const changePlayingState = () => {
     dispatch(setPlayingState(!playingState));
     dispatch(setIsAdvanceTheQueeDisable(false));
-    // socket.emit("startIntroSecondsRequest", {
-    //   time: 10,
-    // });
   };
 
   const startTimer = () => {
@@ -151,20 +152,10 @@ const SideBar = () => {
       dispatch(setIsAdvanceTheQueeDisable(true));
 
       if (initialSongPlaylist) {
-        // setTimeout(() => {
         changePlayingState();
-        // }, 10000);
       } else {
         changePlayingState();
       }
-
-      // setTimeout(() => {
-      //   socket.emit("startIntroSecondsRequest", {
-      //     time: 10,
-      //   });
-      //   dispatch(setIsAdvanceTheQueeDisable(false));
-      //   dispatch(setPlayingState(!playingState));
-      // }, 10000);
     } else {
       dispatch(setPlayingState(!playingState));
     }
@@ -172,7 +163,9 @@ const SideBar = () => {
 
   return (
     <>
-      <div className=" drop-shadow-lg  lg:block md:block hidden bg-white relative  rounded-3xl mr-5 w-1/6 ">
+      <div
+        className={` drop-shadow-lg  lg:block md:block hidden ${masterViewTheme ? "bg-white" : "bg-light-tile"} relative  rounded-3xl mr-5 w-1/6 `}
+      >
         <ul className="p-4 flex-col w-full">
           <div className="flex  items-center justify-center">
             <Link href={"/players"} className="hover:cursor-pointer">
@@ -186,16 +179,16 @@ const SideBar = () => {
                 <li
                   className={`${
                     isActive
-                      ? "bg-[#FEF9EB]  border border-top-queue-bg "
-                      : "my-5 "
-                  }  hover:cursor-pointer hover:bg-[#FEF9EB] rounded-xl lg:p-4 p-2 my-3`}
+                      ? "bg-[#FEF9EB]  border border-top-queue-bg text-top-queue-bg "
+                      : `my-5 hover:text-black  ${masterViewTheme ? "text-black " : "text-white"}`
+                  }  hover:cursor-pointer hover:bg-[#FEF9EB]  rounded-xl lg:p-4 p-2 my-3`}
                 >
-                  <div className={`flex justify-start items-center`}>
-                    <div className="w-[23px]">{i.icon(isActive)}</div>
+                  <div className={`flex justify-start items-center  `}>
+                    <div className="w-[23px]">
+                      {i.icon(isActive, masterViewTheme)}
+                    </div>
                     <div
-                      className={`lg:ml-10 ml-2 mr-3 m lg:text-base text-sm ${
-                        isActive ? "text-top-queue-bg" : "text-black "
-                      }`}
+                      className={`lg:ml-10 ml-2 mr-3 m lg:text-base text-sm `}
                     >
                       {i.name}
                     </div>
@@ -207,7 +200,9 @@ const SideBar = () => {
         </ul>
         {pathname != "/playlist" && playlistLength > 0 && (
           <div className=" absolute bottom-0  p-4  w-full ">
-            <span className="text-black font-semibold text-lg">
+            <span
+              className={`text-black font-semibold text-lg ${masterViewTheme ? "text-black" : "text-white"}`}
+            >
               Current Song
             </span>
             <div className="bg-primary rounded-lg mt-2 p-4">
