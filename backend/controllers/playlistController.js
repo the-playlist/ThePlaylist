@@ -482,35 +482,6 @@ export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   res.status(200).json(response);
 };
 
-// export const deleteAllSongsFromPlaylist = async (req, res, next) => {
-//   try {
-//     // Delete all documents where isDeleted is false
-//     await Playlist.deleteMany({ isDeleted: false });
-
-//     // Optionally update PlaylistType if needed
-//     await PlaylistType.updateOne(
-//       {
-//         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
-//       },
-//       {
-//         $set: { isFirst: true },
-//       },
-//       { new: true }
-//     );
-
-//     // Respond with success
-//     const response = new ResponseModel(
-//       true,
-//       "All songs deleted and list updated successfully.",
-//       null
-//     );
-//     res.status(200).json(response);
-//   } catch (error) {
-//     // Handle errors
-//     next(error);
-//   }
-// };
-
 export const undoDeleteSongsFromPlaylist = async (req, res, next) => {
   const songsIdList = req.body.data;
   if (songsIdList?.length) {
