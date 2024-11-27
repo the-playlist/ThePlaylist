@@ -17,9 +17,12 @@ export default function ToastProvider({ children }: ToastProviderProps) {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-      autoConnect: false,
-    });
+    const socket = io(
+      process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3000",
+      {
+        autoConnect: false,
+      }
+    );
     socket.connect();
 
     socket.on("themeChangeByMasterRes-v2", (item) => {
