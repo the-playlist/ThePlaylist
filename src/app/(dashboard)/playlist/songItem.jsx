@@ -516,7 +516,11 @@ export function PlaylistSongItemV2({
           </div>
         </div>
         <div className={`w-2/12 flex items-center justify-center `}>
-          <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>{category}</div>
+          <div
+            className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
+          >
+            {category}
+          </div>
         </div>
         <div className="w-1/12">
           <div className="flex items-center justify-end ">
