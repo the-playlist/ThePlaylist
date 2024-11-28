@@ -25,7 +25,7 @@ const Location = () => {
 
   return isLoading ? (
     <div className=" h-[80vh] flex items-center justify-center">
-      <CustomLoader />
+      <CustomLoader bgColor={masterViewTheme ? "bg-dark" : "bg-light"} />
     </div>
   ) : (
     <div className=" flex flex-col gap-2">

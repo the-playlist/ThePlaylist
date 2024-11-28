@@ -127,7 +127,9 @@ const DutyScreen = () => {
                 ✕
               </button>
               <div className="flex items-center mt-2 mb-5">
-                <div className=" h-20 w-20 mr-3 rounded-md bg-gray-100 flex items-center justify-center">
+                <div
+                  className={` h-20 w-20 mr-3 rounded-md ${masterViewTheme ? "bg-gray-100" : "bg-light-tile"} flex items-center justify-center`}
+                >
                   <FaQuestion size={30} color="#EFC440" />
                 </div>
                 <div>
@@ -142,7 +144,7 @@ const DutyScreen = () => {
               <div className="">
                 <div className="w-full flex gap-2">
                   <button
-                    className="btn flex-1  bg-white text-black border border-black"
+                    className={`btn flex-1    border ${masterViewTheme ? "border-black bg-white text-black" : "text-white bg-light-tile border-darkThemeBorder"} `}
                     onClick={() => {
                       setShowModal(false);
                     }}
@@ -195,7 +197,7 @@ const DutyScreen = () => {
                       setSearchTerm(searchTerm.trim());
                     }}
                     onChange={handleSearch}
-                    className="block w-full py-3 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-primary"
+                    className={`block w-full py-3 pl-10 pr-4 border ${masterViewTheme ? "border-gray-300 text-black" : "border-darkThemeBorder bg-light-tile text-white"} rounded-md focus:outline-none focus:border-primary`}
                   />
                   <svg
                     className="absolute top-0 left-0 w-6 h-6 mt-3 ml-3 text-gray-400"
