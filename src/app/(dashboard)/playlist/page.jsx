@@ -648,7 +648,7 @@ const page = () => {
                     false
                   );
                 }}
-                className={`flex items-center ${masterViewTheme ? "bg-black text-white " : "bg-white text-black"} hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
+                className={`flex items-center ${masterViewTheme ? "bg-black  " : "bg-light-tile"}  text-white hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
               >
                 <span className="mr-2">Advance the Queue</span>
                 <FaForward />
@@ -658,7 +658,7 @@ const page = () => {
               {!isFavSongs &&
                 (fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
                   <button
-                    className={`${masterViewTheme ? " border-black border" : " bg-white"} rounded p-3 flex-grow-0 mr-2 text-black transition-transform transform hover:scale-105 disabled:bg-gray-400`}
+                    className={`${masterViewTheme ? "  text-black" : " bg-light-tile text-white"} border-black border rounded p-3 flex-grow-0 mr-2  transition-transform transform hover:scale-105 disabled:bg-gray-400`}
                     onClick={() => setIsConfirmationPopup(true)}
                   >
                     <span className="flex items-center">
@@ -674,9 +674,9 @@ const page = () => {
                   <button
                     disabled={playingState}
                     onClick={toggleFavSongs}
-                    className={`flex items-center hover:cursor-pointer border ${
+                    className={`flex items-center hover:cursor-pointer border border-black ${
                       !isFavSongs
-                        ? `${masterViewTheme ? "border-black" : "bg-white"} `
+                        ? `${masterViewTheme ? " text-black" : "bg-light-tile text-white"} `
                         : "border-top-queue-bg"
                     }  ${
                       !isFavSongs
