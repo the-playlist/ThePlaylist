@@ -116,7 +116,7 @@ function AddEditPlayer({
             method="dialog"
             className={`flex  items-center justify-between flex-1 ${masterViewTheme ? "text-black" : "text-white"}`}
           >
-            <div className={` font-bold text-lg  `}>
+            <div className={` font-bold text-lg  mb-4 `}>
               {currentInfo ? "Edit Player" : "Add New Player"}
             </div>
 
@@ -173,13 +173,19 @@ function AddEditPlayer({
             />
           </div>
           <div
-            className={`font-semibold my-1 text-lg ${masterViewTheme ? " text-black" : " text-white"} `}
+            className={`font-semibold my-1 text-lg ${masterViewTheme ? " text-black" : " text-white "} `}
           >{`Assign Songs (${selectedSongsList?.length})`}</div>
-          <div className="border rounded mt-2 px-3 pt-3">
-            <div className="flex  flex-row items-center border-2  shadow-md bg-white p-2 rounded">
-              <IoSearchOutline />
+          <div
+            className={`border rounded mt-2 px-3 pt-3 ${masterViewTheme ? "" : " border-darkThemeBorder bg-light-tile"}`}
+          >
+            <div
+              className={`flex  flex-row items-center   shadow-md ${masterViewTheme ? "bg-white border-2" : "bg-dark"} p-2 rounded`}
+            >
+              <IoSearchOutline
+                className={masterViewTheme ? "" : " text-gray-300"}
+              />
               <input
-                className="ml-2 outline-none  w-full border-none"
+                className={`ml-2 outline-none  w-full border-none ${masterViewTheme ? "bg-white  text-black" : " bg-dark text-white"}`}
                 placeholder="Search Songs"
                 value={searchTerm}
                 onChange={(e) => {

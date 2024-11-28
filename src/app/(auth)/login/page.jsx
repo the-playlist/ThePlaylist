@@ -5,8 +5,12 @@ import { useForm } from "react-hook-form";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { useSelector } from "react-redux";
 
 const Login = () => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const [isPassword, setIsPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -54,7 +58,9 @@ const Login = () => {
   };
 
   return (
-    <div className="overflow-x-auto bg-white h-screen overflow-y-scroll mx-auto ">
+    <div
+      className={`overflow-x-auto ${masterViewTheme ? "bg-white text-gray-900" : "bg-dark text-white"}  h-screen overflow-y-scroll mx-auto `}
+    >
       <div className=" flex items-center justify-center m-14">
         <Logo />
       </div>
@@ -64,13 +70,13 @@ const Login = () => {
             <span className="text-xl font-bold ">Login your account</span>
           </div>
           <div className="mb-6">
-            <label className="block mb-2 text-base font-medium text-black ">
+            <label className="block mb-2 text-base font-medium  ">
               Email address
             </label>
             <input
               type="email"
               id="email"
-              className=" focus:outline-none border border-gray-300 text-gray-900 text-sm rounded-md  focus:ring-top-queue-bg block w-full p-5  "
+              className={` focus:outline-none border border-gray-300  text-sm rounded-md  focus:ring-top-queue-bg block w-full p-5 bg-transparent  `}
               placeholder="Enter Email"
               {...register("email", {
                 required: "Please enter email",
@@ -88,14 +94,14 @@ const Login = () => {
             )}
           </div>
           <div className="mb-16">
-            <label className="block mb-2 text-base font-medium text-black ">
+            <label className="block mb-2 text-base font-medium  ">
               Password
             </label>
-            <div className="border  focus:ring-top-queue-bg   border-gray-300 text-gray-900 rounded-md  w-full p-5 flex justify-between items-center">
+            <div className="border  focus:ring-top-queue-bg   border-gray-300  rounded-md  w-full p-5 flex justify-between items-center">
               <input
                 type={!isPassword ? "password" : "text"}
                 id="password"
-                className=" text-sm  focus:outline-none block w-full"
+                className={` text-sm  focus:outline-none block w-full bg-transparent `}
                 placeholder="Enter Password"
                 {...register("password", {
                   required: "Please enter password",

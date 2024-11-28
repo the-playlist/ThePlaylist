@@ -113,7 +113,7 @@ const SongsManagment = () => {
                       fetchSongsList();
                     }
                   }}
-                  className="block w-full py-3 pl-10 pr-4 border border-gray-300 rounded-md focus:outline-none focus:border-primary"
+                  className={`block w-full py-3 pl-10 pr-4 border ${masterViewTheme ? "border-gray-300 text-black" : "border-darkThemeBorder bg-light-tile text-white"} rounded-md focus:outline-none focus:border-primary`}
                 />
                 <svg
                   className="absolute top-0 left-0 w-6 h-6 mt-3 ml-3 text-gray-400"
@@ -201,11 +201,15 @@ const SongsManagment = () => {
                         />
                       </td>
                       <td className=" text-center">
-                        {item?.location || item?.introSec}
+                        <span
+                          className={`text-center font-semibold ${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"}  rounded-3xl text-black   px-5 py-2`}
+                        >
+                          {item?.location || item?.introSec}
+                        </span>
                       </td>
                       <td className=" text-center">
                         <span
-                          className={`text-center font-semibold bg-option p-2 rounded-lg text-black `}
+                          className={`text-center font-semibold ${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"}  rounded-3xl text-black   px-5 py-2`}
                         >
                           {item?.category || "N/A"}
                         </span>
@@ -235,7 +239,9 @@ const SongsManagment = () => {
               </table>
             </div>
           ) : (
-            <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+            <div
+              className={`flex items-center justify-center h-[90vh] ${masterViewTheme ? "text-black" : "text-white"} font-semibold text-lg`}
+            >
               No Songs found
             </div>
           )}

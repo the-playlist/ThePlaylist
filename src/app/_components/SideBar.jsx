@@ -179,9 +179,9 @@ const SideBar = () => {
                 <li
                   className={`${
                     isActive
-                      ? "bg-[#FEF9EB]  border border-top-queue-bg text-top-queue-bg "
-                      : `my-5 hover:text-black  ${masterViewTheme ? "text-black " : "text-white"}`
-                  }  hover:cursor-pointer hover:bg-[#FEF9EB]  rounded-xl lg:p-4 p-2 my-3`}
+                      ? "bg-[#EFC4401A]  border border-top-queue-bg text-top-queue-bg "
+                      : `my-5 ${masterViewTheme ? "hover:text-black" : "hover:text-white"}  ${masterViewTheme ? "text-black " : "text-white"}`
+                  }  hover:cursor-pointer hover:bg-[#EFC4401A]  rounded-xl lg:p-4 p-2 my-3`}
                 >
                   <div className={`flex justify-start items-center  `}>
                     <div className="w-[23px]">
