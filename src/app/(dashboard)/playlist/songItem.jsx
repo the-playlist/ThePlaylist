@@ -84,6 +84,10 @@ const QualifiedPlayersDropdownV2 = ({
   const [selectedId, setSelectedId] = useState(item?.assignedPlayerId);
   const [isLoading, setIsLoading] = useState(false);
   const [updatePlayerNameAPI] = useUpdatePlayerNamePlaylistV2Mutation();
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
+
   function generateObjectByPlayerId(record, playerId) {
     const assignedPlayer = record?.qualifiedPlayers.find(
       (player) => player.id == playerId
@@ -132,7 +136,7 @@ const QualifiedPlayersDropdownV2 = ({
             isFirst: false,
           });
         }}
-        className="select select-bordered w-auto max-w-xs focus:outline-none "
+        className={`select select-bordered w-auto max-w-xs focus:outline-none ${!masterViewTheme && "bg-black text-white"} `}
       >
         {item?.qualifiedPlayers?.map((item) => {
           return (
@@ -467,7 +471,7 @@ export function PlaylistSongItemV2({
         <div className="w-1/12">
           <div className="flex items-center justify-center">
             <div
-              className={`${masterViewTheme ? "bg-[#f1f7ee]" : "bg-white"}  px-5 mr-2 py-3 flex items-center rounded-3xl`}
+              className={`${masterViewTheme ? "bg-[#f1f7ee]" : "bg-black text-white"}  px-5 mr-2 py-3 flex items-center rounded-3xl`}
             >
               <div
                 className={`flex items-center justify-center bg-green-500 rounded-full shadow w-6 h-6 mr-2`}
@@ -477,7 +481,7 @@ export function PlaylistSongItemV2({
               {upVote}
             </div>
             <div
-              className={`${masterViewTheme ? "bg-[#FCEDED]" : "bg-white"}  px-5 py-3 flex items-center rounded-3xl`}
+              className={`${masterViewTheme ? "bg-[#FCEDED]" : "bg-black text-white"}  px-5 py-3 flex items-center rounded-3xl`}
             >
               <div className="flex items-center justify-center bg-red-500 rounded-full shadow w-6 h-6 mr-2">
                 <IoIosArrowDown size={18} color={"white"} />
@@ -505,10 +509,9 @@ export function PlaylistSongItemV2({
           )}
         </div>
         <div className="w-2/12 flex items-center justify-center">
-          {/* <div className="bg-white shadow flex items-center justify-center mt-2 h-10 w-10 rounded-full">
-            {introSec || 0}
-          </div> */}
-          <div className={`bg-[#F7F7F7] rounded-3xl px-5 py-2`}>
+          <div
+            className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
+          >
             {location || introSec}
           </div>
         </div>

@@ -38,7 +38,9 @@ const ConfirmationPopup = ({
           </button>
         </form>
         <div className="flex items-center mt-2 mb-5">
-          <div className=" h-20 w-20 mr-3 rounded-md bg-gray-100 flex items-center justify-center">
+          <div
+            className={` h-20 w-20 mr-3 rounded-md ${masterViewTheme ? "bg-gray-100" : "bg-light-tile"} flex items-center justify-center`}
+          >
             {isDelete ? (
               <BsTrash size={30} color="#FE0101" />
             ) : (
@@ -59,7 +61,9 @@ const ConfirmationPopup = ({
 
         <div className="">
           <form method="dialog" className="w-full flex  justify-between">
-            <button className="btn w-[49%] bg-white text-black border border-black ">
+            <button
+              className={`btn w-[49%]  border  ${masterViewTheme ? "border-black bg-white text-black" : "text-white bg-light-tile border-darkThemeBorder"} `}
+            >
               No, cancel
             </button>
 
