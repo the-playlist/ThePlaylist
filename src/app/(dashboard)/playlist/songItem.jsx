@@ -543,7 +543,7 @@ export function PlaylistSongItemV2({
   ) : (
     <div
       key={index}
-      className={` text-center ${masterViewTheme ? "bg-white" : "bg-gray-tile"} text-black shadow rounded-2xl h-20 flex items-center  px-5`}
+      className={` text-center bg-gray-tile text-black shadow rounded-2xl h-20 flex items-center  px-5`}
     >
       <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle"></div>
       <div className="w-2/12 pr-10">

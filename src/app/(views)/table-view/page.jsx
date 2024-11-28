@@ -278,7 +278,7 @@ const TableView = () => {
       >
         <div className=" flex gap-5 items-center justify-between     ">
           {btnArray?.map((item, index) => {
-            if (performer.length === 0 && item?.id === 0) {
+            if (performer.length === 0 && item?.id === 1) {
               return null;
             }
 
@@ -496,7 +496,7 @@ const TableView = () => {
               {performer?.map((item, index) => {
                 return item?.requestToPerform ? (
                   <div
-                    className={`   ${themeMode ? "" : "bg-gray-tile"} flex text-black rounded-md flex-wrap my-2`}
+                    className={`  bg-gray-tile flex text-black rounded-md flex-wrap my-2`}
                     key={index}
                   >
                     <div className="w-1/2  text-start flex items-center ">

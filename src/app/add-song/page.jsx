@@ -7,6 +7,7 @@ import {
   useLazyGetAddSongListForCustomerV2Query,
   useLazyGetSongsListQuery,
   useRequestToPerformMutation,
+  useLazyGetLimitListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -19,6 +20,7 @@ const Typeahead = () => {
   const table_no = searchParams.get("table_no");
 
   let limitTitle = "Song Limit";
+
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
@@ -26,6 +28,7 @@ const Typeahead = () => {
   const [getAllSongsListApi] = useLazyGetSongsListQuery();
   const [requestToPerformApi, { isLoading: btnLoader }] =
     useRequestToPerformMutation();
+  const [getLimitListApi] = useLazyGetLimitListQuery();
 
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
@@ -36,6 +39,8 @@ const Typeahead = () => {
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
+  const [requestLimit, setRequestLimit] = useState(null);
+
   const [songDetail, setSongDetail] = useState({
     title: "",
     playerName: "",
@@ -48,10 +53,11 @@ const Typeahead = () => {
       autoConnect: false,
     });
     socket.on("limitChangeByMasterRes", (item) => {
-      const { title } = item;
-      if (limitTitle == title) {
-        getLimitByTitleHandler(title);
-      }
+      getLimitApiHandler();
+      // const { title } = item;
+      // if (limitTitle == title) {
+      //   getLimitByTitleHandler(title);
+      // }
     });
 
     socket.on("insertSongIntoPlaylistRequest-v2", (item) => {
@@ -107,8 +113,8 @@ const Typeahead = () => {
       fetchSongsList();
     }
     // request_to_perform ? fetchAllSongsList() : fetchSongsList();
-
-    getLimitByTitleHandler(limitTitle);
+    getLimitApiHandler();
+    // getLimitByTitleHandler(limitTitle);
   }, [request_to_perform]);
 
   const fetchAllSongsList = async () => {
@@ -188,17 +194,8 @@ const Typeahead = () => {
     }
   };
 
-  const requestToPerformApiHandler = async (
-    songId,
-    tableNo,
-    requestToPerform
-  ) => {
+  const requestToPerformApiHandler = async (payload) => {
     try {
-      let payload = {
-        songId: songId,
-        requestToPerform: requestToPerform,
-        tableNo: tableNo,
-      };
       const response = await requestToPerformApi(payload);
       if (response && !response.error) {
         const { song, playlistCount, list } = response?.data?.content;
@@ -226,6 +223,51 @@ const Typeahead = () => {
     }
   };
 
+  const getLimitApiHandler = async () => {
+    let response = await getLimitListApi();
+    if (response && !response.isError) {
+      const { list } = response?.data?.content;
+
+      const songLimit = list?.find((item) => item.heading == "Song Limit");
+      const requestLimit = list?.find(
+        (item) => item?.heading == "Perform Request Limit"
+      );
+
+      setRequestLimit(requestLimit);
+
+      setSongLimit(songLimit);
+    }
+  };
+
+  const handleRequestSong = (payload) => {
+    const currentTime = new Date().getTime();
+    const prevSongTime = parseInt(localStorage.getItem("prevReqSongTime"), 10);
+    const songCount = parseInt(localStorage.getItem("reqSongCount"), 10) || 0;
+    const timeLimit = requestLimit?.time * 60000;
+    const songCountLimit = requestLimit?.value;
+
+    if (!prevSongTime) {
+      localStorage.setItem("prevReqSongTime", currentTime);
+      localStorage.setItem("reqSongCount", 1);
+      requestToPerformApiHandler(payload);
+      return;
+    }
+    const timeDifference = currentTime - prevSongTime;
+    if (timeDifference > timeLimit) {
+      localStorage.setItem("prevReqSongTime", currentTime);
+      localStorage.setItem("reqSongCount", 1);
+      requestToPerformApiHandler(payload);
+    } else {
+      if (songCount < songCountLimit) {
+        localStorage.setItem("reqSongCount", songCount + 1);
+        requestToPerformApiHandler(payload);
+      } else {
+        toast.error(
+          requestLimit?.message ?? "Song limit reached. Please try again later."
+        );
+      }
+    }
+  };
   return (
     <>
       <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
@@ -332,11 +374,12 @@ const Typeahead = () => {
           disabled={inputValue?.length == 0}
           onClick={() => {
             if (request_to_perform == "true") {
-              requestToPerformApiHandler(
-                selectedSong?._id,
-                table_no,
-                request_to_perform
-              );
+              let payload = {
+                songId: selectedSong?._id,
+                requestToPerform: request_to_perform,
+                tableNo: table_no,
+              };
+              handleRequestSong(payload);
             } else {
               handleSong(selectedSong?._id, selectedSong);
             }

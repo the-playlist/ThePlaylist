@@ -144,6 +144,10 @@ const LimitAndAppearence = () => {
       return `${value} ${
         value == 1 ? "song" : "songs"
       } can be added in the playlist`;
+    } else if (heading == "Perform Request Limit") {
+      return `user can request ${value} ${
+        value == 1 ? "song" : "songs"
+      } to perform in ${time} ${time == 1 ? "minute" : "minutes"}`;
     } else {
       return `${value} live ${
         value == 1 ? "request" : "requests"
