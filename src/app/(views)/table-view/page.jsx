@@ -494,9 +494,10 @@ const TableView = () => {
                 </div>
               )}
               {performer?.map((item, index) => {
+                const isLocked = index < 2;
                 return item?.requestToPerform ? (
                   <div
-                    className={`  bg-gray-tile flex text-black rounded-md flex-wrap my-2`}
+                    className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex text-black rounded-md flex-wrap my-2`}
                     key={index}
                   >
                     <div className="w-1/2  text-start flex items-center ">
@@ -509,7 +510,7 @@ const TableView = () => {
                       className={`w-1/2 p-4 flex justify-end  capitalize text-sm lg:text-lg`}
                     >
                       <div
-                        className={`${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
+                        className={` ${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
                       >{`Table ${item?.tableNo}`}</div>
                     </div>
                   </div>

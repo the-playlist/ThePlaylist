@@ -221,13 +221,36 @@ const WallView = () => {
                   <Logo />
                 </div>
                 <ul>
-                  {songList.map((item, index) => (
-                    <div
-                      key={item?._id}
-                      className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
+                  {songList.map((item, index) => {
+                    const isLocked = index < 2;
+
+                    return item?.requestToPerform ? (
+                      <div
+                        className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} p-2 rounded-lg flex items-center justify-between mb-5 font-medium`}
+                        key={index}
+                      >
+                        <div className="w-1/2  text-start flex items-center ">
+                          <EllipsisText
+                            text={item?.title}
+                            length={20}
+                            className={`text-[35px]  capitalize  leading-[85px] `}
+                          />
+                        </div>
+                        <div
+                          className={`w-1/2 flex justify-end  capitalize text-[23px]`}
+                        >
+                          <div
+                            className={` ${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
+                          >{`Table ${item?.tableNo}`}</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div
+                        key={item?._id}
+                        className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
               ${
                 index < 2
-                  ? "bg-yellow-400  text-black  "
+                  ? "bg-top-queue-bg  text-black  "
                   : `${
                       themeMode
                         ? "bg-[#F0F0F0] text-black"
@@ -235,20 +258,21 @@ const WallView = () => {
                     }`
               }
               `}
-                    >
-                      <EllipsisText
-                        text={item?.title}
-                        length={20}
-                        className={`text-[35px]  capitalize  leading-[85px] `}
-                      />
+                      >
+                        <EllipsisText
+                          text={item?.title}
+                          length={20}
+                          className={`text-[35px]  capitalize  leading-[85px] `}
+                        />
 
-                      <EllipsisText
-                        text={item?.artist}
-                        length={15}
-                        className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
-                      />
-                    </div>
-                  ))}
+                        <EllipsisText
+                          text={item?.artist}
+                          length={15}
+                          className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
+                        />
+                      </div>
+                    );
+                  })}
                 </ul>
 
                 {songList?.length == 0 && (
