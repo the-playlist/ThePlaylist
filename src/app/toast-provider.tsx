@@ -43,6 +43,7 @@ export default function ToastProvider({ children }: ToastProviderProps) {
     let response = await getThemeByTitleApi(title);
     if (response && !response.isError) {
       const { mode } = response?.data?.content;
+
       dispatch(setMasterViewTheme(mode));
     }
   };

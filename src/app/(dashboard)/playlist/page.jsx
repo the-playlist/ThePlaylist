@@ -63,6 +63,7 @@ const page = () => {
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
+
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
@@ -129,13 +130,13 @@ const page = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (completeList?.length != 0 && completeList?.length < 30) {
-      fetchSongsList();
-    }
-  }, [completeList]);
+  // useEffect(() => {
+  //   if (completeList?.length != 0 && completeList?.length < 30) {
+  //     fetchSongsList();
+  //   }
+  // }, [completeList]);
 
-  const fetchSongsList = async () => {
+  const fetchSongsList = async (res) => {
     let response = await songsListApi();
     if (response && !response.isError) {
       const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
@@ -144,14 +145,22 @@ const page = () => {
 
       const songList = response.data?.content;
 
-      const getData = getRandomSongIds(
-        songList,
-        count,
-        completeList[completeList?.length - 1]?.playerName,
-        mostRepeatedPlayer
-      );
-      if (getData?.length > 0) {
-        addMultiSongsHandler(getData);
+      if (songList?.length > 0) {
+        const getData = getRandomSongIds(
+          songList,
+          count,
+          completeList[completeList?.length - 1]?.playerName,
+          mostRepeatedPlayer
+        );
+        if (getData?.length > 0) {
+          addMultiSongsHandler(getData);
+        }
+      } else {
+        socket.emit("RemoveSongFromPlaylistRequest-v2", {
+          isFirst: false,
+          playlist: res,
+          time: 10,
+        });
       }
     }
   };
@@ -253,7 +262,9 @@ const page = () => {
 
   const addMultiSongsHandler = async (data) => {
     await addMultiSongsApi(data);
-    await fetchPlaylistSongList();
+    setTimeout(async () => {
+      await fetchPlaylistSongList();
+    }, 2000);
   };
 
   useEffect(() => {
@@ -287,12 +298,14 @@ const page = () => {
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
+
         if (
           isFixedItems?.length > 0 &&
           currentSong?.title == "" &&
           currentSongSecond == 0
         ) {
           const { playerName, title, _id } = isFixedItems[0];
+
           dispatch(
             setCurrentSong({
               title: title,
@@ -353,11 +366,10 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
-    socket.emit("RemoveSongFromPlaylistRequest-v2", {
-      isFirst: false,
-      playlist: res,
-      time: 10,
-    });
+
+    if (completeList?.length != 0 && completeList?.length < 30) {
+      await fetchSongsList(res);
+    }
   };
   const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...completeList];
@@ -387,7 +399,7 @@ const page = () => {
       );
       const { playerName, title, _id } = tempFixed[0];
 
-      dispatch(
+      await dispatch(
         setCurrentSong({
           title: title,
           player: playerName,
