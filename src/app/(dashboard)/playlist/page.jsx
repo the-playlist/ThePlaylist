@@ -155,13 +155,14 @@ const page = () => {
         if (getData?.length > 0) {
           addMultiSongsHandler(getData);
         }
-      } else {
-        socket.emit("RemoveSongFromPlaylistRequest-v2", {
-          isFirst: false,
-          playlist: res,
-          time: 10,
-        });
       }
+      // else {
+      //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
+      //     isFirst: false,
+      //     playlist: res,
+      //     time: 10,
+      //   });
+      // }
     }
   };
   function getMostRepeatedPlayer(data) {
@@ -295,6 +296,10 @@ const page = () => {
           id: index, // Add a unique id if it doesn't exist
         }));
         setCompleteList(completeList);
+
+        if (completeList?.length != 0 && completeList?.length < 30) {
+          fetchSongsList();
+        }
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
@@ -367,15 +372,16 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
 
-    if (completeList?.length != 0 && completeList?.length < 30) {
-      await fetchSongsList(res);
-    } else {
-      socket.emit("RemoveSongFromPlaylistRequest-v2", {
-        isFirst: false,
-        playlist: res,
-        time: 10,
-      });
-    }
+    fetchPlaylistSongList();
+    // if (completeList?.length != 0 && completeList?.length < 30) {
+    //   await fetchSongsList(res);
+    // } else {
+    //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
+    //     isFirst: false,
+    //     playlist: res,
+    //     time: 10,
+    //   });
+    // }
   };
   const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...completeList];
