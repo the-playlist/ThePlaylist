@@ -685,6 +685,7 @@ const page = () => {
               category,
               isFav,
               songDuration,
+              tableNo,
             } = item || {};
 
             return (
