@@ -369,6 +369,12 @@ const page = () => {
 
     if (completeList?.length != 0 && completeList?.length < 30) {
       await fetchSongsList(res);
+    } else {
+      socket.emit("RemoveSongFromPlaylistRequest-v2", {
+        isFirst: false,
+        playlist: res,
+        time: 10,
+      });
     }
   };
   const removeItemById = async (id, isTrashPress) => {
