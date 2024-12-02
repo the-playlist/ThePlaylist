@@ -269,10 +269,18 @@ export const songFromPlaylistV2 = [
     },
   },
   {
-    $unwind: "$assignedPlayer", // Unwind the array if necessary
+    $unwind: {
+      path: "$assignedPlayer", // Unwind the array if necessary
+      preserveNullAndEmptyArrays: true, // Include documents even if assignedPlayer is null
+    },
   },
   {
-    $match: { "assignedPlayer.duty.status": true }, // Filter documents based on assignedPlayer.duty.status
+    $match: {
+      $or: [
+        { "assignedPlayer.duty.status": true },
+        { assignedPlayer: { $eq: null } }, // Include documents where assignedPlayer is null
+      ],
+    }, // Filter documents based on assignedPlayer.duty.status
   },
   {
     $project: {
@@ -298,6 +306,8 @@ export const songFromPlaylistV2 = [
       qualifiedPlayers: 1,
       isFixed: 1,
       applySwap: 1,
+      requestToPerform: 1,
+      tableNo: 1,
     },
   },
   {
@@ -369,10 +379,18 @@ export const songsForTableViewV2 = [
     },
   },
   {
-    $unwind: "$assignedPlayer", // Unwind the array if necessary
+    $unwind: {
+      path: "$assignedPlayer", // Unwind the array if necessary
+      preserveNullAndEmptyArrays: true, // Include documents even if assignedPlayer is null
+    },
   },
   {
-    $match: { "assignedPlayer.duty.status": true }, // Filter documents based on assignedPlayer.duty.status
+    $match: {
+      $or: [
+        { "assignedPlayer.duty.status": true },
+        { assignedPlayer: { $eq: null } }, // Include documents where assignedPlayer is null
+      ],
+    },
   },
   {
     $project: {
@@ -397,6 +415,8 @@ export const songsForTableViewV2 = [
       addByCustomer: 1,
       isFixed: 1,
       applySwap: 1,
+      requestToPerform: 1,
+      tableNo: 1,
     },
   },
   {

@@ -5,14 +5,16 @@ const playlistSchemaV2 = new mongoose.Schema(
     assignedPlayer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Players",
-      required: [true, "Assigned Player Info is necessary"],
+      // required: [true, "Assigned Player Info is necessary"],
+      requred: false,
     },
     qualifiedPlayers: [
       {
         id: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Players",
-          required: [true, "Qualified Player Info is necessary"],
+          // required: [true, "Qualified Player Info is necessary"],
+          requred: false,
         },
         name: {
           type: String,
@@ -47,9 +49,17 @@ const playlistSchemaV2 = new mongoose.Schema(
       type: Date, // Track when the song was added to the playlist
       default: null,
     },
+    requestToPerform: {
+      type: Boolean,
+      default: false,
+    },
     applySwap: {
       type: Boolean,
       default: false,
+    },
+    tableNo: {
+      type: Number,
+      default: null,
     },
   },
   {

@@ -5,17 +5,31 @@ import {
   useAddSongToPlaylistByCustomerV2Mutation,
   useLazyGetLimitByTitleQuery,
   useLazyGetAddSongListForCustomerV2Query,
+  useLazyGetSongsListQuery,
+  useRequestToPerformMutation,
+  useLazyGetLimitListQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
+import { useSearchParams } from "next/navigation";
 
 const Typeahead = () => {
+  const searchParams = useSearchParams();
+  const request_to_perform = searchParams.get("request_perform");
+  const table_no = searchParams.get("table_no");
+
   let limitTitle = "Song Limit";
+
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
 
   const [addSongToPlaylistByUserApi, { isLoading }] =
     useAddSongToPlaylistByCustomerV2Mutation();
+  const [getAllSongsListApi] = useLazyGetSongsListQuery();
+  const [requestToPerformApi, { isLoading: btnLoader }] =
+    useRequestToPerformMutation();
+  const [getLimitListApi] = useLazyGetLimitListQuery();
+
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [selectedSong, setSelectedSong] = useState(null);
@@ -25,6 +39,8 @@ const Typeahead = () => {
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
+  const [requestLimit, setRequestLimit] = useState(null);
+
   const [songDetail, setSongDetail] = useState({
     title: "",
     playerName: "",
@@ -37,10 +53,11 @@ const Typeahead = () => {
       autoConnect: false,
     });
     socket.on("limitChangeByMasterRes", (item) => {
-      const { title } = item;
-      if (limitTitle == title) {
-        getLimitByTitleHandler(title);
-      }
+      getLimitApiHandler();
+      // const { title } = item;
+      // if (limitTitle == title) {
+      //   getLimitByTitleHandler(title);
+      // }
     });
 
     socket.on("insertSongIntoPlaylistRequest-v2", (item) => {
@@ -90,10 +107,26 @@ const Typeahead = () => {
     setFilteredOptions(songList);
   };
   useEffect(() => {
-    fetchSongsList();
+    if (request_to_perform == "true") {
+      fetchAllSongsList();
+    } else {
+      fetchSongsList();
+    }
+    // request_to_perform ? fetchAllSongsList() : fetchSongsList();
+    getLimitApiHandler();
+    // getLimitByTitleHandler(limitTitle);
+  }, [request_to_perform]);
 
-    getLimitByTitleHandler(limitTitle);
-  }, []);
+  const fetchAllSongsList = async () => {
+    setSelectedSong(null);
+    let response = await getAllSongsListApi();
+
+    if (response && !response.isError) {
+      const songList = response.data?.content;
+      setFilteredOptions(songList);
+      setSongList(songList);
+    }
+  };
 
   const fetchSongsList = async () => {
     setSelectedSong(null);
@@ -144,6 +177,27 @@ const Typeahead = () => {
         qualifiedPlayers: song?.assignedPlayers,
       });
       if (response && !response.error) {
+        toast.success(response?.data?.description);
+        setInputValue("");
+        setSelectedSong(null);
+        socket.emit("songAddByCustomerReq-v2", {});
+        router.back();
+      } else {
+        toast.error(response?.error?.data?.description);
+        localStorage.setItem("prevSongTime", null);
+        localStorage.setItem("songCount", 0);
+      }
+    } catch (error) {
+      toast.success(error?.message || "Something went wrong.");
+      localStorage.setItem("prevSongTime", null);
+      localStorage.setItem("songCount", 0);
+    }
+  };
+
+  const requestToPerformApiHandler = async (payload) => {
+    try {
+      const response = await requestToPerformApi(payload);
+      if (response && !response.error) {
         const { song, playlistCount, list } = response?.data?.content;
         toast.success(response?.data?.description);
         setInputValue("");
@@ -158,11 +212,7 @@ const Typeahead = () => {
         localStorage.setItem("prevSongTime", null);
         localStorage.setItem("songCount", 0);
       }
-    } catch (error) {
-      toast.success(error?.message || "Something went wrong.");
-      localStorage.setItem("prevSongTime", null);
-      localStorage.setItem("songCount", 0);
-    }
+    } catch (error) {}
   };
 
   const getLimitByTitleHandler = async (title) => {
@@ -173,11 +223,56 @@ const Typeahead = () => {
     }
   };
 
+  const getLimitApiHandler = async () => {
+    let response = await getLimitListApi();
+    if (response && !response.isError) {
+      const { list } = response?.data?.content;
+
+      const songLimit = list?.find((item) => item.heading == "Song Limit");
+      const requestLimit = list?.find(
+        (item) => item?.heading == "Perform Request Limit"
+      );
+
+      setRequestLimit(requestLimit);
+
+      setSongLimit(songLimit);
+    }
+  };
+
+  const handleRequestSong = (payload) => {
+    const currentTime = new Date().getTime();
+    const prevSongTime = parseInt(localStorage.getItem("prevReqSongTime"), 10);
+    const songCount = parseInt(localStorage.getItem("reqSongCount"), 10) || 0;
+    const timeLimit = requestLimit?.time * 60000;
+    const songCountLimit = requestLimit?.value;
+
+    if (!prevSongTime) {
+      localStorage.setItem("prevReqSongTime", currentTime);
+      localStorage.setItem("reqSongCount", 1);
+      requestToPerformApiHandler(payload);
+      return;
+    }
+    const timeDifference = currentTime - prevSongTime;
+    if (timeDifference > timeLimit) {
+      localStorage.setItem("prevReqSongTime", currentTime);
+      localStorage.setItem("reqSongCount", 1);
+      requestToPerformApiHandler(payload);
+    } else {
+      if (songCount < songCountLimit) {
+        localStorage.setItem("reqSongCount", songCount + 1);
+        requestToPerformApiHandler(payload);
+      } else {
+        toast.error(
+          requestLimit?.message ?? "Song limit reached. Please try again later."
+        );
+      }
+    }
+  };
   return (
     <>
       <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
         <div className="mb-2 text-base font-medium text-white">
-          Select a Song
+          {request_to_perform ? "Select a Song to Perform" : "Select a Song"}
         </div>
         <div className="relative flex  bg-[#303134]  w-full rounded-lg">
           <input
@@ -243,7 +338,7 @@ const Typeahead = () => {
                   className="pl-4 py-2 capitalize cursor-pointer flex w-full justify-between  items-center"
                 >
                   <span
-                    className={`text-sm text-${
+                    className={`text-sm text-start text-${
                       selectedSong?._id == option?._id ? "black" : "white"
                     } font-bold`}
                   >
@@ -278,7 +373,16 @@ const Typeahead = () => {
         <button
           disabled={inputValue?.length == 0}
           onClick={() => {
-            handleSong(selectedSong?._id, selectedSong);
+            if (request_to_perform == "true") {
+              let payload = {
+                songId: selectedSong?._id,
+                requestToPerform: request_to_perform,
+                tableNo: table_no,
+              };
+              handleRequestSong(payload);
+            } else {
+              handleSong(selectedSong?._id, selectedSong);
+            }
           }}
           className={`flex w-full items-center ml-4 ${
             inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
@@ -289,7 +393,7 @@ const Typeahead = () => {
               inputValue?.length > 0 ? "black" : "white"
             }`}
           >
-            {isLoading ? (
+            {isLoading || btnLoader ? (
               <span className="loading loading-spinner loading-md"></span>
             ) : (
               "Add"

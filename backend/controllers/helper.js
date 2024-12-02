@@ -30,5 +30,7 @@ export const flattenPlaylist = (playlist) =>
       isFixed: item?.isFixed,
       applySwap: item?.applySwap,
       location: item?.songData?.location,
+      requestToPerform: item?.requestToPerform,
+      tableNo: item?.tableNo,
     };
   });

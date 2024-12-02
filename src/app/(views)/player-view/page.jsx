@@ -74,10 +74,10 @@ const PerformerView = () => {
       fetchPlaylistSongList(isFirst);
     });
 
-    socket.on("songAddByCustomerRes-v2", (item) => {
-      const { playlist, isFirst } = item;
-      setPerformers([...playlist]);
-    });
+    // socket.on("songAddByCustomerRes-v2", (item) => {
+    //   const { playlist, isFirst } = item;
+    //   setPerformers([...playlist]);
+    // });
 
     socket.on("handleDragRes-v2", (item) => {
       const { playlist } = item;
@@ -194,43 +194,73 @@ const PerformerView = () => {
                 </div>
               )}
               <div className=" flex flex-col gap-5">
-                {performer?.map((item, index) => (
-                  <div
-                    className={`flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg ${
-                      index < 2
-                        ? "bg-yellow-400 text-black"
-                        : `
+                {performer?.map((item, index) => {
+                  const isLocked = index < 2;
+
+                  return item?.requestToPerform ? (
+                    <div
+                      className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg`}
+                      key={index}
+                    >
+                      <div className=" w-1/2  text-left capitalize ">
+                        <span className="text-base  md:text-[40px] leading-snug     ">
+                          {getElipsisText(item.title, 15)}
+                        </span>
+                      </div>
+
+                      <div
+                        className={` p-4 flex justify-end  capitalize text-2xl`}
+                      >
+                        <div
+                          className={` ${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
+                        >{`Table ${item?.tableNo}`}</div>
+                      </div>
+                      <div className="">
+                        <div
+                          className={`bg-[#F7F7F7] rounded-full min-w-32 px-5 py-2 text-black text-center text-2xl`}
+                        >
+                          {item?.location || item?.introSec}
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div
+                      className={`flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg ${
+                        index < 2
+                          ? "bg-yellow-400 text-black"
+                          : `
                     ${
                       themeMode
                         ? "bg-[#F0F0F0] text-black"
                         : "bg-[#303134] text-white"
                     }
                     `
-                    }`}
-                  >
-                    <div className=" w-1/2  text-left capitalize ">
-                      <span className="text-base  md:text-[40px] leading-snug     ">
-                        {getElipsisText(item.title, 15)}
-                      </span>
-                    </div>
-                    <div className=" ">
-                      <span
-                        className={
-                          "text-base md:text-[35px]  capitalize text-left leading-snug    "
-                        }
-                      >
-                        {getElipsisText(item.playerName, 10)}
-                      </span>
-                    </div>
-                    <div className="">
-                      <div
-                        className={`bg-[#F7F7F7] rounded-full min-w-32 px-5 py-2 text-black text-center text-2xl`}
-                      >
-                        {item?.location || item?.introSec}
+                      }`}
+                    >
+                      <div className=" w-1/2  text-left capitalize ">
+                        <span className="text-base  md:text-[40px] leading-snug     ">
+                          {getElipsisText(item.title, 15)}
+                        </span>
+                      </div>
+                      <div className=" ">
+                        <span
+                          className={
+                            "text-base md:text-[35px]  capitalize text-left leading-snug    "
+                          }
+                        >
+                          {getElipsisText(item.playerName, 10)}
+                        </span>
+                      </div>
+                      <div className="">
+                        <div
+                          className={`bg-[#F7F7F7] rounded-full min-w-32 px-5 py-2 text-black text-center text-2xl`}
+                        >
+                          {item?.location || item?.introSec}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {/* <table className="table table-lg border-separate border-spacing-y-4  ">
                 {performer?.map((item, index) => (

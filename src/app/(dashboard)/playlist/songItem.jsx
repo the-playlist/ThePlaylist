@@ -384,17 +384,20 @@ export function PlaylistSongItemV2({
     songDuration,
     location,
     id: index,
+    requestToPerform,
+    tableNo,
   } = item || {};
+
   const masterViewTheme = useSelector(
     (state) => state?.playlistReducer?.masterViewTheme
   );
 
   const { onMouseDown, onTouchStart } = dragHandleProps || {};
-  const isMoreThanOneQualifiedPlayers = item?.qualifiedPlayers.length > 1;
+  const isMoreThanOneQualifiedPlayers = item?.qualifiedPlayers?.length > 1;
 
   const isUpvoteOrDownVote = upVote > 0 || downVote > 0;
 
-  return (
+  return !requestToPerform ? (
     <div>
       <div
         key={index}
@@ -535,6 +538,32 @@ export function PlaylistSongItemV2({
               <FaTrashAlt className="text-red-500" size={20} />
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div
+      key={index}
+      className={` text-center bg-gray-tile text-black shadow rounded-2xl h-20 flex items-center  px-5`}
+    >
+      <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle"></div>
+      <div className="w-2/12 pr-10">
+        <EllipsisText color={"text-black"} text={title} length={15} />
+      </div>
+      <div className="w-1/12" />
+      <div className="w-3/12 ">{`Table ${tableNo}`}</div>
+      <div className="w-2/12 flex items-center justify-center">
+        <div
+          className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
+        >
+          {location || introSec}
+        </div>
+      </div>
+      <div className={`w-2/12 flex items-center justify-center `}>
+        <div
+          className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
+        >
+          {category}
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Logo } from "@/app/svgs";
+import { Logo, RequestToPerfromIcon } from "@/app/svgs";
 import { FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
@@ -16,6 +16,8 @@ import { io } from "socket.io-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
+import AddSongIcon from "@/app/svgs/addSong";
+import LiveVideoIcon from "@/app/svgs/liveVideo";
 
 const TableView = () => {
   const isOnline = useOnlineStatus();
@@ -234,36 +236,94 @@ const TableView = () => {
     }
   };
 
+  const navigateToAddSong = (request_perform) => {
+    let payload = {
+      request_perform: request_perform,
+      table_no: tableno,
+    };
+    const queryString = new URLSearchParams(payload).toString();
+    const url = `/add-song?${queryString}`;
+    router.push(url);
+  };
+
   const ButtonsAtEnd = ({}) => {
+    const btnArray = [
+      {
+        id: 0,
+        text: "Add a Song",
+        icon: (themeMode) => <AddSongIcon color={themeMode} />,
+        onPress: () => navigateToAddSong(false),
+      },
+      {
+        id: 1,
+        text: "Request to Perform",
+        icon: (themeMode) => (
+          <RequestToPerfromIcon color={themeMode ? "#1F1F1F" : "#ffff"} />
+        ),
+        onPress: () => navigateToAddSong(true),
+      },
+      {
+        id: 2,
+        text: "Live Video",
+        icon: (themeMode) => (
+          <LiveVideoIcon color={themeMode ? "#1F1F1F" : "#ffff"} />
+        ),
+        onPress: () => creatStreamUserHandler(),
+      },
+    ];
+
     return (
       <div
-        className={`fixed bottom-0 left-0 w-full ${
-          themeMode ? "bg-white" : "bg-[#1F1F1F]"
-        } flex justify-end p-4`}
+        className={`bottom-0 fixed py-5 px-4 ${themeMode ? " bg-light text-black" : "bg-light-tile text-white "} w-full rounded-t-3xl drop-shadow`}
       >
-        <button
-          onClick={() => {
-            router.push("/add-song");
-          }}
-          className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
-        >
-          <div className="flex items-center justify-center">
-            <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
-              <IoAdd size={16} color="white" />
-            </div>
-            Add a Song
-          </div>
-        </button>
-        <button
-          disabled={currentActiveStreams == streamLimit}
-          onClick={() => {
-            creatStreamUserHandler();
-          }}
-          className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white`}
-        >
-          <FaVideo size={16} className="mr-2" /> Live Video
-        </button>
+        <div className=" flex gap-5 items-center justify-between     ">
+          {btnArray?.map((item, index) => {
+            if (performer.length === 0 && item?.id === 1) {
+              return null;
+            }
+
+            return (
+              <button
+                key={index}
+                disabled={item?.id == 2 && currentActiveStreams == streamLimit}
+                onClick={() => item?.onPress()}
+                className=" flex flex-col justify-between items-center h-12"
+              >
+                <div>{item?.icon(themeMode)}</div>
+                <div className=" text-sm">{item?.text}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
+      // <div
+      //   className={`fixed bottom-0 left-0 w-full ${
+      //     themeMode ? "bg-white" : "bg-[#1F1F1F]"
+      //   } flex justify-end p-4`}
+      // >
+      //   <button
+      //     onClick={() => {
+      //       router.push("/add-song");
+      //     }}
+      //     className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
+      //   >
+      //     <div className="flex items-center justify-center">
+      //       <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
+      //         <IoAdd size={16} color="white" />
+      //       </div>
+      //       Add a Song
+      //     </div>
+      //   </button>
+      //   <button
+      //     disabled={currentActiveStreams == streamLimit}
+      //     onClick={() => {
+      //       creatStreamUserHandler();
+      //     }}
+      //     className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white`}
+      //   >
+      //     <FaVideo size={16} className="mr-2" /> Live Video
+      //   </button>
+      // </div>
     );
   };
   function generateRandomStreamId(length = 12) {
@@ -411,69 +471,93 @@ const TableView = () => {
     <div
       className={`overflow-x-auto ${
         themeMode ? "bg-white" : "bg-[#1F1F1F]"
-      } h-screen overflow-y-scroll mx-auto   px-5 pt-5 pb-10`}
+      } h-screen overflow-y-scroll mx-auto    pt-5 pb-10`}
     >
       {loading ? (
-        <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
+        <div className=" flex items-center justify-center">
+          <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
+        </div>
       ) : (
         <>
-          <div className=" flex items-center justify-center m-5">
-            <Logo />
-          </div>
-          <div className="mb-32">
-            {performer?.length === 0 && (
-              <div
-                className={`flex items-center ${
-                  themeMode ? "text-black" : "text-white"
-                } justify-center flex-1 mt-20 font-semibold text-lg`}
-              >
-                The playlist is empty.
-              </div>
-            )}
-            {performer?.map((item, index) => {
-              return (
+          <div className=" px-5">
+            <div className=" flex items-center justify-center m-5">
+              <Logo />
+            </div>
+            <div className="mb-32">
+              {performer?.length === 0 && (
                 <div
-                  key={index}
-                  className={`flex  ${
-                    index < 2 ? "bg-top-queue-bg" : ""
-                  } rounded-md flex-wrap my-2`}
+                  className={`flex items-center ${
+                    themeMode ? "text-black" : "text-white"
+                  } justify-center flex-1 mt-20 font-semibold text-lg`}
                 >
-                  <div className="w-1/2  text-start flex items-center">
-                    {index < 2 ? (
+                  The playlist is empty.
+                </div>
+              )}
+              {performer?.map((item, index) => {
+                const isLocked = index < 2;
+                return item?.requestToPerform ? (
+                  <div
+                    className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex text-black rounded-md flex-wrap my-2`}
+                    key={index}
+                  >
+                    <div className="w-1/2  text-start flex items-center ">
                       <p className="mx-5 font-extrabold text-lg  ">{`${
                         index < 2 ? index + 1 : ""
                       }`}</p>
-                    ) : (
-                      <ActionButtons key={index} index={index} item={item} />
-                    )}
-                    <p
-                      className={`font-semibold capitalize ${
+                      {item?.title}
+                    </div>
+                    <div
+                      className={`w-1/2 p-4 flex justify-end  capitalize text-sm lg:text-lg`}
+                    >
+                      <div
+                        className={` ${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
+                      >{`Table ${item?.tableNo}`}</div>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    key={index}
+                    className={`flex  ${
+                      index < 2 ? "bg-top-queue-bg" : ""
+                    } rounded-md flex-wrap my-2`}
+                  >
+                    <div className="w-1/2  text-start flex items-center">
+                      {index < 2 ? (
+                        <p className="mx-5 font-extrabold text-lg  ">{`${
+                          index < 2 ? index + 1 : ""
+                        }`}</p>
+                      ) : (
+                        <ActionButtons key={index} index={index} item={item} />
+                      )}
+                      <p
+                        className={`font-semibold capitalize ${
+                          index < 2
+                            ? "text-black"
+                            : themeMode
+                              ? "text-black"
+                              : "text-white"
+                        }  text-sm lg:text-lg`}
+                      >
+                        {item?.title}
+                      </p>
+                    </div>
+                    <div
+                      className={`w-1/2 p-4 text-end capitalize ${
                         index < 2
                           ? "text-black"
                           : themeMode
                             ? "text-black"
                             : "text-white"
-                      }  text-sm lg:text-lg`}
+                      } text-sm lg:text-lg`}
                     >
-                      {item?.title}
-                    </p>
+                      {item?.artist}
+                    </div>
                   </div>
-                  <div
-                    className={`w-1/2 p-4 text-end capitalize ${
-                      index < 2
-                        ? "text-black"
-                        : themeMode
-                          ? "text-black"
-                          : "text-white"
-                    } text-sm lg:text-lg`}
-                  >
-                    {item?.artist}
-                  </div>
-                </div>
-              );
-            })}
-            <ButtonsAtEnd />
+                );
+              })}
+            </div>
           </div>
+          <ButtonsAtEnd />
         </>
       )}
       {votingLoader && <ScreenLoader openModal={votingLoader} />}
