@@ -125,7 +125,6 @@ const page = () => {
 
     socket.on("disconnect", async (reason) => {
       console.log(`Socket disconnected socket connection test: ${reason}`);
-
       await fetchPlaylistSongList(null);
     });
   }, []);
