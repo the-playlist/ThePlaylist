@@ -32,7 +32,8 @@ const config: Config = {
         "gray-3": "#939393",
         "gray-4": "#D9D9D9",
         'dark':'#1F1F1F',
-        'gray-tile':'#CFCFCF'
+        'gray-tile':'#CFCFCF',
+        "darkThemeBorder":'#D4D4D4'
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

@@ -40,6 +40,7 @@ const SongCountdownTimer = ({
   const currentSongDetail = useSelector(
     (state) => state?.playlistReducer?.currentSong
   );
+
   useEffect(() => {
     if (isStart) {
       if (duration == 0) {

@@ -39,14 +39,14 @@ const SelectedItemContent =
                   selectedItem?.id == item.id
                     ? "border-[#EFC440]"
                     : "border-[#F1F1F1]"
-                } bg-white rounded-lg w-1/4`}
+                } ${masterViewTheme ? "bg-white text-black" : "bg-light-tile text-white"} rounded-lg w-1/4`}
               >
                 <div className="flex justify-between items-center">
                   <span
                     className={`${
                       selectedItem?.id == item.id
                         ? "text-[#EFC440]"
-                        : "text-black"
+                        : `${masterViewTheme ? "text-black" : "text-white"} `
                     } font-semibold`}
                   >
                     {item?.title}
@@ -56,7 +56,7 @@ const SelectedItemContent =
                       selectedItem?.id == item.id
                         ? "bg-[#FDF9EC]"
                         : "bg-[#f2f2f2]"
-                    } text-black`}
+                    } text-black `}
                   >
                     {item.icon(
                       selectedItem?.id == item.id ? "#EFC440" : "black"

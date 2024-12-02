@@ -70,7 +70,9 @@ const FavSongList = () => {
                     item?.introSec || "N/A"
                   }`}</td>
                   <td className=" text-center">
-                    <span className="text-center font-semibold bg-option p-2 rounded-lg text-black">
+                    <span
+                      className={`text-center font-semibold ${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} rounded-3xl px-5 py-2`}
+                    >
                       {item?.category || "N/A"}
                     </span>
                   </td>
@@ -87,7 +89,9 @@ const FavSongList = () => {
           </table>
         </div>
       ) : (
-        <div className="flex items-center justify-center h-[90vh] text-black font-semibold text-lg">
+        <div
+          className={`flex items-center justify-center h-[90vh] ${masterViewTheme ? "text-black" : "text-white"}  font-semibold text-lg`}
+        >
           No Songs found
         </div>
       )}

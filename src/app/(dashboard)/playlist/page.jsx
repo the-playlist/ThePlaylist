@@ -63,6 +63,7 @@ const page = () => {
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
+
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
   );
@@ -129,13 +130,13 @@ const page = () => {
     });
   }, []);
 
-  useEffect(() => {
-    if (completeList?.length != 0 && completeList?.length < 30) {
-      fetchSongsList();
-    }
-  }, [completeList]);
+  // useEffect(() => {
+  //   if (completeList?.length != 0 && completeList?.length < 30) {
+  //     fetchSongsList();
+  //   }
+  // }, [completeList]);
 
-  const fetchSongsList = async () => {
+  const fetchSongsList = async (res) => {
     let response = await songsListApi();
     if (response && !response.isError) {
       const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
@@ -144,15 +145,24 @@ const page = () => {
 
       const songList = response.data?.content;
 
-      const getData = getRandomSongIds(
-        songList,
-        count,
-        completeList[completeList?.length - 1]?.playerName,
-        mostRepeatedPlayer
-      );
-      if (getData?.length > 0) {
-        addMultiSongsHandler(getData);
+      if (songList?.length > 0) {
+        const getData = getRandomSongIds(
+          songList,
+          count,
+          completeList[completeList?.length - 1]?.playerName,
+          mostRepeatedPlayer
+        );
+        if (getData?.length > 0) {
+          addMultiSongsHandler(getData);
+        }
       }
+      // else {
+      //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
+      //     isFirst: false,
+      //     playlist: res,
+      //     time: 10,
+      //   });
+      // }
     }
   };
   function getMostRepeatedPlayer(data) {
@@ -179,73 +189,6 @@ const page = () => {
 
     return mostRepeatedPlayer;
   }
-
-  // function getRandomSongIds(
-  //   songsArray,
-  //   count,
-  //   lastPlayername,
-  //   mostRepeatedPlayer
-  // ) {
-  //   const numSongs = Math.min(count, songsArray.length);
-
-  //   // Separate songs into prioritized and non-prioritized groups
-  //   const prioritized = [];
-  //   const nonPrioritized = [];
-
-  //   songsArray.forEach((song) => {
-  //     // Check if lastPlayername is in assignedPlayers
-  //     if (
-  //       song.assignedPlayers &&
-  //       song.assignedPlayers.some(
-  //         (player) => player.playerName === lastPlayername
-  //       )
-  //     ) {
-  //       nonPrioritized.push(song);
-  //     } else {
-  //       prioritized.push(song);
-  //     }
-  //   });
-
-  //   // Shuffle each group
-  //   const shuffle = (array) => array.sort(() => 0.5 - Math.random());
-  //   const shuffledPrioritized = shuffle(prioritized);
-  //   const shuffledNonPrioritized = shuffle(nonPrioritized);
-
-  //   // Modify non-prioritized songs as per requirements
-  //   const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
-  //     // Create a shallow copy of the song object to avoid direct mutation
-  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
-
-  //     if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
-  //       // Filter out the player with lastPlayername
-  //       const players = songCopy.assignedPlayers.filter(
-  //         (player) => player.playerName !== lastPlayername
-  //       );
-
-  //       // If there are any remaining players, move the first one to the start
-  //       if (players.length > 0) {
-  //         const newFirstPlayer = players[0]; // Pick the first eligible player
-  //         const remainingPlayers = songCopy.assignedPlayers.filter(
-  //           (player) => player !== newFirstPlayer
-  //         );
-  //         songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
-  //       }
-  //     }
-  //     return songCopy;
-  //   });
-
-  //   // Combine the groups, prioritizing songs where lastPlayername is not in assignedPlayers
-  //   const finalSongs = [
-  //     ...shuffledPrioritized,
-  //     ...modifiedNonPrioritized,
-  //   ].slice(0, numSongs);
-
-  //   // Format the result
-  //   return finalSongs.map((song) => ({
-  //     songId: song._id,
-  //     qualifiedPlayers: song?.assignedPlayers,
-  //   }));
-  // }
 
   function getRandomSongIds(
     songsArray,
@@ -320,7 +263,9 @@ const page = () => {
 
   const addMultiSongsHandler = async (data) => {
     await addMultiSongsApi(data);
-    await fetchPlaylistSongList();
+    setTimeout(async () => {
+      await fetchPlaylistSongList();
+    }, 2000);
   };
 
   useEffect(() => {
@@ -351,15 +296,21 @@ const page = () => {
           id: index, // Add a unique id if it doesn't exist
         }));
         setCompleteList(completeList);
+
+        if (completeList?.length != 0 && completeList?.length < 30) {
+          fetchSongsList();
+        }
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
+
         if (
           isFixedItems?.length > 0 &&
           currentSong?.title == "" &&
           currentSongSecond == 0
         ) {
           const { playerName, title, _id } = isFixedItems[0];
+
           dispatch(
             setCurrentSong({
               title: title,
@@ -420,11 +371,17 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
-    socket.emit("RemoveSongFromPlaylistRequest-v2", {
-      isFirst: false,
-      playlist: res,
-      time: 10,
-    });
+
+    fetchPlaylistSongList();
+    // if (completeList?.length != 0 && completeList?.length < 30) {
+    //   await fetchSongsList(res);
+    // } else {
+    //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
+    //     isFirst: false,
+    //     playlist: res,
+    //     time: 10,
+    //   });
+    // }
   };
   const removeItemById = async (id, isTrashPress) => {
     let currentArray = [...completeList];
@@ -454,7 +411,7 @@ const page = () => {
       );
       const { playerName, title, _id } = tempFixed[0];
 
-      dispatch(
+      await dispatch(
         setCurrentSong({
           title: title,
           player: playerName,

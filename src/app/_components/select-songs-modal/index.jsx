@@ -20,6 +20,9 @@ import { useSelector } from "react-redux";
 import { usePathname } from "next/navigation";
 
 const AssignedSongsDropdown = ({ item }) => {
+  const masterViewTheme = useSelector(
+    (state) => state?.playlistReducer?.masterViewTheme
+  );
   const [selectedId, setSelectedId] = useState(item?.selectedPlayers?._id);
   function generateObjectByPlayerId(record, playerId) {
     const assignedPlayer = record.assignedPlayers.find(
@@ -43,7 +46,7 @@ const AssignedSongsDropdown = ({ item }) => {
         setSelectedId(value._id);
         item.selectedPlayers = value;
       }}
-      className="select select-bordered w-full max-w-xs focus:outline-none text-black"
+      className={`select select-bordered w-full max-w-xs focus:outline-none ${masterViewTheme ? "text-black" : "bg-black text-white"}`}
     >
       {item?.assignedPlayers?.map((item) => {
         return (
@@ -301,15 +304,6 @@ const SelectSongModal = ({
             </div>
           ) : (
             <>
-              {/* {playersList?.length == 0 && (
-                <div className="p-4">
-                  <span>
-                    There is no currently Active Player, Please Go the Duty
-                    Screen and mark attandance.
-                  </span>
-                </div>
-              )} */}
-
               <div
                 className={`sticky z-10 ${masterViewTheme ? " bg-light" : "bg-dark"} lg:p-4 px-4 py-2 top-0`}
               >
@@ -334,7 +328,7 @@ const SelectSongModal = ({
                         setSearchTerm(searchTerm.trim());
                       }}
                       onChange={handleSearch}
-                      className="block w-full py-5 pl-10 pr-4 border placeholder:text-base border-gray-300 rounded-md focus:outline-none focus:border-blue-500"
+                      className={`block w-full py-5 pl-10 pr-4 border placeholder:text-base ${masterViewTheme ? " border-gray-300 text-black" : " border-darkThemeBorder bg-light-tile text-white"} rounded-md focus:outline-none `}
                     />
                     <svg
                       className="absolute top-0 left-0 w-6 h-6 mt-5 ml-3 text-gray-400"
@@ -451,14 +445,18 @@ const SelectSongModal = ({
                           </div>
                           <div className="w-3/12">
                             <div className="flex items-center justify-center">
-                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7] text-black">
+                              <div
+                                className={`px-7 py-2 rounded-3xl ${masterViewTheme ? "bg-[#F7F7F7] text-black" : "bg-black text-white"}`}
+                              >
                                 {item.category}
                               </div>
                             </div>
                           </div>
                           <div className="w-3/12 ">
                             <div className="flex items-center justify-center">
-                              <div className="px-7 py-2 rounded-3xl bg-[#F7F7F7]">
+                              <div
+                                className={`px-7 py-2 rounded-3xl ${masterViewTheme ? "bg-[#F7F7F7] text-black" : "bg-black text-white"}`}
+                              >
                                 {item?.location || item?.introSec}
                               </div>
                             </div>

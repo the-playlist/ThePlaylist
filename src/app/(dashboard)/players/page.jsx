@@ -20,7 +20,7 @@ const Players = () => {
   const [addModalOpens, setAddModalOpens] = useState(false);
   const [deletePlayerModal, setDeletePlayerModal] = useState(false);
   const [currentPlayerInfo, setCurrentPlayerInfo] = useState(null);
-  const [deletePlayerAPI, deletePlayerResponse] = useDeletePlayerByIdMutation();
+  const [deletePlayerAPI] = useDeletePlayerByIdMutation();
   const [playersList, setPlayersList] = useState([]);
   const [getAllPlayersApi, getAllPlayersResponse] = useLazyGetAllPlayersQuery();
   const masterViewTheme = useSelector(

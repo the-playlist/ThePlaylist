@@ -167,7 +167,7 @@ const LimitAndAppearence = () => {
           Customer Limits
         </button>
         <div
-          className={`absolute drop-shadow font-bold  transform transition-transform duration-300 text-white  p-3 w-1/2 bg-primary rounded-xl text-center ${
+          className={`absolute drop-shadow font-bold  transform transition-transform duration-300 ${masterViewTheme ? "text-white" : "text-black"}  p-3 w-1/2 bg-primary rounded-xl text-center ${
             activeTab == 2 ? " translate-x-[96%]" : ""
           }`}
         >
@@ -230,7 +230,9 @@ const LimitAndAppearence = () => {
                     <div className="  w-3/4">
                       <div className=" flex items-center w-full">
                         <span className="font-semibold ">{item?.title}:</span>
-                        <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  ml-2 mr-5 h-12  ">
+                        <div
+                          className={` ${masterViewTheme ? "bg-white text-black border" : "bg-dark text-white"} rounded-md drop-shadow  w-1/4 flex  ml-2 mr-5 h-12  `}
+                        >
                           <button
                             disabled={item?.value == 1}
                             onClick={() => {
@@ -243,10 +245,10 @@ const LimitAndAppearence = () => {
                             }}
                             className="p-3   border-r text-center text-lg"
                           >
-                            <IoIosRemove className=" text-black" />
+                            <IoIosRemove />
                           </button>
                           <input
-                            className="w-full disabled:bg-inherit  text-center m-auto focus:outline-none text-black"
+                            className="w-full disabled:bg-inherit  text-center m-auto focus:outline-none "
                             value={item?.value}
                             disabled={true}
                           />
@@ -261,7 +263,7 @@ const LimitAndAppearence = () => {
                             }}
                             className="p-3  border-l  text-center text-lg"
                           >
-                            <IoMdAdd className=" text-black" />
+                            <IoMdAdd />
                           </button>
                         </div>
 
@@ -270,10 +272,12 @@ const LimitAndAppearence = () => {
                             <span className="font-semibold ">
                               {item?.subTitle}:
                             </span>
-                            <div className=" bg-white rounded-md drop-shadow border w-1/4 flex  mx-2 h-12 p-1 mr-5 ">
+                            <div
+                              className={` ${masterViewTheme ? "bg-white text-black border" : "bg-dark text-white"} rounded-md drop-shadow  w-1/4 flex  mx-2 h-12 p-1 mr-5 `}
+                            >
                               <input
                                 type="number"
-                                className="w-full px-3 disabled:bg-inherit focus:outline-none text-black"
+                                className={`w-full px-3 disabled:bg-inherit focus:outline-none ${masterViewTheme ? "bg-white" : "bg-dark"} `}
                                 value={item?.time}
                                 min="1"
                                 onChange={(e) => {
@@ -288,7 +292,9 @@ const LimitAndAppearence = () => {
                                   );
                                 }}
                               />
-                              <div className="p-2 flex items-center justify-center text-[#989B9E] font-semibold text-center text-sm bg-[#F2F2F2] rounded-sm">
+                              <div
+                                className={`p-2 flex items-center justify-center font-semibold text-center text-sm ${masterViewTheme ? " text-[#989B9E] bg-[#F2F2F2]" : "bg-light-tile text-white"} rounded-sm`}
+                              >
                                 Min
                               </div>
                             </div>
@@ -302,10 +308,12 @@ const LimitAndAppearence = () => {
                       <div className=" w-full items-center">
                         <span className=" font-semibold  ">Alert Message:</span>
 
-                        <div className="  rounded-md     w-[57%] flex mt-1 h-11 p-1 mr-5 ">
+                        <div
+                          className={`${masterViewTheme ? "bg-white text-black" : "bg-dark text-white"}  rounded-md     w-[57%] flex mt-1 h-11 p-1 mr-5 `}
+                        >
                           <input
                             type="text"
-                            className="w-full px-3 text-sm rounded-md text-black disabled:bg-inherit focus:outline-none"
+                            className={`w-full px-3 text-sm rounded-md  disabled:bg-inherit focus:outline-none ${masterViewTheme ? "bg-white text-black" : "bg-dark text-white"}`}
                             onChange={(e) => {
                               const value = e.target.value;
                               changeLimitHandler(

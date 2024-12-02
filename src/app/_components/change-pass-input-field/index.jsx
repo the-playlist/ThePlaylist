@@ -22,7 +22,7 @@ function ChangePassInputField({
       </label>
       <input
         type={type}
-        className=" border border-gray-300 text-gray-900 text-sm rounded-lg  focus:ring-top-queue-bg block w-full p-5 "
+        className={` border border-gray-300  text-sm rounded-lg  focus:ring-top-queue-bg block w-full p-5  ${masterViewTheme ? "bg-white  text-black" : " bg-light-tile text-white"}`}
         {...register(name, validate)}
         {...props}
       />
