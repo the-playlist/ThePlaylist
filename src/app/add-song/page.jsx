@@ -197,6 +197,7 @@ const Typeahead = () => {
   const requestToPerformApiHandler = async (payload) => {
     try {
       const response = await requestToPerformApi(payload);
+
       if (response && !response.error) {
         const { song, playlistCount, list } = response?.data?.content;
         toast.success(response?.data?.description);
@@ -240,33 +241,34 @@ const Typeahead = () => {
   };
 
   const handleRequestSong = (payload) => {
-    const currentTime = new Date().getTime();
-    const prevSongTime = parseInt(localStorage.getItem("prevReqSongTime"), 10);
-    const songCount = parseInt(localStorage.getItem("reqSongCount"), 10) || 0;
-    const timeLimit = requestLimit?.time * 60000;
-    const songCountLimit = requestLimit?.value;
+    requestToPerformApiHandler(payload);
+    // const currentTime = new Date().getTime();
+    // const prevSongTime = parseInt(localStorage.getItem("prevReqSongTime"), 10);
+    // const songCount = parseInt(localStorage.getItem("reqSongCount"), 10) || 0;
+    // const timeLimit = requestLimit?.time * 60000;
+    // const songCountLimit = requestLimit?.value;
 
-    if (!prevSongTime) {
-      localStorage.setItem("prevReqSongTime", currentTime);
-      localStorage.setItem("reqSongCount", 1);
-      requestToPerformApiHandler(payload);
-      return;
-    }
-    const timeDifference = currentTime - prevSongTime;
-    if (timeDifference > timeLimit) {
-      localStorage.setItem("prevReqSongTime", currentTime);
-      localStorage.setItem("reqSongCount", 1);
-      requestToPerformApiHandler(payload);
-    } else {
-      if (songCount < songCountLimit) {
-        localStorage.setItem("reqSongCount", songCount + 1);
-        requestToPerformApiHandler(payload);
-      } else {
-        toast.error(
-          requestLimit?.message ?? "Song limit reached. Please try again later."
-        );
-      }
-    }
+    // if (!prevSongTime) {
+    //   localStorage.setItem("prevReqSongTime", currentTime);
+    //   localStorage.setItem("reqSongCount", 1);
+    //   requestToPerformApiHandler(payload);
+    //   return;
+    // }
+    // const timeDifference = currentTime - prevSongTime;
+    // if (timeDifference > timeLimit) {
+    //   localStorage.setItem("prevReqSongTime", currentTime);
+    //   localStorage.setItem("reqSongCount", 1);
+    //   requestToPerformApiHandler(payload);
+    // } else {
+    //   if (songCount < songCountLimit) {
+    //     localStorage.setItem("reqSongCount", songCount + 1);
+    //     requestToPerformApiHandler(payload);
+    //   } else {
+    //     toast.error(
+    //       requestLimit?.message ?? "Song limit reached. Please try again later."
+    //     );
+    //   }
+    // }
   };
   return (
     <>
