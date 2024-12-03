@@ -135,7 +135,7 @@ const page = () => {
   //   }
   // }, [completeList]);
 
-  const fetchSongsList = async (res) => {
+  const fetchSongsList = async (completeList) => {
     let response = await songsListApi();
     if (response && !response.isError) {
       const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
@@ -297,7 +297,7 @@ const page = () => {
         setCompleteList(completeList);
 
         if (completeList?.length != 0 && completeList?.length < 30) {
-          fetchSongsList();
+          fetchSongsList(completeList);
         }
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
