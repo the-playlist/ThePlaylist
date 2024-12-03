@@ -1298,6 +1298,7 @@ export const requestToPerformSong = async (req, res) => {
     if (checkRequestToPerform?.length <= value && differenceInMinutes > time) {
       const lastPerformRequestItem = await PlaylistV2.findOne({
         requestToPerform: true,
+        isDeleted: false,
       })
         .sort({ sortOrder: -1 })
         .exec();
@@ -1346,6 +1347,7 @@ export const requestToPerformSong = async (req, res) => {
   } else {
     const lastPerformRequestItem = await PlaylistV2.findOne({
       requestToPerform: true,
+      isDeleted: false,
     })
       .sort({ sortOrder: -1 })
       .exec();
