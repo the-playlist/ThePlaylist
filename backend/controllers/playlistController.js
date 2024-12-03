@@ -1274,44 +1274,232 @@ export const addMultipleSongsToPlaylistV2 = async (req, res) => {
 
 export const requestToPerformSong = async (req, res) => {
   const { songId, requestToPerform, tableNo } = req.body;
+  const heading = "Perform Request Limit";
+  const { value, time } = await Limit.findOne({
+    heading,
+  });
 
-  const lastPerformRequestItem = await PlaylistV2.findOne({
-    requestToPerform: true,
-  })
-    .sort({ sortOrder: -1 })
-    .exec();
-  const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
-  const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+  const earliestEntry = await PlaylistV2.findOne({ tableNo: tableNo })
+    .sort({ requestTime: 1 })
+    .lean();
 
-  const maxSortOrderItem = await PlaylistV2.find()
-    .sort({ sortOrder: -1 })
-    .limit(1)
-    .exec();
-  const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
-  const finalSortOrder =
-    nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
+  if (earliestEntry) {
+    const checkRequestToPerform = await PlaylistV2.find({
+      tableNo: tableNo,
+    }).lean();
+    const requestTime = new Date(earliestEntry.requestTime);
 
-  await PlaylistV2.updateMany(
-    { sortOrder: { $gte: nextSortOrder } },
-    { $inc: { sortOrder: 1 } }
-  );
+    const differenceInMilliseconds = Math.abs(
+      Date.now() - requestTime.getTime()
+    );
 
-  let payload = {
-    assignedPlayer: null,
-    songData: new mongoose.Types.ObjectId(songId),
-    addByCustomer: false,
-    sortOrder: finalSortOrder,
-    qualifiedPlayers: null,
-    requestToPerform: requestToPerform,
-    tableNo: tableNo,
-  };
+    const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
+    if (checkRequestToPerform?.length <= value && differenceInMinutes > time) {
+      const lastPerformRequestItem = await PlaylistV2.findOne({
+        requestToPerform: true,
+      })
+        .sort({ sortOrder: -1 })
+        .exec();
+      const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
+      const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
 
-  await PlaylistV2.create(payload);
+      const maxSortOrderItem = await PlaylistV2.find()
+        .sort({ sortOrder: -1 })
+        .limit(1)
+        .exec();
+      const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
+      const finalSortOrder =
+        nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
 
-  const response = new ResponseModel(
-    true,
-    "Song added and playlist updated successfully",
-    { lastPerformRequestItem }
-  );
-  res.status(200).json(response);
+      await PlaylistV2.updateMany(
+        { sortOrder: { $gte: nextSortOrder } },
+        { $inc: { sortOrder: 1 } }
+      );
+
+      let payload = {
+        assignedPlayer: null,
+        songData: new mongoose.Types.ObjectId(songId),
+        addByCustomer: false,
+        sortOrder: finalSortOrder,
+        qualifiedPlayers: null,
+        requestToPerform: requestToPerform,
+        tableNo: tableNo,
+      };
+
+      await PlaylistV2.create(payload);
+
+      const response = new ResponseModel(
+        true,
+        "Song added and playlist updated successfully",
+        { lastPerformRequestItem }
+      );
+      res.status(200).json(response);
+    } else {
+      const response = new ResponseModel(
+        true,
+        "Song Cannot be Added at this moment, please try again later ",
+        null
+      );
+      res.status(200).json(response);
+    }
+  } else {
+    const lastPerformRequestItem = await PlaylistV2.findOne({
+      requestToPerform: true,
+    })
+      .sort({ sortOrder: -1 })
+      .exec();
+    const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
+    const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+
+    const maxSortOrderItem = await PlaylistV2.find()
+      .sort({ sortOrder: -1 })
+      .limit(1)
+      .exec();
+    const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
+    const finalSortOrder =
+      nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
+
+    await PlaylistV2.updateMany(
+      { sortOrder: { $gte: nextSortOrder } },
+      { $inc: { sortOrder: 1 } }
+    );
+
+    let payload = {
+      assignedPlayer: null,
+      songData: new mongoose.Types.ObjectId(songId),
+      addByCustomer: false,
+      sortOrder: finalSortOrder,
+      qualifiedPlayers: null,
+      requestToPerform: requestToPerform,
+      tableNo: tableNo,
+    };
+
+    await PlaylistV2.create(payload);
+
+    const response = new ResponseModel(
+      true,
+      "Song added and playlist updated successfully",
+      { lastPerformRequestItem }
+    );
+    res.status(200).json(response);
+  }
 };
+
+// const createPlaylistEntry = async (
+//   songId,
+//   tableNo,
+//   requestToPerform,
+//   finalSortOrder
+// ) => {
+//   const payload = {
+//     assignedPlayer: null,
+//     songData: new mongoose.Types.ObjectId(songId),
+//     addByCustomer: false,
+//     sortOrder: finalSortOrder,
+//     qualifiedPlayers: null,
+//     requestToPerform: requestToPerform,
+//     tableNo: tableNo,
+//   };
+
+//   await PlaylistV2.create(payload);
+// };
+
+// const calculateFinalSortOrder = async (lastPerformRequestItem) => {
+//   const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
+//   const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+
+//   const maxSortOrderItem = await PlaylistV2.find()
+//     .sort({ sortOrder: -1 })
+//     .limit(1)
+//     .lean();
+//   const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
+
+//   const finalSortOrder =
+//     nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
+
+//   await PlaylistV2.updateMany(
+//     { sortOrder: { $gte: nextSortOrder } },
+//     { $inc: { sortOrder: 1 } }
+//   );
+
+//   return finalSortOrder;
+// };
+
+// export const requestToPerformSong = async (req, res) => {
+//   try {
+//     const { songId, requestToPerform, tableNo } = req.body;
+//     const heading = "Perform Request Limit";
+//     const { value, time } = await Limit.findOne({ heading }).lean();
+
+//     // Get the earliest entry
+//     const earliestEntry = await PlaylistV2.findOne({
+//       tableNo,
+//       isDeleted: false,
+//     })
+//       .sort({ requestTime: 1 })
+//       .lean();
+
+//     const canAddSong = async () => {
+//       const lastPerformRequestItem = await PlaylistV2.findOne({
+//         requestToPerform: true,
+//         isDeleted: false,
+//       })
+//         .sort({ sortOrder: -1 })
+//         .lean();
+
+//       const finalSortOrder = await calculateFinalSortOrder(
+//         lastPerformRequestItem
+//       );
+//       await createPlaylistEntry(
+//         songId,
+//         tableNo,
+//         requestToPerform,
+//         finalSortOrder
+//       );
+
+//       return new ResponseModel(
+//         true,
+//         "Song added and playlist updated successfully",
+//         { lastPerformRequestItem }
+//       );
+//     };
+
+//     if (earliestEntry) {
+//       const requestTime = new Date(earliestEntry.requestTime);
+//       const differenceInMilliseconds = Math.abs(
+//         Date.now() - requestTime.getTime()
+//       );
+//       const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
+
+//       const checkRequestToPerform = await PlaylistV2.countDocuments({
+//         tableNo,
+//         isDeleted: false,
+//       });
+
+//       if (checkRequestToPerform <= value && differenceInMinutes > time) {
+//         const response = await canAddSong();
+//         return res.status(200).json(response);
+//       } else {
+//         return res
+//           .status(403)
+//           .json(
+//             new ResponseModel(
+//               false,
+//               "Song cannot be added at this moment, please try again later.",
+//               null
+//             )
+//           );
+//       }
+//     } else {
+//       const response = await canAddSong();
+//       return res.status(200).json(response);
+//     }
+//   } catch (error) {
+//     console.error("Error in requestToPerformSong:", error);
+//     return res.status(500).json(
+//       new ResponseModel(false, "Internal Server Error", {
+//         error: error.message,
+//       })
+//     );
+//   }
+// };
