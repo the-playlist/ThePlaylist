@@ -61,6 +61,10 @@ const playlistSchemaV2 = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    requestTime: {
+      type: Date, // Track when the song was added to the playlist
+      default: () => new Date(), // Set the default value to the current timestamp
+    },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt
