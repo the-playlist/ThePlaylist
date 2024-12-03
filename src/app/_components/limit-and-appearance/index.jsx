@@ -339,7 +339,7 @@ const LimitAndAppearence = () => {
                         text="Update"
                         onClick={() => {
                           let payload;
-                          if (index < 2) {
+                          if (index < 2 || index == 4) {
                             payload = {
                               heading: item?.heading,
                               value: item?.value,

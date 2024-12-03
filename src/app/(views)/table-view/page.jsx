@@ -495,16 +495,21 @@ const TableView = () => {
               )}
               {performer?.map((item, index) => {
                 const isLocked = index < 2;
-                return item?.requestToPerform ? (
+                return item?.requestToPerform && item?.tableNo == tableno ? (
                   <div
                     className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex text-black rounded-md flex-wrap my-2`}
                     key={index}
                   >
                     <div className="w-1/2  text-start flex items-center ">
-                      <p className="mx-5 font-extrabold text-lg  ">{`${
+                      <p className="mx-6  font-extrabold text-lg  ">{`${
                         index < 2 ? index + 1 : ""
                       }`}</p>
-                      {item?.title}
+
+                      <p
+                        className={`font-semibold capitalize text-black   text-sm lg:text-lg`}
+                      >
+                        {item?.title}
+                      </p>
                     </div>
                     <div
                       className={`w-1/2 p-4 flex justify-end  capitalize text-sm lg:text-lg`}
