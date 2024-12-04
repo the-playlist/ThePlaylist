@@ -1407,12 +1407,19 @@ const createPlaylistEntry = async (
 
 const calculateFinalSortOrder = async (lastPerformRequestItem) => {
   const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
-  const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+  // const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
+  let nextSortOrder;
+  if (currentSortOrder == 0) {
+    nextSortOrder = currentSortOrder + 2; // Maintain a difference of 3
+  } else {
+    nextSortOrder = currentSortOrder + 3; // Maintain a difference of 3
+  }
 
   const maxSortOrderItem = await PlaylistV2.find()
     .sort({ sortOrder: -1 })
     .limit(1)
     .lean();
+
   const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
 
   const finalSortOrder =
@@ -1443,6 +1450,7 @@ export const requestToPerformSong = async (req, res) => {
     const canAddSong = async () => {
       const lastPerformRequestItem = await PlaylistV2.findOne({
         requestToPerform: true,
+        isDeleted: false,
       })
         .sort({ sortOrder: -1 })
         .lean();
@@ -1476,7 +1484,7 @@ export const requestToPerformSong = async (req, res) => {
         isDeleted: false,
       });
 
-      if (checkRequestToPerform <= value && differenceInMinutes > time) {
+      if (checkRequestToPerform < value && differenceInMinutes < time) {
         const response = await canAddSong();
         return res.status(200).json(response);
       } else {

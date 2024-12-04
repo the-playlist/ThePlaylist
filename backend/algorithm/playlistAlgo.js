@@ -30,10 +30,13 @@ export function playlistAlgorithmV2(isFirstTimeFetched, flattenedPlaylist) {
   const requestToPerformMap = new Map();
 
   flattenedPlaylist.forEach((song, index) => {
-    if (index > 1 && song.sortByMaster) {
+    if (index <= 1) return;
+
+    // Process the song based on its properties
+    if (song.sortByMaster) {
       sortByMasterMap.set(index, song);
     }
-    if (index > 1 && song.requestToPerform) {
+    if (song.requestToPerform) {
       requestToPerformMap.set(index, song);
     }
   });
