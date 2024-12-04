@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { useSearchParams } from "next/navigation";
+import { CustomLoader } from "../_components/custom_loader";
 
 const Typeahead = () => {
   const searchParams = useSearchParams();
@@ -22,10 +23,11 @@ const Typeahead = () => {
   let limitTitle = "Song Limit";
 
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
-
+  const [screenLoader, setScreenLoader] = useState(true);
   const [addSongToPlaylistByUserApi, { isLoading }] =
     useAddSongToPlaylistByCustomerV2Mutation();
-  const [getAllSongsListApi] = useLazyGetSongsListQuery();
+  const [getAllSongsListApi, { isLoading: allSongLoader }] =
+    useLazyGetSongsListQuery();
   const [requestToPerformApi, { isLoading: btnLoader }] =
     useRequestToPerformMutation();
   const [getLimitListApi] = useLazyGetLimitListQuery();
@@ -126,6 +128,7 @@ const Typeahead = () => {
       setFilteredOptions(songList);
       setSongList(songList);
     }
+    setScreenLoader(false);
   };
 
   const fetchSongsList = async () => {
@@ -136,6 +139,7 @@ const Typeahead = () => {
       setFilteredOptions(songList);
       setSongList(songList);
     }
+    setScreenLoader(false);
   };
 
   const handleSong = (id, song) => {
@@ -270,7 +274,9 @@ const Typeahead = () => {
     //   }
     // }
   };
-  return (
+  return screenLoader ? (
+    <CustomLoader bgColor={"bg-white"} />
+  ) : (
     <>
       <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
         <div className="mb-2 text-base font-medium text-white">
@@ -305,9 +311,9 @@ const Typeahead = () => {
           )}
         </div>
       </div>
-      {getSongsListResponse?.isFetching ? (
+      {getSongsListResponse?.isFetching || allSongLoader ? (
         <div className="mt-24 flex items-center justify-center">
-          <span className="loading loading-spinner loading-md bg-white"></span>
+          <span className={`loading loading-spinner loading-md `}></span>
         </div>
       ) : filteredOptions?.length > 0 ? (
         <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">

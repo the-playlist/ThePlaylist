@@ -21,6 +21,7 @@ import {
 import { flattenPlaylist } from "./helper";
 import AlgorithmStatus from "../models/algorithStatus";
 import PlaylistV2 from "../models/playlistV2";
+import { MdContactSupport } from "react-icons/md";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 export const algoStatusId = "6728794712916c8fc48542c3";
@@ -1130,7 +1131,8 @@ const addSongHandlerV2 = async (
   songId,
   addByCustomer,
   res,
-  qualifiedPlayers
+  qualifiedPlayers,
+  count
 ) => {
   const players = await Players.aggregate([
     {
@@ -1203,12 +1205,11 @@ const addSongHandlerV2 = async (
     playlistCount = await PlaylistV2.countDocuments({
       isDeleted: false,
     });
-
     const newPlaylistEntry = new PlaylistV2({
       assignedPlayer: playerToAssign._id,
       songData: new mongoose.Types.ObjectId(songId),
       addByCustomer: addByCustomer,
-      sortOrder: playlistCount,
+      sortOrder: count ? count : playlistCount,
       qualifiedPlayers: qualifiedPlayers.map((player) => ({
         id: player?._id,
         name: player?.playerName,
@@ -1267,124 +1268,19 @@ export const addMultipleSongsToPlaylistV2 = async (req, res) => {
       .status(400)
       .json({ message: "An array of song IDs is required" });
   }
-
+  const playlistCount = await PlaylistV2.countDocuments({
+    isDeleted: false,
+  });
   payload?.map(async (item, index) => {
-    addSongHandlerV2(item?.songId, false, res, item?.qualifiedPlayers);
+    addSongHandlerV2(
+      item?.songId,
+      false,
+      res,
+      item?.qualifiedPlayers,
+      playlistCount + index
+    );
   });
 };
-
-// export const requestToPerformSong = async (req, res) => {
-//   const { songId, requestToPerform, tableNo } = req.body;
-//   const heading = "Perform Request Limit";
-//   const { value, time } = await Limit.findOne({
-//     heading,
-//   });
-
-//   const earliestEntry = await PlaylistV2.findOne({ tableNo: tableNo })
-//     .sort({ requestTime: 1 })
-//     .lean();
-
-//   if (earliestEntry) {
-//     const checkRequestToPerform = await PlaylistV2.find({
-//       tableNo: tableNo,
-//     }).lean();
-//     const requestTime = new Date(earliestEntry.requestTime);
-
-//     const differenceInMilliseconds = Math.abs(
-//       Date.now() - requestTime.getTime()
-//     );
-
-//     const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
-//     if (checkRequestToPerform?.length <= value && differenceInMinutes > time) {
-//       const lastPerformRequestItem = await PlaylistV2.findOne({
-//         requestToPerform: true,
-//       })
-//         .sort({ sortOrder: -1 })
-//         .exec();
-//       const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
-//       const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
-
-//       const maxSortOrderItem = await PlaylistV2.find()
-//         .sort({ sortOrder: -1 })
-//         .limit(1)
-//         .exec();
-//       const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
-//       const finalSortOrder =
-//         nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
-
-//       await PlaylistV2.updateMany(
-//         { sortOrder: { $gte: nextSortOrder } },
-//         { $inc: { sortOrder: 1 } }
-//       );
-
-//       let payload = {
-//         assignedPlayer: null,
-//         songData: new mongoose.Types.ObjectId(songId),
-//         addByCustomer: false,
-//         sortOrder: finalSortOrder,
-//         qualifiedPlayers: null,
-//         requestToPerform: requestToPerform,
-//         tableNo: tableNo,
-//       };
-
-//       await PlaylistV2.create(payload);
-
-//       const response = new ResponseModel(
-//         true,
-//         "Song added and playlist updated successfully",
-//         { lastPerformRequestItem }
-//       );
-//       res.status(200).json(response);
-//     } else {
-//       const response = new ResponseModel(
-//         true,
-//         "Song Cannot be Added at this moment, please try again later ",
-//         null
-//       );
-//       res.status(200).json(response);
-//     }
-//   } else {
-//     const lastPerformRequestItem = await PlaylistV2.findOne({
-//       requestToPerform: true,
-//     })
-//       .sort({ sortOrder: -1 })
-//       .exec();
-//     const currentSortOrder = lastPerformRequestItem?.sortOrder || 0;
-//     const nextSortOrder = Math.ceil(currentSortOrder / 3) * 3 + 2;
-
-//     const maxSortOrderItem = await PlaylistV2.find()
-//       .sort({ sortOrder: -1 })
-//       .limit(1)
-//       .exec();
-//     const maxSortOrder = maxSortOrderItem?.sortOrder || 0;
-//     const finalSortOrder =
-//       nextSortOrder <= maxSortOrder ? maxSortOrder + 1 : nextSortOrder;
-
-//     await PlaylistV2.updateMany(
-//       { sortOrder: { $gte: nextSortOrder } },
-//       { $inc: { sortOrder: 1 } }
-//     );
-
-//     let payload = {
-//       assignedPlayer: null,
-//       songData: new mongoose.Types.ObjectId(songId),
-//       addByCustomer: false,
-//       sortOrder: finalSortOrder,
-//       qualifiedPlayers: null,
-//       requestToPerform: requestToPerform,
-//       tableNo: tableNo,
-//     };
-
-//     await PlaylistV2.create(payload);
-
-//     const response = new ResponseModel(
-//       true,
-//       "Song added and playlist updated successfully",
-//       { lastPerformRequestItem }
-//     );
-//     res.status(200).json(response);
-//   }
-// };
 
 const createPlaylistEntry = async (
   songId,
