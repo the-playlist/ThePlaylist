@@ -1329,6 +1329,24 @@ const calculateFinalSortOrder = async (lastPerformRequestItem) => {
   return finalSortOrder;
 };
 
+const getValidRecords = async (tableNo, time) => {
+  try {
+    const now = new Date();
+    const timeThreshold = new Date(now.getTime() - time * 60 * 1000); // `time` in minutes
+
+    const validRecords = await PlaylistV2.find({
+      tableNo,
+      isDeleted: false,
+      requestTime: { $gte: timeThreshold }, // Compare requestTime with the threshold
+    }).lean();
+
+    return validRecords;
+  } catch (error) {
+    console.error("Error fetching valid records:", error);
+    throw error;
+  }
+};
+
 export const requestToPerformSong = async (req, res) => {
   try {
     const { songId, requestToPerform, tableNo } = req.body;
@@ -1369,18 +1387,22 @@ export const requestToPerformSong = async (req, res) => {
     };
 
     if (earliestEntry) {
-      const requestTime = new Date(earliestEntry.requestTime);
-      const differenceInMilliseconds = Math.abs(
-        Date.now() - requestTime.getTime()
-      );
-      const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
+      const currentTime = Date.now();
 
-      const checkRequestToPerform = await PlaylistV2.countDocuments({
+      const timeInMilliseconds = time * 60 * 1000;
+
+      const targetTime = currentTime - timeInMilliseconds;
+
+      const targetDate = new Date(targetTime);
+
+      const records = await PlaylistV2.find({
         tableNo,
+        requestToPerform: true, // Filter where requestToPerform is true
+        requestTime: { $gte: targetDate }, // Filter records from 1 minute ago to now
         isDeleted: false,
-      });
+      }).exec();
 
-      if (checkRequestToPerform < value && differenceInMinutes < time) {
+      if (records?.length < value) {
         const response = await canAddSong();
         return res.status(200).json(response);
       } else {
