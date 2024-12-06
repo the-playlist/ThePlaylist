@@ -1,7 +1,7 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo, RequestToPerfromIcon } from "@/app/svgs";
-import { FaVideo } from "react-icons/fa";
+import { FaQuestion, FaVideo } from "react-icons/fa";
 import { IoAdd } from "react-icons/io5";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { useOnlineStatus } from "@/app/_utils/helper";
@@ -20,6 +20,7 @@ import AddSongIcon from "@/app/svgs/addSong";
 import LiveVideoIcon from "@/app/svgs/liveVideo";
 
 const TableView = () => {
+  const popUpRef = useRef(null);
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -31,6 +32,7 @@ const TableView = () => {
       fetchPlaylistSongList(null);
     }
   }, [isOnline]);
+
   let screenName = "Table View";
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -49,6 +51,7 @@ const TableView = () => {
   const [votingLoader, setVotingLoader] = useState(false);
   const [currentActiveStreams, setCurrentActiveStreams] = useState(0);
   const [streamLimit, setStreamLimit] = useState(0);
+  const [showModal, setShowModal] = useState(false);
   const [disableVoteBtn, setDisableVoteBtn] = useState({
     id: null,
     isTrue: null,
@@ -61,6 +64,14 @@ const TableView = () => {
     playingState: false,
     id: null,
   });
+
+  useEffect(() => {
+    if (showModal) {
+      popUpRef?.current?.showModal();
+    } else {
+      popUpRef?.current?.close();
+    }
+  }, [showModal]);
 
   function generateDeviceId() {
     const combinedId =
@@ -260,7 +271,7 @@ const TableView = () => {
         icon: (themeMode) => (
           <RequestToPerfromIcon color={themeMode ? "#1F1F1F" : "#ffff"} />
         ),
-        onPress: () => navigateToAddSong(true),
+        onPress: () => setShowModal(true),
       },
       {
         id: 2,
@@ -296,34 +307,6 @@ const TableView = () => {
           })}
         </div>
       </div>
-      // <div
-      //   className={`fixed bottom-0 left-0 w-full ${
-      //     themeMode ? "bg-white" : "bg-[#1F1F1F]"
-      //   } flex justify-end p-4`}
-      // >
-      //   <button
-      //     onClick={() => {
-      //       router.push("/add-song");
-      //     }}
-      //     className=" text-base w-full items-center bg-top-queue-bg  disabled:bg-gray-300 disabled:text-gray-200  text-black font-bold py-3 px-4 rounded-md justify-center"
-      //   >
-      //     <div className="flex items-center justify-center">
-      //       <div className={`rounded-full bg-[#1F1F1F] mr-2 p-1`}>
-      //         <IoAdd size={16} color="white" />
-      //       </div>
-      //       Add a Song
-      //     </div>
-      //   </button>
-      //   <button
-      //     disabled={currentActiveStreams == streamLimit}
-      //     onClick={() => {
-      //       creatStreamUserHandler();
-      //     }}
-      //     className={`ml-4 w-full text-base flex items-center  bg-[#1F1F1F] disabled:bg-gray-300  border border-white   font-bold py-3 px-4 rounded-md justify-center text-white`}
-      //   >
-      //     <FaVideo size={16} className="mr-2" /> Live Video
-      //   </button>
-      // </div>
     );
   };
   function generateRandomStreamId(length = 12) {
@@ -479,6 +462,58 @@ const TableView = () => {
         </div>
       ) : (
         <>
+          <dialog ref={popUpRef} className="modal ">
+            <div
+              className={`modal-box   pt-10  rounded-md ${!themeMode ? "bg-black" : "bg-white"}`}
+            >
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                }}
+                className={`btn btn-sm btn-circle btn-ghost absolute right-2 top-2 ${themeMode ? "text-black" : "text-white"} `}
+              >
+                ✕
+              </button>
+              <div className="flex gap-3 items-center mt-2 mb-5">
+                <div
+                  className={` h-20 w-20 rounded-md ${themeMode ? "bg-gray-100" : "bg-light-tile"} flex items-center justify-center`}
+                >
+                  <FaQuestion size={20} color="#EFC440" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-top-queue-bg">
+                    Are you sure?
+                  </h3>
+                  <p className=" text-gray-400 text-sm">
+                    {`This feature requires you as the customer to get up on our stage and perform to the song you select`}
+                  </p>
+                </div>
+              </div>
+              <div className="">
+                <div className="w-full flex gap-2">
+                  <button
+                    className={`btn flex-1    border ${themeMode ? "border-black bg-white text-black" : "text-white bg-light-tile border-darkThemeBorder"} `}
+                    onClick={() => {
+                      setShowModal(false);
+                    }}
+                  >
+                    No, cancel
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowModal(false);
+                      navigateToAddSong(true);
+                    }}
+                    className="btn flex-1 bg-primary text-black border-none "
+                  >
+                    {"Yes, confirm"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </dialog>
+
           <div className=" px-5">
             <div className=" flex items-center justify-center m-5">
               <Logo />
