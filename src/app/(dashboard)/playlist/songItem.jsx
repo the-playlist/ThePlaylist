@@ -551,7 +551,11 @@ export function PlaylistSongItemV2({
         <EllipsisText color={"text-black"} text={title} length={15} />
       </div>
       <div className="w-1/12" />
-      <div className="w-3/12 ">{`Table ${tableNo}`}</div>
+      <div className="w-3/12 flex items-center justify-center ">
+        <div className="px-2 py-1 bg-black rounded-full text-white">
+          {`Table ${tableNo}`}
+        </div>
+      </div>
       <div className="w-2/12 flex items-center justify-center">
         <div
           className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
@@ -564,6 +568,20 @@ export function PlaylistSongItemV2({
           className={`${masterViewTheme ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-5 py-2`}
         >
           {category}
+        </div>
+      </div>
+      <div className="w-1/12">
+        <div className="flex items-center justify-end ">
+          {isFav && <FaHeart className={"text-primary"} size={20} />}
+
+          <button
+            onClick={() => {
+              deleteSongFromPlaylistHandler(item?._id, true, false);
+            }}
+            className=" hover:cursor-pointer ml-5"
+          >
+            <FaTrashAlt className="text-red-500" size={20} />
+          </button>
         </div>
       </div>
     </div>

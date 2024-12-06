@@ -199,7 +199,7 @@ const PerformerView = () => {
 
                   return item?.requestToPerform ? (
                     <div
-                      className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg`}
+                      className={`  bg-gray-tile flex items-center justify-between flex-row gap-2 p-3 md:p-11 font-semibold rounded-lg`}
                       key={index}
                     >
                       <div className=" w-1/2  text-left capitalize ">

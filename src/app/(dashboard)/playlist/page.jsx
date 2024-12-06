@@ -685,12 +685,13 @@ const page = () => {
               isFav,
               songDuration,
               tableNo,
+              requestToPerform,
             } = item || {};
 
             return (
               <div
                 key={index}
-                className="text-center bg-top-queue-bg shadow rounded-2xl h-20 flex items-center px-5 mb-3"
+                className={`text-center ${requestToPerform ? "bg-gray-tile" : "bg-top-queue-bg"} shadow rounded-2xl h-20 flex items-center px-5 mb-3`}
               >
                 <div className="w-1/12 text-start font-extrabold text-lg">
                   <div className="flex items-center justify-center cursor-pointer">
@@ -702,9 +703,16 @@ const page = () => {
                 </div>
                 <div className="w-1/12"></div>
                 <div className="w-3/12">
-                  {playerName != "undefined undefined"
-                    ? playerName
-                    : `Table ${tableNo}`}
+                  {playerName != "undefined undefined" ? (
+                    playerName
+                  ) : (
+                    <div className="  flex items-center justify-center">
+                      <div className="px-2 py-1 bg-black rounded-full text-white">
+                        Table {tableNo}
+                      </div>
+                    </div>
+                  )}
+
                   {}
                 </div>
 

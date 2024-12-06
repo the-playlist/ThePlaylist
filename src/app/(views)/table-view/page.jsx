@@ -532,7 +532,7 @@ const TableView = () => {
                 const isLocked = index < 2;
                 return item?.requestToPerform && item?.tableNo == tableno ? (
                   <div
-                    className={` ${isLocked ? "bg-top-queue-bg" : " bg-gray-tile"} flex text-black rounded-md flex-wrap my-2`}
+                    className={`  bg-gray-tile flex text-black rounded-md flex-wrap my-2`}
                     key={index}
                   >
                     <div className="w-1/2  text-start flex items-center ">

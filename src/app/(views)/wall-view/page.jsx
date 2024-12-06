@@ -224,7 +224,34 @@ const WallView = () => {
                   {songList.map((item, index) => {
                     const isLocked = index < 2;
 
-                    return (
+                    return item?.requestToPerform ? (
+                      <div
+                        key={item?._id}
+                        className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium bg-gray-tile`}
+                      >
+                        <EllipsisText
+                          text={item?.title}
+                          length={20}
+                          className={`text-[35px]  capitalize  leading-[85px] `}
+                        />
+
+                        {!item?.requestToPerform ? (
+                          <EllipsisText
+                            text={item?.artist}
+                            length={15}
+                            className={`text-[23px]  capitalize  flex-1 leading-[85px] text-right  `}
+                          />
+                        ) : (
+                          <div
+                            className={`w-1/2 flex justify-end  capitalize text-[23px]`}
+                          >
+                            <div
+                              className={` ${themeMode ? "bg-[#F7F7F7]  text-black" : "bg-black text-white"} font-semibold  rounded-3xl px-3 py-1 `}
+                            >{`Table ${item?.tableNo}`}</div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
                       <div
                         key={item?._id}
                         className={`p-2 rounded-lg flex items-center justify-between mb-5 font-medium
