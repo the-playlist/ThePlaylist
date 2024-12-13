@@ -1430,62 +1430,76 @@ const getValidRecords = async (tableNo, time) => {
 // };
 
 export const requestToPerformSong = async (req, res) => {
-  const { songId, requestToPerform, tableNo } = req.body;
-
   try {
     const result = await addToQueue(async () => {
+      const { songId, requestToPerform, tableNo } = req.body;
       const heading = "Perform Request Limit";
       const { value, time } = await Limit.findOne({ heading }).lean();
 
-      const currentTime = Date.now();
-      const timeInMilliseconds = time * 60 * 1000;
-      const targetDate = new Date(currentTime - timeInMilliseconds);
-
-      const records = await PlaylistV2.find({
+      const earliestEntry = await PlaylistV2.findOne({
         tableNo,
-        requestToPerform: true,
-        requestTime: { $gte: targetDate },
-        isDeleted: false,
-      }).exec();
-
-      if (records?.length >= value) {
-        throw new Error(
-          "Song cannot be added at this moment, please try again later."
-        );
-      }
-
-      const lastPerformRequestItem = await PlaylistV2.findOne({
-        requestToPerform: true,
         isDeleted: false,
       })
-        .sort({ sortOrder: -1 })
+        .sort({ requestTime: 1 })
         .lean();
 
-      const finalSortOrder = await calculateFinalSortOrder(
-        lastPerformRequestItem
-      );
+      const canAddSong = async () => {
+        const lastPerformRequestItem = await PlaylistV2.findOne({
+          requestToPerform: true,
+          isDeleted: false,
+        })
+          .sort({ sortOrder: -1 })
+          .lean();
 
-      // Add song to the playlist
-      await createPlaylistEntry(
-        songId,
-        tableNo,
-        requestToPerform,
-        finalSortOrder
-      );
+        const finalSortOrder = await calculateFinalSortOrder(
+          lastPerformRequestItem
+        );
+        await createPlaylistEntry(
+          songId,
+          tableNo,
+          requestToPerform,
+          finalSortOrder
+        );
 
-      return {
-        message: "Song added and playlist updated successfully",
+        return new ResponseModel(
+          true,
+          "Song added and playlist updated successfully",
+          { lastPerformRequestItem }
+        );
       };
+
+      if (earliestEntry) {
+        const currentTime = Date.now();
+        const timeInMilliseconds = time * 60 * 1000;
+        const targetTime = currentTime - timeInMilliseconds;
+        const targetDate = new Date(targetTime);
+
+        const records = await PlaylistV2.find({
+          tableNo,
+          requestToPerform: true,
+          requestTime: { $gte: targetDate },
+          isDeleted: false,
+        }).exec();
+
+        if (records?.length < value) {
+          return await canAddSong();
+        } else {
+          throw new Error(
+            "Song cannot be added at this moment, please try again later."
+          );
+        }
+      } else {
+        return await canAddSong();
+      }
     });
 
-    return res.status(200).json({
-      success: true,
-      message: result.message,
-    });
+    return res.status(200).json(result);
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: error.message,
-    });
+    console.error("Error in requestToPerformSong:", error);
+    return res.status(500).json(
+      new ResponseModel(false, error.message, {
+        error: error.message,
+      })
+    );
   }
 };
