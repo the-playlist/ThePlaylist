@@ -280,7 +280,9 @@ const Typeahead = () => {
     <>
       <div className="fixed top-0 left-0  bg-[#1F1F1F] right-0   p-4">
         <div className="mb-2 text-base font-medium text-white">
-          {request_to_perform ? "Select a Song to Perform" : "Select a Song"}
+          {request_to_perform == "true"
+            ? "Select a Song to Perform"
+            : "Select a Song"}
         </div>
         <div className="relative flex  bg-[#303134]  w-full rounded-lg">
           <input
