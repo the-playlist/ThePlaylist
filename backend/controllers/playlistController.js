@@ -18,10 +18,9 @@ import {
   playlistAlgorithm,
   playlistAlgorithmV2,
 } from "../algorithm/playlistAlgo";
-import { flattenPlaylist } from "./helper";
+import { flattenPlaylist, addToQueue } from "./helper";
 import AlgorithmStatus from "../models/algorithStatus";
 import PlaylistV2 from "../models/playlistV2";
-import { MdContactSupport } from "react-icons/md";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 export const algoStatusId = "6728794712916c8fc48542c3";
@@ -1347,83 +1346,158 @@ const getValidRecords = async (tableNo, time) => {
   }
 };
 
+// export const requestToPerformSong = async (req, res) => {
+//   try {
+//     const { songId, requestToPerform, tableNo } = req.body;
+//     const heading = "Perform Request Limit";
+//     const { value, time } = await Limit.findOne({ heading }).lean();
+
+//     // Get the earliest entry
+//     const earliestEntry = await PlaylistV2.findOne({
+//       tableNo,
+//       isDeleted: false,
+//     })
+//       .sort({ requestTime: 1 })
+//       .lean();
+
+//     const canAddSong = async () => {
+//       const lastPerformRequestItem = await PlaylistV2.findOne({
+//         requestToPerform: true,
+//         isDeleted: false,
+//       })
+//         .sort({ sortOrder: -1 })
+//         .lean();
+
+//       const finalSortOrder = await calculateFinalSortOrder(
+//         lastPerformRequestItem
+//       );
+//       await createPlaylistEntry(
+//         songId,
+//         tableNo,
+//         requestToPerform,
+//         finalSortOrder
+//       );
+
+//       return new ResponseModel(
+//         true,
+//         "Song added and playlist updated successfully",
+//         { lastPerformRequestItem }
+//       );
+//     };
+
+//     if (earliestEntry) {
+//       const currentTime = Date.now();
+
+//       const timeInMilliseconds = time * 60 * 1000;
+
+//       const targetTime = currentTime - timeInMilliseconds;
+
+//       const targetDate = new Date(targetTime);
+
+//       const records = await PlaylistV2.find({
+//         tableNo,
+//         requestToPerform: true, // Filter where requestToPerform is true
+//         requestTime: { $gte: targetDate }, // Filter records from 1 minute ago to now
+//         isDeleted: false,
+//       }).exec();
+
+//       if (records?.length < value) {
+//         const response = await canAddSong();
+//         return res.status(200).json(response);
+//       } else {
+//         return res
+//           .status(403)
+//           .json(
+//             new ResponseModel(
+//               false,
+//               "Song cannot be added at this moment, please try again later.",
+//               null
+//             )
+//           );
+//       }
+//     } else {
+//       const response = await canAddSong();
+//       return res.status(200).json(response);
+//     }
+//   } catch (error) {
+//     console.error("Error in requestToPerformSong:", error);
+//     return res.status(500).json(
+//       new ResponseModel(false, "Internal Server Error", {
+//         error: error.message,
+//       })
+//     );
+//   }
+// };
+
 export const requestToPerformSong = async (req, res) => {
   try {
-    const { songId, requestToPerform, tableNo } = req.body;
-    const heading = "Perform Request Limit";
-    const { value, time } = await Limit.findOne({ heading }).lean();
+    const result = await addToQueue(async () => {
+      const { songId, requestToPerform, tableNo } = req.body;
+      const heading = "Perform Request Limit";
+      const { value, time } = await Limit.findOne({ heading }).lean();
 
-    // Get the earliest entry
-    const earliestEntry = await PlaylistV2.findOne({
-      tableNo,
-      isDeleted: false,
-    })
-      .sort({ requestTime: 1 })
-      .lean();
-
-    const canAddSong = async () => {
-      const lastPerformRequestItem = await PlaylistV2.findOne({
-        requestToPerform: true,
+      const earliestEntry = await PlaylistV2.findOne({
+        tableNo,
         isDeleted: false,
       })
-        .sort({ sortOrder: -1 })
+        .sort({ requestTime: 1 })
         .lean();
 
-      const finalSortOrder = await calculateFinalSortOrder(
-        lastPerformRequestItem
-      );
-      await createPlaylistEntry(
-        songId,
-        tableNo,
-        requestToPerform,
-        finalSortOrder
-      );
+      const canAddSong = async () => {
+        const lastPerformRequestItem = await PlaylistV2.findOne({
+          requestToPerform: true,
+          isDeleted: false,
+        })
+          .sort({ sortOrder: -1 })
+          .lean();
 
-      return new ResponseModel(
-        true,
-        "Song added and playlist updated successfully",
-        { lastPerformRequestItem }
-      );
-    };
+        const finalSortOrder = await calculateFinalSortOrder(
+          lastPerformRequestItem
+        );
+        await createPlaylistEntry(
+          songId,
+          tableNo,
+          requestToPerform,
+          finalSortOrder
+        );
 
-    if (earliestEntry) {
-      const currentTime = Date.now();
+        return new ResponseModel(
+          true,
+          "Song added and playlist updated successfully",
+          { lastPerformRequestItem }
+        );
+      };
 
-      const timeInMilliseconds = time * 60 * 1000;
+      if (earliestEntry) {
+        const currentTime = Date.now();
+        const timeInMilliseconds = time * 60 * 1000;
+        const targetTime = currentTime - timeInMilliseconds;
+        const targetDate = new Date(targetTime);
 
-      const targetTime = currentTime - timeInMilliseconds;
+        const records = await PlaylistV2.find({
+          tableNo,
+          requestToPerform: true,
+          requestTime: { $gte: targetDate },
+          isDeleted: false,
+        }).exec();
 
-      const targetDate = new Date(targetTime);
-
-      const records = await PlaylistV2.find({
-        tableNo,
-        requestToPerform: true, // Filter where requestToPerform is true
-        requestTime: { $gte: targetDate }, // Filter records from 1 minute ago to now
-        isDeleted: false,
-      }).exec();
-
-      if (records?.length < value) {
-        const response = await canAddSong();
-        return res.status(200).json(response);
-      } else {
-        return res
-          .status(403)
-          .json(
-            new ResponseModel(
-              false,
-              "Song cannot be added at this moment, please try again later.",
-              null
-            )
+        if (records?.length < value) {
+          return await canAddSong();
+        } else {
+          throw new Error(
+            "Song cannot be added at this moment, please try again later."
           );
+        }
+      } else {
+        return await canAddSong();
       }
-    } else {
-      const response = await canAddSong();
-      return res.status(200).json(response);
-    }
+    });
+
+    return res.status(200).json(result);
   } catch (error) {
     console.error("Error in requestToPerformSong:", error);
     return res.status(500).json(
-      new ResponseModel(false, "Internal Server Error", {
+      new ResponseModel(false, error.message, {
         error: error.message,
       })
     );
