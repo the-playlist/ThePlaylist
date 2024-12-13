@@ -36,6 +36,7 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 import DraggableList from "react-draggable-list";
 import { PlaylistSongItemV2 } from "./songItem";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
+import debounce from "lodash.debounce";
 
 const page = () => {
   const containerRef = useRef();
@@ -114,10 +115,13 @@ const page = () => {
     socket.on("voteCastingResponse-v2", (item) => {
       setVotingList(item || {});
     });
-    socket.on("songAddByCustomerRes-v2", (item) => {
-      const { playlistCount } = item;
-      fetchPlaylistSongList(null);
-    });
+    socket.on(
+      "songAddByCustomerRes-v2",
+      debounce((item) => {
+        const { playlistCount } = item;
+        fetchPlaylistSongList(null);
+      }, 500)
+    );
 
     socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
       fetchPlaylistSongList(null);
