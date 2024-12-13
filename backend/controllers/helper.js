@@ -34,3 +34,30 @@ export const flattenPlaylist = (playlist) =>
       tableNo: item?.tableNo,
     };
   });
+
+const queue = [];
+let isProcessing = false;
+
+const processQueue = async () => {
+  if (isProcessing || queue.length === 0) return;
+
+  isProcessing = true;
+
+  const { resolve, reject, task } = queue.shift(); // Dequeue
+  try {
+    const result = await task();
+    resolve(result); // Resolve the task promise
+  } catch (error) {
+    reject(error); // Reject the task promise
+  } finally {
+    isProcessing = false;
+    processQueue(); // Process the next item in the queue
+  }
+};
+
+export const addToQueue = (task) => {
+  return new Promise((resolve, reject) => {
+    queue.push({ task, resolve, reject });
+    processQueue(); // Start processing
+  });
+};
