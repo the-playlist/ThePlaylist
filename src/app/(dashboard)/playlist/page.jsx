@@ -144,7 +144,7 @@ const page = () => {
     if (response && !response.isError) {
       const { mostRepeatedPlayer, leastRepeatedPlayers } =
         getPlayerRepetitionStats(completeList);
-
+      console.log("==>", mostRepeatedPlayer, leastRepeatedPlayers);
       const count = 30 - completeList?.length;
 
       const songList = response.data?.content;
@@ -230,14 +230,15 @@ const page = () => {
 
       // Priority logic
       if (hasLeastRepeatedPlayer && !hasLastPlayername) {
-        // Least repeated player is prioritized if `lastPlayername` is not present
+        // Prioritize songs with leastRepeatedPlayers if lastPlayername is not present
         prioritized.push(song);
       } else if (
         hasMostRepeatedPlayer ||
         hasLastPlayername ||
-        hasLeastRepeatedPlayer
+        (hasLeastRepeatedPlayer && hasLastPlayername)
       ) {
-        // If `lastPlayername` or `mostRepeatedPlayer` or `leastRepeatedPlayer` (with lastPlayername) is present, deprioritize
+        // De-prioritize songs with mostRepeatedPlayer, lastPlayername, or
+        // leastRepeatedPlayer if lastPlayername is also present
         nonPrioritized.push(song);
       } else {
         // Default: prioritize
@@ -245,12 +246,38 @@ const page = () => {
       }
     });
 
-    // Shuffle each group
+    // Adjust prioritized songs to ensure leastRepeatedPlayer is at index 0 for assignedPlayers
+    const adjustedPrioritized = prioritized.map((song) => {
+      // Create a deep copy of the song object
+      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+
+      if (
+        songCopy.assignedPlayers?.length > 1 &&
+        songCopy.assignedPlayers.some((player) =>
+          leastRepeatedPlayers.includes(player.playerName)
+        )
+      ) {
+        // Move the least repeated player to the 0 index
+        const playersWithLeast = songCopy.assignedPlayers.filter((player) =>
+          leastRepeatedPlayers.includes(player.playerName)
+        );
+        const remainingPlayers = songCopy.assignedPlayers.filter(
+          (player) => !leastRepeatedPlayers.includes(player.playerName)
+        );
+        songCopy.assignedPlayers = [...playersWithLeast, ...remainingPlayers];
+      }
+
+      return songCopy;
+    });
+
+    console.log("Prioritized Songs After Adjustment:", adjustedPrioritized);
+
+    // Shuffle both groups
     const shuffle = (array) => array.sort(() => 0.5 - Math.random());
-    const shuffledPrioritized = shuffle(prioritized);
+    const shuffledPrioritized = shuffle(adjustedPrioritized);
     const shuffledNonPrioritized = shuffle(nonPrioritized);
 
-    // Modify non-prioritized songs as per requirements
+    // Modify non-prioritized songs to ensure better player distribution
     const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
       const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
 
@@ -270,11 +297,13 @@ const page = () => {
       return songCopy;
     });
 
-    // Combine the groups, prioritizing songs with leastRepeatedPlayers (without lastPlayername)
+    // Combine prioritized and modified non-prioritized songs
     const finalSongs = [
       ...shuffledPrioritized,
       ...modifiedNonPrioritized,
     ].slice(0, numSongs);
+
+    console.log("Final Songs:", finalSongs);
 
     // Format the result
     return finalSongs.map((song) => ({
