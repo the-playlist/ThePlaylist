@@ -142,7 +142,8 @@ const page = () => {
   const fetchSongsList = async (completeList) => {
     let response = await songsListApi();
     if (response && !response.isError) {
-      const mostRepeatedPlayer = getMostRepeatedPlayer(completeList);
+      const { mostRepeatedPlayer, leastRepeatedPlayers } =
+        getPlayerRepetitionStats(completeList);
 
       const count = 30 - completeList?.length;
 
@@ -153,7 +154,8 @@ const page = () => {
           songList,
           count,
           completeList[completeList?.length - 1]?.playerName,
-          mostRepeatedPlayer
+          mostRepeatedPlayer,
+          leastRepeatedPlayers
         );
         if (getData?.length > 0) {
           addMultiSongsHandler(getData);
@@ -168,36 +170,44 @@ const page = () => {
       // }
     }
   };
-  function getMostRepeatedPlayer(data) {
+  function getPlayerRepetitionStats(data) {
     // Step 1: Count occurrences of each player
-    const playerCount = {};
-    data.forEach((item) => {
-      const playerName = item.playerName;
-      playerCount[playerName] = (playerCount[playerName] || 0) + 1;
-    });
+    const playerCount = data.reduce((acc, item) => {
+      acc[item.playerName] = (acc[item.playerName] || 0) + 1;
+      return acc;
+    }, {});
 
-    // Step 2: Find the player with the maximum count
+    // Step 2: Determine most repeated and least repeated players
     let mostRepeatedPlayer = "";
+    let leastRepeatedPlayers = [];
     let maxCount = 0;
+    let minCount = Infinity;
 
     for (const [playerName, count] of Object.entries(playerCount)) {
       if (count > maxCount) {
         mostRepeatedPlayer = playerName;
         maxCount = count;
       }
-    }
-    if (mostRepeatedPlayer.length === 1) {
-      return mostRepeatedPlayer[0];
+      if (count < minCount) {
+        leastRepeatedPlayers = [playerName];
+        minCount = count;
+      } else if (count === minCount) {
+        leastRepeatedPlayers.push(playerName);
+      }
     }
 
-    return mostRepeatedPlayer;
+    return {
+      mostRepeatedPlayer,
+      leastRepeatedPlayers,
+    };
   }
 
   function getRandomSongIds(
     songsArray,
     count,
     lastPlayername,
-    mostRepeatedPlayer
+    mostRepeatedPlayer,
+    leastRepeatedPlayers
   ) {
     const numSongs = Math.min(count, songsArray.length);
 
@@ -206,19 +216,31 @@ const page = () => {
     const nonPrioritized = [];
 
     songsArray.forEach((song) => {
-      // Check if the song contains the mostRepeatedPlayer
       const hasMostRepeatedPlayer = song.assignedPlayers?.some(
         (player) => player.playerName === mostRepeatedPlayer
       );
 
-      // Check if lastPlayername is in assignedPlayers
       const hasLastPlayername = song.assignedPlayers?.some(
         (player) => player.playerName === lastPlayername
       );
 
-      if (hasMostRepeatedPlayer || hasLastPlayername) {
-        nonPrioritized.push(song); // Move to non-prioritized
+      const hasLeastRepeatedPlayer = song.assignedPlayers?.some((player) =>
+        leastRepeatedPlayers.includes(player.playerName)
+      );
+
+      // Priority logic
+      if (hasLeastRepeatedPlayer && !hasLastPlayername) {
+        // Least repeated player is prioritized if `lastPlayername` is not present
+        prioritized.push(song);
+      } else if (
+        hasMostRepeatedPlayer ||
+        hasLastPlayername ||
+        hasLeastRepeatedPlayer
+      ) {
+        // If `lastPlayername` or `mostRepeatedPlayer` or `leastRepeatedPlayer` (with lastPlayername) is present, deprioritize
+        nonPrioritized.push(song);
       } else {
+        // Default: prioritize
         prioritized.push(song);
       }
     });
@@ -230,18 +252,15 @@ const page = () => {
 
     // Modify non-prioritized songs as per requirements
     const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
-      // Create a shallow copy of the song object to avoid direct mutation
       const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
 
       if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
-        // Filter out the player with lastPlayername
         const players = songCopy.assignedPlayers.filter(
           (player) => player.playerName !== lastPlayername
         );
 
-        // If there are any remaining players, move the first one to the start
         if (players.length > 0) {
-          const newFirstPlayer = players[0]; // Pick the first eligible player
+          const newFirstPlayer = players[0];
           const remainingPlayers = songCopy.assignedPlayers.filter(
             (player) => player !== newFirstPlayer
           );
@@ -251,7 +270,7 @@ const page = () => {
       return songCopy;
     });
 
-    // Combine the groups, prioritizing songs where lastPlayername and mostRepeatedPlayer are not in assignedPlayers
+    // Combine the groups, prioritizing songs with leastRepeatedPlayers (without lastPlayername)
     const finalSongs = [
       ...shuffledPrioritized,
       ...modifiedNonPrioritized,
