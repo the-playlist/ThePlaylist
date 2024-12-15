@@ -331,68 +331,68 @@ const page = () => {
     }
   }, [fixedContent]);
 
-  // const fetchPlaylistSongList = async (firstFetch) => {
-  //   try {
-  //     let response = await getPlaylistSongListApi();
-  //     const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //       autoConnect: false,
-  //     });
-  //     newConnection.connect();
-  //     if (response && !response?.isError) {
-  //       const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-  //         response?.data?.content;
+  const fetchPlaylistSongList = async (firstFetch) => {
+    try {
+      let response = await getPlaylistSongListApi();
+      const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      newConnection.connect();
+      if (response && !response?.isError) {
+        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
+          response?.data?.content;
 
-  //       const playlistWithId = isNotFixed?.map((item, index) => ({
-  //         ...item,
-  //         id: index, // Add a unique id if it doesn't exist
-  //       }));
-  //       setCompleteList(completeList);
+        const playlistWithId = isNotFixed?.map((item, index) => ({
+          ...item,
+          id: index, // Add a unique id if it doesn't exist
+        }));
+        setCompleteList(completeList);
 
-  //       if (completeList?.length != 0 && completeList?.length < 30) {
-  //         fetchSongsList(completeList);
-  //       }
-  //       if (completeList?.length > 0) {
-  //         setIsFavExist(completeList?.filter((item) => item?.isFav));
-  //       }
+        if (completeList?.length != 0 && completeList?.length < 30) {
+          fetchSongsList(completeList);
+        }
+        if (completeList?.length > 0) {
+          setIsFavExist(completeList?.filter((item) => item?.isFav));
+        }
 
-  //       if (
-  //         isFixedItems?.length > 0 &&
-  //         currentSong?.title == "" &&
-  //         currentSongSecond == 0
-  //       ) {
-  //         const { playerName, title, _id } = isFixedItems[0];
+        // if (
+        //   isFixedItems?.length > 0 &&
+        //   currentSong?.title == "" &&
+        //   currentSongSecond == 0
+        // ) {
+        //   const { playerName, title, _id } = isFixedItems[0];
 
-  //         dispatch(
-  //           setCurrentSong({
-  //             title: title,
-  //             player: playerName,
-  //             id: _id,
-  //             duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-  //           })
-  //         );
-  //         dispatch(
-  //           setCurrentSongSecond(
-  //             convertTimeToSeconds(isFixedItems[0].songDuration)
-  //           )
-  //         );
-  //       }
-  //       setFixedContent([...isFixedItems] || []);
-  //       setNonFixedContent([...playlistWithId] || []);
-  //       setIsFavSongs(isFavortiteListType);
-  //       dispatch(setPlaylistLength(isFixedItems?.length));
+        //   dispatch(
+        //     setCurrentSong({
+        //       title: title,
+        //       player: playerName,
+        //       id: _id,
+        //       duration: convertTimeToSeconds(isFixedItems[0].songDuration),
+        //     })
+        //   );
+        //   dispatch(
+        //     setCurrentSongSecond(
+        //       convertTimeToSeconds(isFixedItems[0].songDuration)
+        //     )
+        //   );
+        // }
+        setFixedContent([...isFixedItems] || []);
+        setNonFixedContent([...playlistWithId] || []);
+        setIsFavSongs(isFavortiteListType);
+        dispatch(setPlaylistLength(isFixedItems?.length));
 
-  //       newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-  //         playlist: completeList,
-  //         isInsert: false,
-  //       });
-  //     }
-  //     setIsAdvanceButtonDisable(false);
+        newConnection.emit("insertSongIntoPlaylistRequest-v2", {
+          playlist: completeList,
+          isInsert: false,
+        });
+      }
+      setIsAdvanceButtonDisable(false);
 
-  //     setIsLoading(false);
-  //   } catch (error) {
-  //     console.error("Fetch failed:", error);
-  //   }
-  // };
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    }
+  };
 
   useEffect(() => {
     if (
@@ -416,58 +416,58 @@ const page = () => {
     }
   }, [fixedContent]);
 
-  let fetchQueue = Promise.resolve();
+  // let fetchQueue = Promise.resolve();
 
-  const fetchPlaylistSongList = async (firstFetch) => {
-    fetchQueue = fetchQueue.then(async () => {
-      try {
-        let response = await getPlaylistSongListApi();
-        const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-          autoConnect: false,
-        });
-        newConnection.connect();
-        if (response && !response?.isError) {
-          const {
-            isFavortiteListType,
-            isFixedItems,
-            isNotFixed,
-            completeList,
-          } = response?.data?.content;
+  // const fetchPlaylistSongList = async (firstFetch) => {
+  //   fetchQueue = fetchQueue.then(async () => {
+  //     try {
+  //       let response = await getPlaylistSongListApi();
+  //       const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+  //         autoConnect: false,
+  //       });
+  //       newConnection.connect();
+  //       if (response && !response?.isError) {
+  //         const {
+  //           isFavortiteListType,
+  //           isFixedItems,
+  //           isNotFixed,
+  //           completeList,
+  //         } = response?.data?.content;
 
-          const playlistWithId = isNotFixed?.map((item, index) => ({
-            ...item,
-            id: index,
-          }));
+  //         const playlistWithId = isNotFixed?.map((item, index) => ({
+  //           ...item,
+  //           id: index,
+  //         }));
 
-          setCompleteList(completeList);
+  //         setCompleteList(completeList);
 
-          if (completeList?.length != 0 && completeList?.length < 30) {
-            fetchSongsList(completeList);
-          }
-          if (completeList?.length > 0) {
-            setIsFavExist(completeList?.filter((item) => item?.isFav));
-          }
+  //         if (completeList?.length != 0 && completeList?.length < 30) {
+  //           fetchSongsList(completeList);
+  //         }
+  //         if (completeList?.length > 0) {
+  //           setIsFavExist(completeList?.filter((item) => item?.isFav));
+  //         }
 
-          setFixedContent([...isFixedItems] || []);
-          setNonFixedContent([...playlistWithId] || []);
-          setIsFavSongs(isFavortiteListType);
-          dispatch(setPlaylistLength(isFixedItems?.length));
+  //         setFixedContent([...isFixedItems] || []);
+  //         setNonFixedContent([...playlistWithId] || []);
+  //         setIsFavSongs(isFavortiteListType);
+  //         dispatch(setPlaylistLength(isFixedItems?.length));
 
-          newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-            playlist: completeList,
-            isInsert: false,
-          });
-        }
-        setIsAdvanceButtonDisable(false);
+  //         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
+  //           playlist: completeList,
+  //           isInsert: false,
+  //         });
+  //       }
+  //       setIsAdvanceButtonDisable(false);
 
-        setIsLoading(false);
-      } catch (error) {
-        setIsLoading(false);
+  //       setIsLoading(false);
+  //     } catch (error) {
+  //       setIsLoading(false);
 
-        console.error("Fetch failed:", error);
-      }
-    });
-  };
+  //       console.error("Fetch failed:", error);
+  //     }
+  //   });
+  // };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
     setIsAdvanceButtonDisable(true);
