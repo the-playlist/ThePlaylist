@@ -265,8 +265,8 @@ const SelectSongModal = ({
         closeModal();
         toast.success(response?.data?.description);
         onReload();
-        setTimeout(() => {
-          fetchList(isFirstTimeFetched);
+        setTimeout(async () => {
+          await fetchList(isFirstTimeFetched);
         }, 1000);
 
         setBtnLoader(false);

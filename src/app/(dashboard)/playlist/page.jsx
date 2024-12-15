@@ -331,27 +331,27 @@ const page = () => {
     }
   }, [fixedContent]);
 
-  useEffect(() => {
-    if (
-      fixedContent?.length > 0 &&
-      (!currentSong?.title ||
-        currentSong?.title === "" ||
-        currentSongSecond === 0)
-    ) {
-      const { playerName, title, _id } = fixedContent[0];
-      dispatch(
-        setCurrentSong({
-          title: title,
-          player: playerName,
-          id: _id,
-          duration: convertTimeToSeconds(fixedContent[0].songDuration),
-        })
-      );
-      dispatch(
-        setCurrentSongSecond(convertTimeToSeconds(fixedContent[0].songDuration))
-      );
-    }
-  }, [fixedContent]);
+  // useEffect(() => {
+  //   if (
+  //     fixedContent?.length > 0 &&
+  //     (!currentSong?.title ||
+  //       currentSong?.title === "" ||
+  //       currentSongSecond === 0)
+  //   ) {
+  //     const { playerName, title, _id } = fixedContent[0];
+  //     dispatch(
+  //       setCurrentSong({
+  //         title: title,
+  //         player: playerName,
+  //         id: _id,
+  //         duration: convertTimeToSeconds(fixedContent[0].songDuration),
+  //       })
+  //     );
+  //     dispatch(
+  //       setCurrentSongSecond(convertTimeToSeconds(fixedContent[0].songDuration))
+  //     );
+  //   }
+  // }, [fixedContent]);
 
   const fetchPlaylistSongList = async (firstFetch) => {
     try {
@@ -377,27 +377,27 @@ const page = () => {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
         }
 
-        // if (
-        //   isFixedItems?.length > 0 &&
-        //   currentSong?.title == "" &&
-        //   currentSongSecond == 0
-        // ) {
-        //   const { playerName, title, _id } = isFixedItems[0];
+        if (
+          isFixedItems?.length > 0 &&
+          currentSong?.title == "" &&
+          currentSongSecond == 0
+        ) {
+          const { playerName, title, _id } = isFixedItems[0];
 
-        //   dispatch(
-        //     setCurrentSong({
-        //       title: title,
-        //       player: playerName,
-        //       id: _id,
-        //       duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-        //     })
-        //   );
-        //   dispatch(
-        //     setCurrentSongSecond(
-        //       convertTimeToSeconds(isFixedItems[0].songDuration)
-        //     )
-        //   );
-        // }
+          dispatch(
+            setCurrentSong({
+              title: title,
+              player: playerName,
+              id: _id,
+              duration: convertTimeToSeconds(isFixedItems[0].songDuration),
+            })
+          );
+          dispatch(
+            setCurrentSongSecond(
+              convertTimeToSeconds(isFixedItems[0].songDuration)
+            )
+          );
+        }
         setFixedContent([...isFixedItems] || []);
         setNonFixedContent([...playlistWithId] || []);
         setIsFavSongs(isFavortiteListType);
