@@ -393,173 +393,80 @@ const page = () => {
   //     console.error("Fetch failed:", error);
   //   }
   // };
-  // let fetchQueue = Promise.resolve();
+  let fetchQueue = Promise.resolve();
 
-  // const fetchPlaylistSongList = async (firstFetch) => {
-  //   fetchQueue = fetchQueue.then(async () => {
-  //     try {
-  //       let response = await getPlaylistSongListApi();
-  //       const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //         autoConnect: false,
-  //       });
-  //       newConnection.connect();
-  //       if (response && !response?.isError) {
-  //         const {
-  //           isFavortiteListType,
-  //           isFixedItems,
-  //           isNotFixed,
-  //           completeList,
-  //         } = response?.data?.content;
-
-  //         const playlistWithId = isNotFixed?.map((item, index) => ({
-  //           ...item,
-  //           id: index,
-  //         }));
-
-  //         setCompleteList(completeList);
-
-  //         if (completeList?.length != 0 && completeList?.length < 30) {
-  //           fetchSongsList(completeList);
-  //         }
-  //         if (completeList?.length > 0) {
-  //           setIsFavExist(completeList?.filter((item) => item?.isFav));
-  //         }
-
-  //         if (
-  //           isFixedItems?.length > 0 &&
-  //           (!currentSong?.title ||
-  //             currentSong?.title === "" ||
-  //             currentSongSecond === 0)
-  //         ) {
-  //           const { playerName, title, _id } = isFixedItems[0];
-  //           dispatch(
-  //             setCurrentSong({
-  //               title: title,
-  //               player: playerName,
-  //               id: _id,
-  //               duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-  //             })
-  //           );
-  //           dispatch(
-  //             setCurrentSongSecond(
-  //               convertTimeToSeconds(isFixedItems[0].songDuration)
-  //             )
-  //           );
-  //         }
-
-  //         setFixedContent([...isFixedItems] || []);
-  //         setNonFixedContent([...playlistWithId] || []);
-  //         setIsFavSongs(isFavortiteListType);
-  //         dispatch(setPlaylistLength(isFixedItems?.length));
-
-  //         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-  //           playlist: completeList,
-  //           isInsert: false,
-  //         });
-  //       }
-  //       setIsAdvanceButtonDisable(false);
-
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       setIsLoading(false);
-
-  //       console.error("Fetch failed:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   });
-  // };
-
-  let requestQueue = [];
-  let isProcessing = false;
-
-  const processQueue = async () => {
-    if (isProcessing || requestQueue.length === 0) {
-      return;
-    }
-
-    isProcessing = true;
-
-    // Get the next request from the queue
-    const { firstFetch, resolve, reject } = requestQueue.shift();
-
-    try {
-      let response = await getPlaylistSongListApi();
-      const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-        autoConnect: false,
-      });
-      newConnection.connect();
-
-      if (response && !response?.isError) {
-        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-          response?.data?.content;
-
-        const playlistWithId = isNotFixed?.map((item, index) => ({
-          ...item,
-          id: index, // Add a unique id if it doesn't exist
-        }));
-
-        setCompleteList(completeList);
-
-        if (completeList?.length !== 0 && completeList?.length < 30) {
-          fetchSongsList(completeList);
-        }
-
-        if (completeList?.length > 0) {
-          setIsFavExist(completeList?.filter((item) => item?.isFav));
-        }
-
-        if (
-          isFixedItems?.length > 0 &&
-          currentSong?.title === "" &&
-          currentSongSecond === 0
-        ) {
-          const { playerName, title, _id } = isFixedItems[0];
-
-          dispatch(
-            setCurrentSong({
-              title,
-              player: playerName,
-              id: _id,
-              duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-            })
-          );
-          dispatch(
-            setCurrentSongSecond(
-              convertTimeToSeconds(isFixedItems[0].songDuration)
-            )
-          );
-        }
-
-        setFixedContent([...isFixedItems] || []);
-        setNonFixedContent([...playlistWithId] || []);
-        setIsFavSongs(isFavortiteListType);
-        dispatch(setPlaylistLength(isFixedItems?.length));
-
-        newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-          playlist: completeList,
-          isInsert: false,
+  const fetchPlaylistSongList = async (firstFetch) => {
+    fetchQueue = fetchQueue.then(async () => {
+      try {
+        let response = await getPlaylistSongListApi();
+        const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+          autoConnect: false,
         });
+        newConnection.connect();
+        if (response && !response?.isError) {
+          const {
+            isFavortiteListType,
+            isFixedItems,
+            isNotFixed,
+            completeList,
+          } = response?.data?.content;
+
+          const playlistWithId = isNotFixed?.map((item, index) => ({
+            ...item,
+            id: index,
+          }));
+
+          setCompleteList(completeList);
+
+          if (completeList?.length != 0 && completeList?.length < 30) {
+            fetchSongsList(completeList);
+          }
+          if (completeList?.length > 0) {
+            setIsFavExist(completeList?.filter((item) => item?.isFav));
+          }
+
+          if (
+            isFixedItems?.length > 0 &&
+            (!currentSong?.title ||
+              currentSong?.title === "" ||
+              currentSongSecond === 0)
+          ) {
+            const { playerName, title, _id } = isFixedItems[0];
+            dispatch(
+              setCurrentSong({
+                title: title,
+                player: playerName,
+                id: _id,
+                duration: convertTimeToSeconds(isFixedItems[0].songDuration),
+              })
+            );
+            dispatch(
+              setCurrentSongSecond(
+                convertTimeToSeconds(isFixedItems[0].songDuration)
+              )
+            );
+          }
+
+          setFixedContent([...isFixedItems] || []);
+          setNonFixedContent([...playlistWithId] || []);
+          setIsFavSongs(isFavortiteListType);
+          dispatch(setPlaylistLength(isFixedItems?.length));
+
+          newConnection.emit("insertSongIntoPlaylistRequest-v2", {
+            playlist: completeList,
+            isInsert: false,
+          });
+        }
+        setIsAdvanceButtonDisable(false);
+
+        setIsLoading(false);
+      } catch (error) {
+        setIsLoading(false);
+
+        console.error("Fetch failed:", error);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsAdvanceButtonDisable(false);
-      setIsLoading(false);
-
-      resolve(); // Resolve the promise when the request is completed
-    } catch (error) {
-      console.error("Fetch failed:", error);
-      reject(error); // Reject the promise on error
-    } finally {
-      isProcessing = false;
-      processQueue(); // Process the next request in the queue
-    }
-  };
-
-  const fetchPlaylistSongList = (firstFetch) => {
-    return new Promise((resolve, reject) => {
-      // Add the request to the queue
-      requestQueue.push({ firstFetch, resolve, reject });
-      processQueue();
     });
   };
 
