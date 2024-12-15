@@ -98,17 +98,12 @@ const SongCountdownTimer = ({
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration && playingState) {
       dispatch(setPlayingState(false));
-      // setShowCountDown(true);
-      // socket.emit("bufferTimeReq", {
-      //   time: 10,
-      // });
       if (initialSongPlaylist) {
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
-        // setTimeout(() => {
+
         changePlayingState();
-        // }, 10000);
       } else {
         changePlayingState();
       }
@@ -117,6 +112,8 @@ const SongCountdownTimer = ({
   }, [orignalSongDuration]);
 
   const startTimer = async () => {
+    localStorage.setItem("isRequestInProgress", true);
+
     let payload = {
       actionName: "Start Timer",
       pathName: pathName,
@@ -131,30 +128,15 @@ const SongCountdownTimer = ({
     dispatch(setInitialSongPlaylist(false));
     const orignalSeconds = convertTimeToSeconds(orignalSongDuration);
     if (orignalSeconds == duration) {
-      // setShowCountDown(true);
-      // socket.emit("bufferTimeReq", {
-      //   time: 10,
-      // });
       if (initialSongPlaylist) {
         socket.emit("startIntroSecondsRequest", {
           time: 10,
         });
-        // setTimeout(() => {
+
         changePlayingState();
-        // socket.emit("startPlayerViewTimeReq", {
-        //   time: 10,
-        // });
-        // }, 10000);
       } else {
         changePlayingState();
       }
-      // setTimeout(() => {
-      //   socket.emit("startIntroSecondsRequest", {
-      //     time: 10,
-      //   });
-
-      //   dispatch(setPlayingState(true));
-      // }, 10000);
     } else {
       dispatch(setPlayingState(true));
     }
