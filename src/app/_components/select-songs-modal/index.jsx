@@ -48,9 +48,10 @@ const AssignedSongsDropdown = ({ item }) => {
       }}
       className={`select select-bordered w-full max-w-xs focus:outline-none ${masterViewTheme ? "text-black" : "bg-black text-white"}`}
     >
-      {item?.assignedPlayers?.map((item) => {
+      {item?.assignedPlayers?.map((item, index) => {
         return (
           <option
+            key={index}
             value={item?._id}
             className=" text-black"
           >{`${item.playerName}`}</option>

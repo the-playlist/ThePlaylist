@@ -393,6 +393,29 @@ const page = () => {
   //     console.error("Fetch failed:", error);
   //   }
   // };
+
+  useEffect(() => {
+    if (
+      fixedContent?.length > 0 &&
+      (!currentSong?.title ||
+        currentSong?.title === "" ||
+        currentSongSecond === 0)
+    ) {
+      const { playerName, title, _id } = fixedContent[0];
+      dispatch(
+        setCurrentSong({
+          title: title,
+          player: playerName,
+          id: _id,
+          duration: convertTimeToSeconds(fixedContent[0].songDuration),
+        })
+      );
+      dispatch(
+        setCurrentSongSecond(convertTimeToSeconds(fixedContent[0].songDuration))
+      );
+    }
+  }, [fixedContent]);
+
   let fetchQueue = Promise.resolve();
 
   const fetchPlaylistSongList = async (firstFetch) => {
@@ -423,28 +446,6 @@ const page = () => {
           }
           if (completeList?.length > 0) {
             setIsFavExist(completeList?.filter((item) => item?.isFav));
-          }
-
-          if (
-            isFixedItems?.length > 0 &&
-            (!currentSong?.title ||
-              currentSong?.title === "" ||
-              currentSongSecond === 0)
-          ) {
-            const { playerName, title, _id } = isFixedItems[0];
-            dispatch(
-              setCurrentSong({
-                title: title,
-                player: playerName,
-                id: _id,
-                duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-              })
-            );
-            dispatch(
-              setCurrentSongSecond(
-                convertTimeToSeconds(isFixedItems[0].songDuration)
-              )
-            );
           }
 
           setFixedContent([...isFixedItems] || []);
