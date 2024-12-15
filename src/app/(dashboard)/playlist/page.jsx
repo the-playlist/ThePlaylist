@@ -466,7 +466,7 @@ const page = () => {
 
         console.error("Fetch failed:", error);
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     });
   };
