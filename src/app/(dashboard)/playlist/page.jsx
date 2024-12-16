@@ -64,6 +64,8 @@ const page = () => {
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
+  const [counter, setCounter] = useState(0);
+  const [isRequestInProgress, setIsRequestInProgress] = useState(false);
 
   const playingState = useSelector(
     (state) => state?.playlistReducer?.playingState
@@ -90,7 +92,12 @@ const page = () => {
         autoConnect: false,
       });
       socket.connect();
-      fetchPlaylistSongList(null);
+
+      fetchPlaylistSongList(true); // Cleanup socket connection
+
+      return () => {
+        socket.disconnect();
+      };
     }
   }, [isOnline]);
 
@@ -107,7 +114,7 @@ const page = () => {
         ...item,
         id: index, // Add a unique id if it doesn't exist
       }));
-      fetchPlaylistSongList();
+      fetchPlaylistSongList(true);
       dispatch(setPlaylistLength(0));
       dispatch(setCurrentSongSecond(0));
       dispatch(setPlayingState(false));
@@ -115,36 +122,25 @@ const page = () => {
     socket.on("voteCastingResponse-v2", (item) => {
       setVotingList(item || {});
     });
-    socket.on(
-      "songAddByCustomerRes-v2",
-      debounce((item) => {
-        const { playlistCount } = item;
-        fetchPlaylistSongList(null);
-      }, 500)
-    );
+    socket.on("songAddByCustomerRes-v2", (item) => {
+      setCounter((prev) => prev + 1);
+    });
 
     socket.on("RemoveSongFromPlaylistResponse-v2", (item) => {
-      fetchPlaylistSongList(null);
+      fetchPlaylistSongList(true);
     });
 
     socket.on("disconnect", async (reason) => {
       console.log(`Socket disconnected socket connection test: ${reason}`);
-      await fetchPlaylistSongList(null);
+      await fetchPlaylistSongList(true);
     });
   }, []);
-
-  // useEffect(() => {
-  //   if (completeList?.length != 0 && completeList?.length < 30) {
-  //     fetchSongsList();
-  //   }
-  // }, [completeList]);
 
   const fetchSongsList = async (completeList) => {
     let response = await songsListApi();
     if (response && !response.isError) {
       const { mostRepeatedPlayer, leastRepeatedPlayers } =
         getPlayerRepetitionStats(completeList);
-      console.log("==>", mostRepeatedPlayer, leastRepeatedPlayers);
       const count = 30 - completeList?.length;
 
       const songList = response.data?.content;
@@ -315,167 +311,183 @@ const page = () => {
   const addMultiSongsHandler = async (data) => {
     await addMultiSongsApi(data);
     setTimeout(async () => {
-      await fetchPlaylistSongList();
+      await fetchPlaylistSongList(true);
     }, 2000);
   };
 
   useEffect(() => {
     if (votingList != null) {
-      fetchPlaylistSongList(null);
+      fetchPlaylistSongList(true);
     }
   }, [votingList]);
 
   useEffect(() => {
+    if (counter > 0) {
+      fetchPlaylistSongList();
+    }
+  }, [counter]);
+
+  useEffect(() => {
     if (fixedContent?.length != 0 && fixedContent?.length != 2) {
-      fetchPlaylistSongList(null);
+      fetchPlaylistSongList(true);
     }
   }, [fixedContent]);
 
-  // const fetchPlaylistSongList = async (firstFetch) => {
-  //   try {
-  //     let shouldNotResetTime = JSON.parse(
-  //       localStorage.getItem("isRequestInProgress") || "false"
-  //     );
-  //     console.log("==>", shouldNotResetTime);
+  const fetchPlaylistSongList = async (shouldCalled) => {
+    if (isRequestInProgress) {
+      return;
+    }
 
-  //     let response = await getPlaylistSongListApi();
-  //     const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //       autoConnect: false,
-  //     });
-  //     newConnection.connect();
-  //     if (response && !response?.isError) {
-  //       const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-  //         response?.data?.content;
+    if (counter <= 0 && !shouldCalled) {
+      console.log("No more requests to process.");
+      return;
+    }
 
-  //       const playlistWithId = isNotFixed?.map((item, index) => ({
-  //         ...item,
-  //         id: index, // Add a unique id if it doesn't exist
-  //       }));
-  //       setCompleteList(completeList);
+    setIsRequestInProgress(true);
 
-  //       if (completeList?.length != 0 && completeList?.length < 30) {
-  //         fetchSongsList(completeList);
-  //       }
-  //       if (completeList?.length > 0) {
-  //         setIsFavExist(completeList?.filter((item) => item?.isFav));
-  //       }
+    try {
+      let response = await getPlaylistSongListApi();
+      const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+        autoConnect: false,
+      });
+      newConnection.connect();
+      if (response && !response?.isError) {
+        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
+          response?.data?.content;
 
-  //       if (
-  //         isFixedItems?.length > 0 &&
-  //         currentSong?.title == "" &&
-  //         currentSongSecond == 0 &&
-  //         !shouldNotResetTime
-  //       ) {
-  //         const { playerName, title, _id } = isFixedItems[0];
+        const playlistWithId = isNotFixed?.map((item, index) => ({
+          ...item,
+          id: index, // Add a unique id if it doesn't exist
+        }));
+        setCompleteList(completeList);
 
-  //         dispatch(
-  //           setCurrentSong({
-  //             title: title,
-  //             player: playerName,
-  //             id: _id,
-  //             duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-  //           })
-  //         );
-  //         dispatch(
-  //           setCurrentSongSecond(
-  //             convertTimeToSeconds(isFixedItems[0].songDuration)
-  //           )
-  //         );
-  //       }
-  //       setFixedContent([...isFixedItems] || []);
-  //       setNonFixedContent([...playlistWithId] || []);
-  //       setIsFavSongs(isFavortiteListType);
-  //       dispatch(setPlaylistLength(isFixedItems?.length));
-
-  //       newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-  //         playlist: completeList,
-  //         isInsert: false,
-  //       });
-  //     }
-  //     setIsAdvanceButtonDisable(false);
-
-  //     setIsLoading(false);
-  //   } catch (error) {
-  //     console.error("Fetch failed:", error);
-  //   }
-  // };
-
-  let fetchQueue = Promise.resolve();
-
-  const fetchPlaylistSongList = async (firstFetch) => {
-    fetchQueue = fetchQueue.then(async () => {
-      try {
-        let response = await getPlaylistSongListApi();
-        const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-          autoConnect: false,
-        });
-        newConnection.connect();
-        if (response && !response?.isError) {
-          const {
-            isFavortiteListType,
-            isFixedItems,
-            isNotFixed,
-            completeList,
-          } = response?.data?.content;
-
-          const playlistWithId = isNotFixed?.map((item, index) => ({
-            ...item,
-            id: index,
-          }));
-
-          setCompleteList(completeList);
-
-          if (completeList?.length != 0 && completeList?.length < 30) {
-            fetchSongsList(completeList);
-          }
-          if (completeList?.length > 0) {
-            setIsFavExist(completeList?.filter((item) => item?.isFav));
-          }
-
-          if (
-            isFixedItems?.length > 0 &&
-            (!currentSong?.title ||
-              currentSong?.title === "" ||
-              currentSongSecond === 0)
-          ) {
-            const { playerName, title, _id } = isFixedItems[0];
-            dispatch(
-              setCurrentSong({
-                title: title,
-                player: playerName,
-                id: _id,
-                duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-              })
-            );
-            dispatch(
-              setCurrentSongSecond(
-                convertTimeToSeconds(isFixedItems[0].songDuration)
-              )
-            );
-          }
-
-          setFixedContent([...isFixedItems] || []);
-          setNonFixedContent([...playlistWithId] || []);
-          setIsFavSongs(isFavortiteListType);
-          dispatch(setPlaylistLength(isFixedItems?.length));
-
-          newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-            playlist: completeList,
-            isInsert: false,
-          });
+        if (completeList?.length != 0 && completeList?.length < 30) {
+          fetchSongsList(completeList);
         }
-        setIsAdvanceButtonDisable(false);
+        if (completeList?.length > 0) {
+          setIsFavExist(completeList?.filter((item) => item?.isFav));
+        }
 
-        setIsLoading(false);
-      } catch (error) {
-        setIsLoading(false);
+        if (
+          isFixedItems?.length > 0 &&
+          currentSong?.title == "" &&
+          currentSongSecond == 0
+        ) {
+          const { playerName, title, _id } = isFixedItems[0];
 
-        console.error("Fetch failed:", error);
-      } finally {
-        setIsLoading(false);
+          dispatch(
+            setCurrentSong({
+              title: title,
+              player: playerName,
+              id: _id,
+              duration: convertTimeToSeconds(isFixedItems[0].songDuration),
+            })
+          );
+          dispatch(
+            setCurrentSongSecond(
+              convertTimeToSeconds(isFixedItems[0].songDuration)
+            )
+          );
+        }
+        setFixedContent([...isFixedItems] || []);
+        setNonFixedContent([...playlistWithId] || []);
+        setIsFavSongs(isFavortiteListType);
+        dispatch(setPlaylistLength(isFixedItems?.length));
+        newConnection.emit("insertSongIntoPlaylistRequest-v2", {
+          playlist: completeList,
+          isInsert: false,
+        });
       }
-    });
+
+      setIsAdvanceButtonDisable(false);
+
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Fetch failed:", error);
+    } finally {
+      setIsRequestInProgress(false); // Unlock after request completion
+      if (counter > 0) {
+        setCounter((prev) => prev - 1); // Decrement the counter
+      }
+    }
   };
+
+  // let fetchQueue = Promise.resolve();
+
+  // const fetchPlaylistSongList = async (firstFetch) => {
+  //   fetchQueue = fetchQueue.then(async () => {
+  //     try {
+  //       let response = await getPlaylistSongListApi();
+  //       const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+  //         autoConnect: false,
+  //       });
+  //       newConnection.connect();
+  //       if (response && !response?.isError) {
+  //         const {
+  //           isFavortiteListType,
+  //           isFixedItems,
+  //           isNotFixed,
+  //           completeList,
+  //         } = response?.data?.content;
+
+  //         const playlistWithId = isNotFixed?.map((item, index) => ({
+  //           ...item,
+  //           id: index,
+  //         }));
+
+  //         setCompleteList(completeList);
+
+  //         if (completeList?.length != 0 && completeList?.length < 30) {
+  //           fetchSongsList(completeList);
+  //         }
+  //         if (completeList?.length > 0) {
+  //           setIsFavExist(completeList?.filter((item) => item?.isFav));
+  //         }
+
+  //         if (
+  //           isFixedItems?.length > 0 &&
+  //           (!currentSong?.title ||
+  //             currentSong?.title === "" ||
+  //             currentSongSecond === 0)
+  //         ) {
+  //           const { playerName, title, _id } = isFixedItems[0];
+  //           dispatch(
+  //             setCurrentSong({
+  //               title: title,
+  //               player: playerName,
+  //               id: _id,
+  //               duration: convertTimeToSeconds(isFixedItems[0].songDuration),
+  //             })
+  //           );
+  //           dispatch(
+  //             setCurrentSongSecond(
+  //               convertTimeToSeconds(isFixedItems[0].songDuration)
+  //             )
+  //           );
+  //         }
+
+  //         setFixedContent([...isFixedItems] || []);
+  //         setNonFixedContent([...playlistWithId] || []);
+  //         setIsFavSongs(isFavortiteListType);
+  //         dispatch(setPlaylistLength(isFixedItems?.length));
+
+  //         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
+  //           playlist: completeList,
+  //           isInsert: false,
+  //         });
+  //       }
+  //       setIsAdvanceButtonDisable(false);
+
+  //       setIsLoading(false);
+  //     } catch (error) {
+  //       setIsLoading(false);
+
+  //       console.error("Fetch failed:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   });
+  // };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
     setIsAdvanceButtonDisable(true);
@@ -506,7 +518,7 @@ const page = () => {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
 
-    fetchPlaylistSongList();
+    fetchPlaylistSongList(true);
     // if (completeList?.length != 0 && completeList?.length < 30) {
     //   await fetchSongsList(res);
     // } else {
@@ -670,7 +682,7 @@ const page = () => {
       });
     } else {
       setIsLoading(true);
-      fetchPlaylistSongList();
+      fetchPlaylistSongList(true);
     }
     setIsFavSongs(!isFavSongs);
     await updatePlaylistTypeAPI({

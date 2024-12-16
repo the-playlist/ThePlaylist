@@ -261,12 +261,12 @@ const SelectSongModal = ({
 
       if (response && !response.error) {
         const { isFirstTimeFetched, playlist } = response?.data?.content;
-        localStorage.setItem("isFirstTimeFetched", isFirstTimeFetched);
+
         closeModal();
         toast.success(response?.data?.description);
         onReload();
         setTimeout(async () => {
-          await fetchList(isFirstTimeFetched);
+          await fetchList(true);
         }, 1000);
 
         setBtnLoader(false);

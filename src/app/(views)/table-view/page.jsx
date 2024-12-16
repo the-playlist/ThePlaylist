@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Logo, RequestToPerfromIcon } from "@/app/svgs";
-import { FaQuestion, FaVideo } from "react-icons/fa";
-import { IoAdd } from "react-icons/io5";
+import { FaQuestion } from "react-icons/fa";
 import { IoIosArrowUp, IoIosArrowDown } from "react-icons/io";
 import { useOnlineStatus } from "@/app/_utils/helper";
 import {

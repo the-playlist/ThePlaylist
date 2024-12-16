@@ -497,7 +497,7 @@ export function PlaylistSongItemV2({
           {isMoreThanOneQualifiedPlayers ? (
             <QualifiedPlayersDropdownV2
               onUpdateSongsList={async () => {
-                await fetchSongsList();
+                await fetchSongsList(true);
               }}
               socket={socket}
               item={item}
