@@ -120,7 +120,8 @@ const page = () => {
       dispatch(setPlayingState(false));
     });
     socket.on("voteCastingResponse-v2", (item) => {
-      setVotingList(item || {});
+      // setVotingList(item || {});
+      setCounter((prev) => prev + 1);
     });
     socket.on("songAddByCustomerRes-v2", (item) => {
       setCounter((prev) => prev + 1);
