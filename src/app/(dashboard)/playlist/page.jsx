@@ -36,7 +36,7 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 import DraggableList from "react-draggable-list";
 import { PlaylistSongItemV2 } from "./songItem";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
-import debounce from "lodash.debounce";
+import { FaSync } from "react-icons/fa";
 
 const page = () => {
   const containerRef = useRef();
@@ -310,10 +310,12 @@ const page = () => {
   }
 
   const addMultiSongsHandler = async (data) => {
-    await addMultiSongsApi(data);
-    setTimeout(async () => {
-      await fetchPlaylistSongList(true);
-    }, 2000);
+    try {
+      await addMultiSongsApi(data);
+      setTimeout(async () => {
+        await fetchPlaylistSongList(true);
+      }, 2000);
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -401,7 +403,7 @@ const page = () => {
       }
 
       setIsAdvanceButtonDisable(false);
-
+      setIsSyncing(false);
       setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
@@ -518,16 +520,16 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
-
+    socket.emit("removeReq-v2", {
+      isFirst: false,
+      playlist: res,
+      time: 10,
+    });
     fetchPlaylistSongList(true);
     // if (completeList?.length != 0 && completeList?.length < 30) {
     //   await fetchSongsList(res);
     // } else {
-    //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
-    //     isFirst: false,
-    //     playlist: res,
-    //     time: 10,
-    //   });
+
     // }
   };
   const removeItemById = async (id, isTrashPress) => {
@@ -732,6 +734,12 @@ const page = () => {
       )
     );
   };
+  const [isSyncing, setIsSyncing] = useState(false);
+  const handleSync = () => {
+    setIsSyncing(true);
+
+    fetchPlaylistSongList(true);
+  };
 
   return (
     <div className="h-full py-5 flex flex-col">
@@ -745,20 +753,33 @@ const page = () => {
             } mx-1`}
           >
             {(fixedContent?.length > 0 || nonFixedContent?.length > 0) && (
-              <button
-                disabled={isAdvanceButtonDisable}
-                onClick={async () => {
-                  await deleteSongFromPlaylistHandler(
-                    fixedContent[0]?._id,
-                    false,
-                    false
-                  );
-                }}
-                className={`flex items-center ${masterViewTheme ? "bg-black  " : "bg-light-tile"}  text-white hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
-              >
-                <span className="mr-2">Advance the Queue</span>
-                <FaForward />
-              </button>
+              <div className=" flex items-center justify-center gap-3">
+                <button
+                  disabled={isAdvanceButtonDisable}
+                  onClick={async () => {
+                    await deleteSongFromPlaylistHandler(
+                      fixedContent[0]?._id,
+                      false,
+                      false
+                    );
+                  }}
+                  className={`flex items-center ${masterViewTheme ? "bg-black  " : "bg-light-tile"}  text-white hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
+                >
+                  <span className="mr-2">Advance the Queue</span>
+                  <FaForward />
+                </button>
+
+                <button
+                  onClick={handleSync}
+                  className={`flex items-center ${masterViewTheme ? "bg-black  " : "bg-light-tile"}  text-white hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}
+                  disabled={isSyncing}
+                >
+                  <span className="mr-2">
+                    {isSyncing ? "Syncing..." : "Sync"}
+                  </span>
+                  <FaSync className={isSyncing ? "animate-spin" : ""} />
+                </button>
+              </div>
             )}
             <div className="flex flex-row">
               {!isFavSongs &&

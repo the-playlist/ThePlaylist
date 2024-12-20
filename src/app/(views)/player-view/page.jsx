@@ -26,6 +26,23 @@ const PerformerView = () => {
   const [isConnected, setIsConnected] = useState(false);
 
   let screenName = "Player View";
+
+  const playlistQueue = useRef([]);
+  const isProcessing = useRef(false);
+  const processQueue = async () => {
+    if (isProcessing.current || playlistQueue.current.length === 0) return;
+
+    isProcessing.current = true;
+
+    while (playlistQueue.current.length > 0) {
+      // Take the most recent playlist from the queue
+      const latestPlaylist = playlistQueue.current.pop();
+      setPerformers([...latestPlaylist]);
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Small delay to prevent rapid UI updates
+    }
+
+    isProcessing.current = false;
+  };
   useEffect(() => {
     if (isOnline) {
       const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -49,10 +66,14 @@ const PerformerView = () => {
       console.log("Connected to server");
       setIsConnected(true); // Set to green (connected)
     });
-    socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
+
+    const handlePlaylistUpdate = (item) => {
       const { playlist } = item;
-      setPerformers([...playlist]);
-    });
+      playlistQueue.current.push(playlist);
+      processQueue();
+    };
+    socket.on("insertSongIntoPlaylistResponse-v2", handlePlaylistUpdate);
+    socket.on("removeRes-v2", handlePlaylistUpdate);
 
     socket.on("favoriteSongRes-v2", (item) => {
       const { playlist } = item;

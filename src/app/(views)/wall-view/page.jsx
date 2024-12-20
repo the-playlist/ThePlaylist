@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
 import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
@@ -25,8 +25,24 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   const [currentActive, setCurrentActive] = useState(null);
+  const [counter, setCounter] = useState(0);
   let screenName = "Wall View";
+  const playlistQueue = useRef([]);
+  const isProcessing = useRef(false);
+  const processQueue = async () => {
+    if (isProcessing.current || playlistQueue.current.length === 0) return;
 
+    isProcessing.current = true;
+
+    while (playlistQueue.current.length > 0) {
+      // Take the most recent playlist from the queue
+      const latestPlaylist = playlistQueue.current.pop();
+      setSongList([...latestPlaylist]);
+      await new Promise((resolve) => setTimeout(resolve, 50)); // Small delay to prevent rapid UI updates
+    }
+
+    isProcessing.current = false;
+  };
   useEffect(() => {
     if (isOnline) {
       const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
@@ -57,12 +73,17 @@ const WallView = () => {
       setIsConnected(true); // Set to green (connected)
     });
 
-    socket.on("heartbeat", (data) => {
-      console.log("Heartbeat received from server:", data.message);
+    // socket.on("heartbeat", (data) => {
+    //   console.log("Heartbeat received from server:", data.message);
 
-      // Optionally respond back to the server
-      socket.emit("heartbeat-ack", { message: "pong" });
-    });
+    //   // Optionally respond back to the server
+    //   socket.emit("heartbeat-ack", { message: "pong" });
+    // });
+    const handlePlaylistUpdate = (item) => {
+      const { playlist } = item;
+      playlistQueue.current.push(playlist);
+      processQueue();
+    };
 
     socket.on("wallViewJumbotronResponse", (item) => {
       const { screenName } = item;
@@ -72,10 +93,9 @@ const WallView = () => {
         fetchPlaylistSongList();
       }
     });
-    socket.on("insertSongIntoPlaylistResponse-v2", (item) => {
-      const { playlist } = item;
-      setSongList([...playlist]);
-    });
+    socket.on("insertSongIntoPlaylistResponse-v2", handlePlaylistUpdate);
+    socket.on("removeRes-v2", handlePlaylistUpdate);
+
     socket.on("favoriteSongRes-v2", (item) => {
       const { playlist } = item;
       setSongList([...playlist]);
@@ -91,7 +111,6 @@ const WallView = () => {
 
     socket.on("wallViewRes-v2", (item) => {
       const { playlist } = item;
-
       setSongList([...playlist]);
     });
     socket.on("undoActionResponse-v2", (item) => {
