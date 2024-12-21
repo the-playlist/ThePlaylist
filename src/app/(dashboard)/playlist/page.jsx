@@ -760,7 +760,7 @@ const page = () => {
                     await deleteSongFromPlaylistHandler(
                       fixedContent[0]?._id,
                       false,
-                      false
+                      true
                     );
                   }}
                   className={`flex items-center ${masterViewTheme ? "bg-black  " : "bg-light-tile"}  text-white hover:bg-primary hover:text-black font-bold py-3 px-4 lg:text-lg justify-center rounded-lg disabled:bg-gray-400 hover:cursor-pointer`}

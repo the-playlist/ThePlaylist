@@ -62,13 +62,10 @@ const Typeahead = () => {
       // }
     });
 
-    socket.on("insertSongIntoPlaylistRequest-v2", (item) => {
-      fetchSongsList();
-    });
     socket.on("songAddByCustomerRes-v2", (item) => {
       fetchSongsList();
     });
-    socket.on("insertSongIntoPlaylistRequest-v2", () => {
+    socket.on("insertSongIntoPlaylistResponse-v2", () => {
       fetchSongsList();
     });
     socket.on("RemoveSongFromPlaylistResponse-v2", () => {
