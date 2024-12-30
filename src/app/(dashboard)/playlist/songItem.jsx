@@ -546,7 +546,71 @@ export function PlaylistSongItemV2({
       key={index}
       className={` text-center bg-gray-tile text-black shadow rounded-2xl h-20 flex items-center  px-5`}
     >
-      <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle"></div>
+      <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
+        <div className=" flex items-center justify-center  cursor-pointer">
+          {sortByMaster ? (
+            loading == item?._id ? (
+              <span className="loading loading-spinner loading-md"></span>
+            ) : (
+              <button
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  console.log("touchStart");
+                  e.target.style.backgroundColor = "blue";
+                  document.body.style.overflow = "scroll";
+                  onTouchStart(e);
+                }}
+                onMouseDown={(e) => {
+                  console.log("mouseDown");
+                  document.body.style.overflow = "scroll";
+                  onMouseDown(e);
+                }}
+                onTouchEnd={(e) => {
+                  e.target.style.backgroundColor = "black";
+                  document.body.style.overflow = "scroll";
+                }}
+                onMouseUp={() => {
+                  document.body.style.overflow = "scroll";
+                }}
+                onClick={() => {
+                  setLoader(item?._id);
+                  revertCrownhandler(item);
+                }}
+              >
+                <RevertMasterIcon reqToPerform={true} />
+              </button>
+            )
+          ) : (
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                console.log("touchStart");
+                e.target.style.backgroundColor = "blue";
+                document.body.style.overflow = "scroll";
+                onTouchStart(e);
+              }}
+              onMouseDown={(e) => {
+                console.log("mouseDown");
+                document.body.style.overflow = "scroll";
+                onMouseDown(e);
+              }}
+              onTouchEnd={(e) => {
+                e.target.style.backgroundColor = "black";
+                document.body.style.overflow = "scroll";
+              }}
+              onMouseUp={() => {
+                document.body.style.overflow = "scroll";
+              }}
+              className="border flex items-center justify-center text-black border-black rounded-full h-10 w-10 cursor-pointer"
+            >
+              <HiOutlineArrowsUpDown />
+            </div>
+          )}
+        </div>
+      </div>
       <div className="w-2/12 pr-10">
         <EllipsisText color={"text-black"} text={title} length={15} />
       </div>
