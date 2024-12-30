@@ -1,6 +1,6 @@
 import React from "react";
 
-function RevertMasterIcon() {
+function RevertMasterIcon({ reqToPerform }: any) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,7 +13,7 @@ function RevertMasterIcon() {
         cx="15"
         cy="22"
         r="14.75"
-        stroke="#C4C4C4"
+        stroke={reqToPerform ? "#000" : "#C4C4C4"}
         strokeWidth="0.5"
       ></circle>
       <path
