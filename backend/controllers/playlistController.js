@@ -21,6 +21,8 @@ import {
 import { flattenPlaylist, addToQueue } from "./helper";
 import AlgorithmStatus from "../models/algorithStatus";
 import PlaylistV2 from "../models/playlistV2";
+import { database } from "../../firebaseConfig";
+import { ref, onValue, push, runTransaction, set } from "firebase/database";
 
 export const SETTING_ID = "662b7a6e80f2c908c92a0b3d";
 export const algoStatusId = "6728794712916c8fc48542c3";
@@ -756,6 +758,8 @@ export const getSongsFromPlaylistV2 = async (req, res, next) => {
       const isNotFixedItems = filteredPlaylist?.filter(
         (item) => !item?.isFixed
       );
+      const playlistRef = ref(database, "master/playlist");
+      await set(playlistRef, filteredPlaylist);
 
       res.status(200).json(
         new ResponseModel(true, "Songs fetched successfully.", {
@@ -781,7 +785,8 @@ export const getSongsFromPlaylistV2 = async (req, res, next) => {
       const isNotFixedItems = filteredPlaylist?.filter(
         (item) => !item?.isFixed
       );
-
+      const playlistRef = ref(database, "master/playlist");
+      await set(playlistRef, filteredPlaylist);
       res.status(200).json(
         new ResponseModel(true, "Songs fetched successfully.", {
           isFixedItems: isFixedItems,

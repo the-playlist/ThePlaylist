@@ -14,6 +14,8 @@ import { CustomLoader } from "@/app/_components/custom_loader";
 import { IntroCounter } from "./intro-counter";
 import Fullscreen from "react-fullscreen-crossbrowser";
 import { useOnlineStatus } from "@/app/_utils/helper";
+import { ref, onValue } from "firebase/database";
+import { database } from "../../../../firebaseConfig";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
@@ -24,6 +26,8 @@ const PerformerView = () => {
   const [performer, setPerformers] = useState([]);
   const [themeMode, setThemeMode] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [playlist, setPlaylist] = useState(null);
+  const [loader, setLoader] = useState(true); // Loader state
 
   let screenName = "Player View";
 
@@ -182,6 +186,25 @@ const PerformerView = () => {
     return truncatedText;
   };
 
+  useEffect(() => {
+    // Reference to the playlist in Firebase
+    const playlistRef = ref(database, "master/playlist");
+
+    // Fetch and listen for real-time updates
+    const unsubscribe = onValue(playlistRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setPlaylist(snapshot.val());
+      } else {
+        setPlaylist([]);
+        console.log("No playlist data available");
+      }
+      setLoader(false); // Turn off loader when data is fetched
+    });
+
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
+  }, []);
+
   return (
     <Fullscreen enabled={isFullScreen} onChange={setIsFullScreen}>
       <div
@@ -190,7 +213,7 @@ const PerformerView = () => {
         } h-[100vh]  overflow-y-scroll`}
       >
         <div className="overflow-x-auto mx-auto md:p-10 p-3  ">
-          {loading ? (
+          {loader ? (
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
@@ -205,7 +228,7 @@ const PerformerView = () => {
               <div className="flex items-center justify-center m-5">
                 <Logo />
               </div>
-              {performer.length === 0 && (
+              {playlist.length === 0 && (
                 <div
                   className={`flex items-center justify-center flex-1 min-h-52 font-semibold sm:text-sm text-lg  ${
                     themeMode ? "text-black" : "text-white"
@@ -215,7 +238,7 @@ const PerformerView = () => {
                 </div>
               )}
               <div className=" flex flex-col gap-5">
-                {performer?.map((item, index) => {
+                {playlist?.map((item, index) => {
                   const isLocked = index < 2;
 
                   return item?.requestToPerform ? (
