@@ -13,6 +13,8 @@ import { JUMBOTRON_VIEW, WALL_VIEW } from "@/app/_utils/common/constants";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 import { useOnlineStatus } from "@/app/_utils/helper";
 import { EllipsisText } from "@/app/_components/ellipsis-text";
+import { ref, onValue } from "firebase/database";
+import { database } from "../../../../firebaseConfig";
 
 const WallView = () => {
   const handle = useFullScreenHandle();
@@ -26,6 +28,9 @@ const WallView = () => {
   const [themeMode, setThemeMode] = useState(false);
   const [currentActive, setCurrentActive] = useState(null);
   const [counter, setCounter] = useState(0);
+  const [playlist, setPlaylist] = useState(null);
+  const [loading, setLoading] = useState(true); // Loader state
+
   let screenName = "Wall View";
   const playlistQueue = useRef([]);
   const isProcessing = useRef(false);
@@ -182,13 +187,32 @@ const WallView = () => {
     }
   };
 
+  useEffect(() => {
+    // Reference to the playlist in Firebase
+    const playlistRef = ref(database, "master/playlist");
+
+    // Fetch and listen for real-time updates
+    const unsubscribe = onValue(playlistRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setPlaylist(snapshot.val());
+      } else {
+        setPlaylist([]);
+        console.log("No playlist data available");
+      }
+      setLoading(false); // Turn off loader when data is fetched
+    });
+
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
+  }, []);
+
   return (
     <FullScreen handle={handle}>
       <div
         className={`${themeMode ? "bg-white" : "bg-[#1F1F1F]"} min-h-screen`}
       >
         <div className="overflow-x-auto mx-auto ">
-          {isLoading ? (
+          {loading ? (
             <CustomLoader bgColor={themeMode ? "bg-[#1F1F1F]" : "bg-white"} />
           ) : (
             <>
@@ -240,7 +264,7 @@ const WallView = () => {
                   <Logo />
                 </div>
                 <ul>
-                  {songList.map((item, index) => {
+                  {playlist.map((item, index) => {
                     const isLocked = index < 2;
 
                     return item?.requestToPerform ? (
@@ -333,7 +357,7 @@ const WallView = () => {
                   })}
                 </ul>
 
-                {songList?.length == 0 && (
+                {playlist?.length == 0 && (
                   <div
                     className={`flex justify-center text-lg items-center h-64 ${
                       themeMode ? "text-black" : "text-white"

@@ -55,7 +55,8 @@
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
     "stream-chat": "^8.31.0",
-    "url-loader": "^4.1.1"
+    "url-loader": "^4.1.1",
+    "firebase": "^11.1.0"
   },
   "devDependencies": {
     "@types/node": "^20",
