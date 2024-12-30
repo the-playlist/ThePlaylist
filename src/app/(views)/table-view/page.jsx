@@ -170,10 +170,6 @@ const TableView = () => {
 
       await fetchPlaylistSongList(null);
     });
-    // Clean up the socket connection on unmount
-    return () => {
-      socket.disconnect();
-    };
   }, []);
 
   useEffect(() => {
