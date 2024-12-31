@@ -885,8 +885,22 @@ export const managePlaylist = async (req, res, next) => {
     }
 
     // Step 8: Select the player (first from filtered list)
+    const lastPlaylistItem = await PlaylistV2.findOne()
+      .sort({ sortOrder: -1 }) // Sort by sortOrder in descending order to get the last item
+      .exec();
+    const lastAssignedPlayerId = lastPlaylistItem
+      ? lastPlaylistItem.assignedPlayer.toString()
+      : null;
+    let filteredPlayersWithoutLastAssigned = filteredPlayers.filter(
+      (player) => {
+        return player._id.toString() !== lastAssignedPlayerId;
+      }
+    );
+
     const selectedPlayer =
-      filteredPlayers?.length > 0 ? filteredPlayers[0] : null;
+      filteredPlayersWithoutLastAssigned?.length > 0
+        ? filteredPlayersWithoutLastAssigned[0]
+        : null;
 
     // Step 9: Extract the player ID
     const onDutyPlayerIds = selectedPlayer ? [selectedPlayer._id] : [];

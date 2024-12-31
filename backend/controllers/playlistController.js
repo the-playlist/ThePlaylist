@@ -1338,24 +1338,6 @@ const calculateFinalSortOrder = async (lastPerformRequestItem) => {
   return finalSortOrder;
 };
 
-const getValidRecords = async (tableNo, time) => {
-  try {
-    const now = new Date();
-    const timeThreshold = new Date(now.getTime() - time * 60 * 1000); // `time` in minutes
-
-    const validRecords = await PlaylistV2.find({
-      tableNo,
-      isDeleted: false,
-      requestTime: { $gte: timeThreshold }, // Compare requestTime with the threshold
-    }).lean();
-
-    return validRecords;
-  } catch (error) {
-    console.error("Error fetching valid records:", error);
-    throw error;
-  }
-};
-
 export const requestToPerformSong = async (req, res) => {
   try {
     const result = await addToQueue(async () => {
