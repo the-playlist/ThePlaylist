@@ -463,3 +463,98 @@ export const songsForTableViewV2 = [
     },
   },
 ];
+
+export const onDutyPlayersSongs = (oneHourAgo) => {
+  const pipeline = [
+    {
+      $lookup: {
+        from: "players",
+        localField: "_id",
+        foreignField: "assignSongs",
+        as: "player_info",
+      },
+    },
+    { $unwind: "$player_info" },
+    { $addFields: { duty: "$player_info.duty" } },
+    {
+      $match: {
+        "duty.status": true,
+        $or: [{ isDisabled: false }, { isDisabled: { $exists: false } }],
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        songName: { $first: "$songName" },
+        artist: { $first: "$artist" },
+        title: { $first: "$title" },
+        totalPlayers: { $sum: 1 },
+        assignedPlayers: {
+          $push: {
+            _id: "$player_info._id",
+            playerName: {
+              $concat: ["$player_info.firstName", " ", "$player_info.lastName"],
+            },
+          },
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "playlistv2",
+        localField: "_id",
+        foreignField: "songData",
+        as: "playlist_info",
+      },
+    },
+    {
+      $addFields: {
+        playlistPlayers: {
+          $size: {
+            $filter: {
+              input: "$playlist_info",
+              as: "playlistItem",
+              cond: { $eq: ["$$playlistItem.isDeleted", false] },
+            },
+          },
+        },
+        songAddedAt: {
+          $max: "$playlist_info.songAddedAt",
+        },
+      },
+    },
+    {
+      $match: {
+        $and: [
+          { playlistPlayers: { $eq: 0 } },
+          {
+            $or: [
+              { songAddedAt: { $lte: oneHourAgo } },
+              { songAddedAt: { $eq: null } },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        songName: 1,
+        artist: 1,
+        title: 1,
+        totalPlayers: 1,
+        playlistPlayers: 1,
+        songAddedAt: 1,
+        assignedPlayers: 1,
+        difference: { $subtract: ["$totalPlayers", "$playlistPlayers"] },
+      },
+    },
+    {
+      $match: {
+        difference: { $ne: 0 },
+      },
+    },
+  ];
+
+  return pipeline;
+};

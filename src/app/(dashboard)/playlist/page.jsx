@@ -12,8 +12,9 @@ import {
   useDeleteAllSongsFromPlaylistV2Mutation,
   useRevertMasterCheckV2Mutation,
   useUpdateSortOrderOfSongsV2Mutation,
-  useLazyGetAddSongListForCustomerV2Query,
-  useAddMultiSongToPlaylistV2Mutation,
+  // useLazyGetAddSongListForCustomerV2Query,
+  // useAddMultiSongToPlaylistV2Mutation,
+  useLazyGetAddEvenSongsToPlaylistQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -53,14 +54,15 @@ const page = () => {
   const [updateSortOrderApi] = useUpdateSortOrderOfSongsV2Mutation();
   const [revertMasterCheckApi] = useRevertMasterCheckV2Mutation();
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdV2Mutation();
-  const [songsListApi] = useLazyGetAddSongListForCustomerV2Query();
-  const [addMultiSongsApi] = useAddMultiSongToPlaylistV2Mutation();
+  // const [songsListApi] = useLazyGetAddSongListForCustomerV2Query();
+  // const [addMultiSongsApi] = useAddMultiSongToPlaylistV2Mutation();
+  const [addMultipleSongsApi] = useLazyGetAddEvenSongsToPlaylistQuery();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [socket, setSocket] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirmationPopup, setIsConfirmationPopup] = useState(false);
   const [isFavExist, setIsFavExist] = useState([]);
-  const [votingList, setVotingList] = useState(null);
+  // const [votingList, setVotingList] = useState(null);
   const [crownLoader, setCrownLoader] = useState(null);
   const [selectSongModal, setSelectSongModal] = useState(false);
   const [isAdvanceButtonDisable, setIsAdvanceButtonDisable] = useState(false);
@@ -137,192 +139,192 @@ const page = () => {
     });
   }, []);
 
-  const fetchSongsList = async (completeList) => {
-    let response = await songsListApi();
-    if (response && !response.isError) {
-      const { mostRepeatedPlayer, leastRepeatedPlayers } =
-        getPlayerRepetitionStats(completeList);
-      const count = 30 - completeList?.length;
+  // const fetchSongsList = async (completeList) => {
+  //   let response = await songsListApi();
+  //   if (response && !response.isError) {
+  //     const { mostRepeatedPlayer, leastRepeatedPlayers } =
+  //       getPlayerRepetitionStats(completeList);
+  //     const count = 30 - completeList?.length;
 
-      const songList = response.data?.content;
+  //     const songList = response.data?.content;
 
-      if (songList?.length > 0) {
-        const getData = getRandomSongIds(
-          songList,
-          count,
-          completeList[completeList?.length - 1]?.playerName,
-          mostRepeatedPlayer,
-          leastRepeatedPlayers
-        );
-        if (getData?.length > 0) {
-          addMultiSongsHandler(getData);
-        }
-      }
-      // else {
-      //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
-      //     isFirst: false,
-      //     playlist: res,
-      //     time: 10,
-      //   });
-      // }
-    }
-  };
-  function getPlayerRepetitionStats(data) {
-    // Step 1: Count occurrences of each player
-    const playerCount = data.reduce((acc, item) => {
-      acc[item.playerName] = (acc[item.playerName] || 0) + 1;
-      return acc;
-    }, {});
+  //     if (songList?.length > 0) {
+  //       const getData = getRandomSongIds(
+  //         songList,
+  //         count,
+  //         completeList[completeList?.length - 1]?.playerName,
+  //         mostRepeatedPlayer,
+  //         leastRepeatedPlayers
+  //       );
+  //       if (getData?.length > 0) {
+  //         addMultiSongsHandler(getData);
+  //       }
+  //     }
+  //     // else {
+  //     //   socket.emit("RemoveSongFromPlaylistRequest-v2", {
+  //     //     isFirst: false,
+  //     //     playlist: res,
+  //     //     time: 10,
+  //     //   });
+  //     // }
+  //   }
+  // };
+  // function getPlayerRepetitionStats(data) {
+  //   // Step 1: Count occurrences of each player
+  //   const playerCount = data.reduce((acc, item) => {
+  //     acc[item.playerName] = (acc[item.playerName] || 0) + 1;
+  //     return acc;
+  //   }, {});
 
-    // Step 2: Determine most repeated and least repeated players
-    let mostRepeatedPlayer = "";
-    let leastRepeatedPlayers = [];
-    let maxCount = 0;
-    let minCount = Infinity;
+  //   // Step 2: Determine most repeated and least repeated players
+  //   let mostRepeatedPlayer = "";
+  //   let leastRepeatedPlayers = [];
+  //   let maxCount = 0;
+  //   let minCount = Infinity;
 
-    for (const [playerName, count] of Object.entries(playerCount)) {
-      if (count > maxCount) {
-        mostRepeatedPlayer = playerName;
-        maxCount = count;
-      }
-      if (count < minCount) {
-        leastRepeatedPlayers = [playerName];
-        minCount = count;
-      } else if (count === minCount) {
-        leastRepeatedPlayers.push(playerName);
-      }
-    }
+  //   for (const [playerName, count] of Object.entries(playerCount)) {
+  //     if (count > maxCount) {
+  //       mostRepeatedPlayer = playerName;
+  //       maxCount = count;
+  //     }
+  //     if (count < minCount) {
+  //       leastRepeatedPlayers = [playerName];
+  //       minCount = count;
+  //     } else if (count === minCount) {
+  //       leastRepeatedPlayers.push(playerName);
+  //     }
+  //   }
 
-    return {
-      mostRepeatedPlayer,
-      leastRepeatedPlayers,
-    };
-  }
+  //   return {
+  //     mostRepeatedPlayer,
+  //     leastRepeatedPlayers,
+  //   };
+  // }
 
-  function getRandomSongIds(
-    songsArray,
-    count,
-    lastPlayername,
-    mostRepeatedPlayer,
-    leastRepeatedPlayers
-  ) {
-    const numSongs = Math.min(count, songsArray.length);
+  // function getRandomSongIds(
+  //   songsArray,
+  //   count,
+  //   lastPlayername,
+  //   mostRepeatedPlayer,
+  //   leastRepeatedPlayers
+  // ) {
+  //   const numSongs = Math.min(count, songsArray.length);
 
-    // Separate songs into prioritized and non-prioritized groups
-    const prioritized = [];
-    const nonPrioritized = [];
+  //   // Separate songs into prioritized and non-prioritized groups
+  //   const prioritized = [];
+  //   const nonPrioritized = [];
 
-    songsArray.forEach((song) => {
-      const hasMostRepeatedPlayer = song.assignedPlayers?.some(
-        (player) => player.playerName === mostRepeatedPlayer
-      );
+  //   songsArray.forEach((song) => {
+  //     const hasMostRepeatedPlayer = song.assignedPlayers?.some(
+  //       (player) => player.playerName === mostRepeatedPlayer
+  //     );
 
-      const hasLastPlayername = song.assignedPlayers?.some(
-        (player) => player.playerName === lastPlayername
-      );
+  //     const hasLastPlayername = song.assignedPlayers?.some(
+  //       (player) => player.playerName === lastPlayername
+  //     );
 
-      const hasLeastRepeatedPlayer = song.assignedPlayers?.some((player) =>
-        leastRepeatedPlayers.includes(player.playerName)
-      );
+  //     const hasLeastRepeatedPlayer = song.assignedPlayers?.some((player) =>
+  //       leastRepeatedPlayers.includes(player.playerName)
+  //     );
 
-      // Priority logic
-      if (hasLeastRepeatedPlayer && !hasLastPlayername) {
-        // Prioritize songs with leastRepeatedPlayers if lastPlayername is not present
-        prioritized.push(song);
-      } else if (
-        hasMostRepeatedPlayer ||
-        hasLastPlayername ||
-        (hasLeastRepeatedPlayer && hasLastPlayername)
-      ) {
-        // De-prioritize songs with mostRepeatedPlayer, lastPlayername, or
-        // leastRepeatedPlayer if lastPlayername is also present
-        nonPrioritized.push(song);
-      } else {
-        // Default: prioritize
-        prioritized.push(song);
-      }
-    });
+  //     // Priority logic
+  //     if (hasLeastRepeatedPlayer && !hasLastPlayername) {
+  //       // Prioritize songs with leastRepeatedPlayers if lastPlayername is not present
+  //       prioritized.push(song);
+  //     } else if (
+  //       hasMostRepeatedPlayer ||
+  //       hasLastPlayername ||
+  //       (hasLeastRepeatedPlayer && hasLastPlayername)
+  //     ) {
+  //       // De-prioritize songs with mostRepeatedPlayer, lastPlayername, or
+  //       // leastRepeatedPlayer if lastPlayername is also present
+  //       nonPrioritized.push(song);
+  //     } else {
+  //       // Default: prioritize
+  //       prioritized.push(song);
+  //     }
+  //   });
 
-    // Adjust prioritized songs to ensure leastRepeatedPlayer is at index 0 for assignedPlayers
-    const adjustedPrioritized = prioritized.map((song) => {
-      // Create a deep copy of the song object
-      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+  //   // Adjust prioritized songs to ensure leastRepeatedPlayer is at index 0 for assignedPlayers
+  //   const adjustedPrioritized = prioritized.map((song) => {
+  //     // Create a deep copy of the song object
+  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
 
-      if (
-        songCopy.assignedPlayers?.length > 1 &&
-        songCopy.assignedPlayers.some((player) =>
-          leastRepeatedPlayers.includes(player.playerName)
-        )
-      ) {
-        // Move the least repeated player to the 0 index
-        const playersWithLeast = songCopy.assignedPlayers.filter((player) =>
-          leastRepeatedPlayers.includes(player.playerName)
-        );
-        const remainingPlayers = songCopy.assignedPlayers.filter(
-          (player) => !leastRepeatedPlayers.includes(player.playerName)
-        );
-        songCopy.assignedPlayers = [...playersWithLeast, ...remainingPlayers];
-      }
+  //     if (
+  //       songCopy.assignedPlayers?.length > 1 &&
+  //       songCopy.assignedPlayers.some((player) =>
+  //         leastRepeatedPlayers.includes(player.playerName)
+  //       )
+  //     ) {
+  //       // Move the least repeated player to the 0 index
+  //       const playersWithLeast = songCopy.assignedPlayers.filter((player) =>
+  //         leastRepeatedPlayers.includes(player.playerName)
+  //       );
+  //       const remainingPlayers = songCopy.assignedPlayers.filter(
+  //         (player) => !leastRepeatedPlayers.includes(player.playerName)
+  //       );
+  //       songCopy.assignedPlayers = [...playersWithLeast, ...remainingPlayers];
+  //     }
 
-      return songCopy;
-    });
+  //     return songCopy;
+  //   });
 
-    console.log("Prioritized Songs After Adjustment:", adjustedPrioritized);
+  //   console.log("Prioritized Songs After Adjustment:", adjustedPrioritized);
 
-    // Shuffle both groups
-    const shuffle = (array) => array.sort(() => 0.5 - Math.random());
-    const shuffledPrioritized = shuffle(adjustedPrioritized);
-    const shuffledNonPrioritized = shuffle(nonPrioritized);
+  //   // Shuffle both groups
+  //   const shuffle = (array) => array.sort(() => 0.5 - Math.random());
+  //   const shuffledPrioritized = shuffle(adjustedPrioritized);
+  //   const shuffledNonPrioritized = shuffle(nonPrioritized);
 
-    // Modify non-prioritized songs to ensure better player distribution
-    const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
-      const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
+  //   // Modify non-prioritized songs to ensure better player distribution
+  //   const modifiedNonPrioritized = shuffledNonPrioritized.map((song) => {
+  //     const songCopy = { ...song, assignedPlayers: [...song.assignedPlayers] };
 
-      if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
-        const players = songCopy.assignedPlayers.filter(
-          (player) => player.playerName !== lastPlayername
-        );
+  //     if (songCopy.assignedPlayers && songCopy.assignedPlayers.length > 1) {
+  //       const players = songCopy.assignedPlayers.filter(
+  //         (player) => player.playerName !== lastPlayername
+  //       );
 
-        if (players.length > 0) {
-          const newFirstPlayer = players[0];
-          const remainingPlayers = songCopy.assignedPlayers.filter(
-            (player) => player !== newFirstPlayer
-          );
-          songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
-        }
-      }
-      return songCopy;
-    });
+  //       if (players.length > 0) {
+  //         const newFirstPlayer = players[0];
+  //         const remainingPlayers = songCopy.assignedPlayers.filter(
+  //           (player) => player !== newFirstPlayer
+  //         );
+  //         songCopy.assignedPlayers = [newFirstPlayer, ...remainingPlayers];
+  //       }
+  //     }
+  //     return songCopy;
+  //   });
 
-    // Combine prioritized and modified non-prioritized songs
-    const finalSongs = [
-      ...shuffledPrioritized,
-      ...modifiedNonPrioritized,
-    ].slice(0, numSongs);
+  //   // Combine prioritized and modified non-prioritized songs
+  //   const finalSongs = [
+  //     ...shuffledPrioritized,
+  //     ...modifiedNonPrioritized,
+  //   ].slice(0, numSongs);
 
-    console.log("Final Songs:", finalSongs);
+  //   console.log("Final Songs:", finalSongs);
 
-    // Format the result
-    return finalSongs.map((song) => ({
-      songId: song._id,
-      qualifiedPlayers: song?.assignedPlayers,
-    }));
-  }
+  //   // Format the result
+  //   return finalSongs.map((song) => ({
+  //     songId: song._id,
+  //     qualifiedPlayers: song?.assignedPlayers,
+  //   }));
+  // }
 
-  const addMultiSongsHandler = async (data) => {
-    try {
-      await addMultiSongsApi(data);
-      setTimeout(async () => {
-        await fetchPlaylistSongList(true);
-      }, 2000);
-    } catch (error) {}
-  };
+  // const addMultiSongsHandler = async (data) => {
+  //   try {
+  //     await addMultiSongsApi(data);
+  //     setTimeout(async () => {
+  //       await fetchPlaylistSongList(true);
+  //     }, 2000);
+  //   } catch (error) {}
+  // };
 
-  useEffect(() => {
-    if (votingList != null) {
-      fetchPlaylistSongList(true);
-    }
-  }, [votingList]);
+  // useEffect(() => {
+  //   if (votingList != null) {
+  //     fetchPlaylistSongList(true);
+  //   }
+  // }, [votingList]);
 
   useEffect(() => {
     if (counter > 0) {
@@ -336,6 +338,29 @@ const page = () => {
     }
   }, [fixedContent]);
 
+  const addMultipleSongsApiHandler = async () => {
+    const response = await addMultipleSongsApi();
+
+    if (response && !response?.isError) {
+      const {
+        isFavortiteListType,
+        isFixedItems,
+        isNotFixed,
+        completeList: fullList,
+      } = response?.data?.content;
+
+      const playlistWithId = isNotFixed?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setCompleteList(fullList);
+      if (completeList?.length > 0) {
+        setIsFavExist(completeList?.filter((item) => item?.isFav));
+      }
+      setNonFixedContent(playlistWithId || []);
+      setIsFavSongs(isFavortiteListType);
+    }
+  };
   const fetchPlaylistSongList = async (shouldCalled) => {
     if (isRequestInProgress) {
       return;
@@ -355,17 +380,21 @@ const page = () => {
       });
       newConnection.connect();
       if (response && !response?.isError) {
-        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-          response?.data?.content;
+        const {
+          isFavortiteListType,
+          isFixedItems,
+          isNotFixed,
+          completeList: fulllist,
+        } = response?.data?.content;
 
         const playlistWithId = isNotFixed?.map((item, index) => ({
           ...item,
           id: index, // Add a unique id if it doesn't exist
         }));
-        setCompleteList(completeList);
+        setCompleteList(fulllist);
 
-        if (completeList?.length != 0 && completeList?.length < 30) {
-          fetchSongsList(completeList);
+        if (fulllist?.length > 1 && fulllist?.length < 30) {
+          addMultipleSongsApiHandler();
         }
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));
@@ -414,83 +443,6 @@ const page = () => {
       }
     }
   };
-
-  // let fetchQueue = Promise.resolve();
-
-  // const fetchPlaylistSongList = async (firstFetch) => {
-  //   fetchQueue = fetchQueue.then(async () => {
-  //     try {
-  //       let response = await getPlaylistSongListApi();
-  //       const newConnection = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
-  //         autoConnect: false,
-  //       });
-  //       newConnection.connect();
-  //       if (response && !response?.isError) {
-  //         const {
-  //           isFavortiteListType,
-  //           isFixedItems,
-  //           isNotFixed,
-  //           completeList,
-  //         } = response?.data?.content;
-
-  //         const playlistWithId = isNotFixed?.map((item, index) => ({
-  //           ...item,
-  //           id: index,
-  //         }));
-
-  //         setCompleteList(completeList);
-
-  //         if (completeList?.length != 0 && completeList?.length < 30) {
-  //           fetchSongsList(completeList);
-  //         }
-  //         if (completeList?.length > 0) {
-  //           setIsFavExist(completeList?.filter((item) => item?.isFav));
-  //         }
-
-  //         if (
-  //           isFixedItems?.length > 0 &&
-  //           (!currentSong?.title ||
-  //             currentSong?.title === "" ||
-  //             currentSongSecond === 0)
-  //         ) {
-  //           const { playerName, title, _id } = isFixedItems[0];
-  //           dispatch(
-  //             setCurrentSong({
-  //               title: title,
-  //               player: playerName,
-  //               id: _id,
-  //               duration: convertTimeToSeconds(isFixedItems[0].songDuration),
-  //             })
-  //           );
-  //           dispatch(
-  //             setCurrentSongSecond(
-  //               convertTimeToSeconds(isFixedItems[0].songDuration)
-  //             )
-  //           );
-  //         }
-
-  //         setFixedContent([...isFixedItems] || []);
-  //         setNonFixedContent([...playlistWithId] || []);
-  //         setIsFavSongs(isFavortiteListType);
-  //         dispatch(setPlaylistLength(isFixedItems?.length));
-
-  //         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-  //           playlist: completeList,
-  //           isInsert: false,
-  //         });
-  //       }
-  //       setIsAdvanceButtonDisable(false);
-
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       setIsLoading(false);
-
-  //       console.error("Fetch failed:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   });
-  // };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
     setIsAdvanceButtonDisable(true);

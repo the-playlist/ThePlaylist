@@ -61,6 +61,7 @@ const endPoints = {
     "api/playlist/addSongToPlaylistByCustomer-v2",
   GET_LOCATION_LIST: "api/location/getLocationList",
   REUEST_TO_PERFORM: "api/songs/requestToPerformSong",
+  ADD_EVEN_SONG_TO_PLAYLIST: "api/playlist/addSongsToPlaylistEvenly",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -87,6 +88,9 @@ export const emptySplitApi = createApi({
   endpoints: (builder) => ({
     getSongsFromPlaylist: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
+    }),
+    getAddEvenSongsToPlaylist: builder.query({
+      query: (body: any) => `${endPoints.ADD_EVEN_SONG_TO_PLAYLIST}`,
     }),
     getSongsReportList: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
@@ -468,4 +472,5 @@ export const {
   useGetTableViewSongsV2Mutation,
   useLazyGetLocationListQuery,
   useRequestToPerformMutation,
+  useLazyGetAddEvenSongsToPlaylistQuery,
 } = emptySplitApi;
