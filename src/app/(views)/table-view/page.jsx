@@ -17,6 +17,7 @@ import { toast } from "react-toastify";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import AddSongIcon from "@/app/svgs/addSong";
 import LiveVideoIcon from "@/app/svgs/liveVideo";
+import { GenericButton } from "../../_components";
 
 const TableView = () => {
   const popUpRef = useRef(null);
