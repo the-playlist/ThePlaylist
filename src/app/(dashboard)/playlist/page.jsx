@@ -362,6 +362,7 @@ const page = () => {
     }
   };
   const fetchPlaylistSongList = async (shouldCalled) => {
+    console.log("==>", "called");
     if (isRequestInProgress) {
       return;
     }
