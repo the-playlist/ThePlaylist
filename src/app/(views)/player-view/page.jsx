@@ -46,9 +46,8 @@ const PerformerView = () => {
         autoConnect: false,
       });
       socket.connect();
-      setTimeout(() => {
-        fetchPlaylistSongList(null);
-      }, 1000);
+
+      fetchPlaylistSongList(true);
     }
   }, [isOnline]);
 
