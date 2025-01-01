@@ -165,8 +165,7 @@ const WallView = () => {
     try {
       let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
       if (response && !response.isError) {
-        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-          response?.data?.content;
+        const { completeList } = response?.data?.content || {};
         setSongList(completeList);
       }
       setIsLoading(false);

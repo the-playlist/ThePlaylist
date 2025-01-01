@@ -154,8 +154,7 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi();
       if (response && !response.isError) {
-        const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
-          response?.data?.content;
+        const { completeList } = response?.data?.content;
 
         setPerformers(completeList);
       }
