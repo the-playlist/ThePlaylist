@@ -163,10 +163,6 @@ const page = () => {
   // }, [votingList]);
 
   // Add signal to buffer and trigger debounce logic
-  const addSignalToBuffer = () => {
-    setSignalBuffer((prevBuffer) => [...prevBuffer, {}]); // Adding an empty object to represent the signal
-    resetDebounceTimer();
-  };
 
   useEffect(() => {
     if (counter > 0) {
@@ -208,17 +204,17 @@ const page = () => {
     }
   };
   const fetchPlaylistSongList = async (shouldCalled) => {
-    console.log("==>", "called");
-    if (isRequestInProgress) {
-      return;
-    }
+    // console.log("==>", "called");
+    // if (isRequestInProgress) {
+    //   return;
+    // }
 
-    if (counter <= 0 && !shouldCalled) {
-      console.log("No more requests to process.");
-      return;
-    }
+    // if (counter <= 0 && !shouldCalled) {
+    //   console.log("No more requests to process.");
+    //   return;
+    // }
 
-    setIsRequestInProgress(true);
+    // setIsRequestInProgress(true);
 
     try {
       let response = await getPlaylistSongListApi();
@@ -283,12 +279,14 @@ const page = () => {
       setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
-    } finally {
-      setIsRequestInProgress(false); // Unlock after request completion
-      if (counter > 0) {
-        setCounter((prev) => prev - 1); // Decrement the counter
-      }
     }
+
+    // finally {
+    //   setIsRequestInProgress(false); // Unlock after request completion
+    //   if (counter > 0) {
+    //     setCounter((prev) => prev - 1); // Decrement the counter
+    //   }
+    // }
   };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {
