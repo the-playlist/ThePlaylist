@@ -5,5 +5,5 @@ import onError from "../../../../../backend/middlewares/errors";
 
 const router = createRouter();
 connectMongoDb();
-router.get(getSongsFromPlaylistV2);
+router.post(getSongsFromPlaylistV2);
 export default router.handler({ onError });

@@ -5,8 +5,9 @@ import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 
 import {
+  useGetSongsFromPlaylistV2Mutation,
   useLazyGetSongsFromPlaylistQuery,
-  useLazyGetSongsFromPlaylistV2Query,
+  // useLazyGetSongsFromPlaylistV2Query,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
@@ -17,7 +18,9 @@ import { useOnlineStatus } from "@/app/_utils/helper";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
-  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
+  // const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
+  const [getPlaylistSongListApi] = useGetSongsFromPlaylistV2Mutation();
+
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const [loading, setLoading] = useState(true);
   const [isFullScreen, setIsFullScreen] = useState(false);

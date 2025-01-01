@@ -7,7 +7,7 @@ import { IoArrowBackOutline } from "react-icons/io5";
 import { SelectSongModal, SongCountdownTimer } from "../../_components";
 import {
   useUpdatePlaylistTypeMutation,
-  useLazyGetSongsFromPlaylistV2Query,
+  // useLazyGetSongsFromPlaylistV2Query,
   useDeleteSongFromPlaylistByIdV2Mutation,
   useDeleteAllSongsFromPlaylistV2Mutation,
   useRevertMasterCheckV2Mutation,
@@ -15,6 +15,7 @@ import {
   // useLazyGetAddSongListForCustomerV2Query,
   // useAddMultiSongToPlaylistV2Mutation,
   useLazyGetAddEvenSongsToPlaylistQuery,
+  useGetSongsFromPlaylistV2Mutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -44,7 +45,7 @@ const page = () => {
   const dispatch = useDispatch();
   const isOnline = useOnlineStatus();
   const [getPlaylistSongListApi, getPlaylistSongListResponse] =
-    useLazyGetSongsFromPlaylistV2Query();
+    useGetSongsFromPlaylistV2Mutation();
   const [fixedContent, setFixedContent] = useState([]);
   const [nonFixedContent, setNonFixedContent] = useState([]);
   const [completeList, setCompleteList] = useState([]);
@@ -112,11 +113,6 @@ const page = () => {
     setSocket(socket);
 
     socket.on("emptyPlaylistResponse-v2", (item) => {
-      const { playlist, isFirst } = item;
-      const playlistWithId = playlist?.map((item, index) => ({
-        ...item,
-        id: index, // Add a unique id if it doesn't exist
-      }));
       fetchPlaylistSongList(true);
       dispatch(setPlaylistLength(0));
       dispatch(setCurrentSongSecond(0));
@@ -127,7 +123,6 @@ const page = () => {
 
       clearTimeout(timer); // Clear previous timeout
 
-      // Set a new timeout to call API if no more signals come in for 500ms
       timer = setTimeout(() => {
         setCounter((prev) => prev + 1);
       }, 1000);
@@ -136,7 +131,6 @@ const page = () => {
       // setCounter((prev) => prev + 1);
       clearTimeout(timer); // Clear previous timeout
 
-      // Set a new timeout to call API if no more signals come in for 500ms
       timer = setTimeout(() => {
         setCounter((prev) => prev + 1);
       }, 700);
@@ -203,18 +197,19 @@ const page = () => {
       });
     }
   };
+
   const fetchPlaylistSongList = async (shouldCalled) => {
-    // console.log("==>", "called");
-    // if (isRequestInProgress) {
-    //   return;
-    // }
+    console.log("==>", "called");
+    if (isRequestInProgress) {
+      return;
+    }
 
-    // if (counter <= 0 && !shouldCalled) {
-    //   console.log("No more requests to process.");
-    //   return;
-    // }
+    if (counter <= 0 && !shouldCalled) {
+      console.log("No more requests to process.");
+      return;
+    }
 
-    // setIsRequestInProgress(true);
+    setIsRequestInProgress(true);
 
     try {
       let response = await getPlaylistSongListApi();
@@ -279,14 +274,12 @@ const page = () => {
       setIsLoading(false);
     } catch (error) {
       console.error("Fetch failed:", error);
+    } finally {
+      setIsRequestInProgress(false); // Unlock after request completion
+      if (counter > 0) {
+        setCounter((prev) => prev - 1); // Decrement the counter
+      }
     }
-
-    // finally {
-    //   setIsRequestInProgress(false); // Unlock after request completion
-    //   if (counter > 0) {
-    //     setCounter((prev) => prev - 1); // Decrement the counter
-    //   }
-    // }
   };
 
   const deleteSongFromPlaylistHandler = async (id, isTrashPress, hideSong) => {

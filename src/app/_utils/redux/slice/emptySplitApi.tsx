@@ -73,6 +73,7 @@ export const emptySplitApi = createApi({
     prepareHeaders: async (headers, { getState }) => {
       try {
         const token = selectToken(getState());
+        headers.set("Cache-Control", "no-cache");
         if (token) {
           headers.set("x-auth-token", `${token}`);
         } else {
@@ -388,8 +389,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-    getSongsFromPlaylistV2: builder.query({
-      query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST_V2}`,
+    getSongsFromPlaylistV2: builder.mutation({
+      // query: (body: any) => ,
+      query: (body: any) => ({
+        url: `${endPoints.GET_SONGS_FROM_PLAYLIST_V2}`,
+        method: "POST",
+        body: body,
+      }),
     }),
     addMultiSongToPlaylistV2: builder.mutation({
       query: (body) => ({
@@ -464,7 +470,8 @@ export const {
   useDeleteAllSongsFromPlaylistV2Mutation,
   useDeleteSongFromPlaylistByIdV2Mutation,
   useLazyGetAddSongListForCustomerV2Query,
-  useLazyGetSongsFromPlaylistV2Query,
+  // useLazyGetSongsFromPlaylistV2Query,
+  useGetSongsFromPlaylistV2Mutation,
   useRevertMasterCheckV2Mutation,
   useUpdatePlayerNamePlaylistV2Mutation,
   useUpdateSortOrderOfSongsV2Mutation,
