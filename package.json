@@ -6,7 +6,7 @@
     "dev": "npm run next",
     "next": "next dev",
     "build": "next build",
-    "start": "next start ",
+    "start": "next start -p 5000",
     "lint": "next lint",
     "node": "node server.js"
   },
