@@ -153,9 +153,9 @@ const PerformerView = () => {
     try {
       let response = await getPlaylistSongListApi();
       if (response && !response.isError) {
-        const { completeList } = response?.data?.content;
+        const { completeList } = response?.data?.content || {};
 
-        setPerformers(completeList);
+        setPerformers(completeList || []);
       }
       setLoading(false);
     } catch (error) {

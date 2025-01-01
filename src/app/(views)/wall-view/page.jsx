@@ -27,7 +27,7 @@ const WallView = () => {
   const [isFullScreen, setIsFullScreen] = useState(false);
   const [themeMode, setThemeMode] = useState(false);
   const [currentActive, setCurrentActive] = useState(null);
-  const [counter, setCounter] = useState(0);
+
   let screenName = "Wall View";
   const playlistQueue = useRef([]);
   const isProcessing = useRef(false);
@@ -51,7 +51,7 @@ const WallView = () => {
         autoConnect: false,
       });
       socket.connect();
-      fetchPlaylistSongList(null);
+      fetchPlaylistSongList(true);
     }
   }, [isOnline]);
 
@@ -155,15 +155,13 @@ const WallView = () => {
       setCurrentActive(1);
       localStorage.setItem("currentActive", 1);
     }
-    fetchPlaylistSongList();
+
     getThemeByTitleHandler(screenName);
   }, []);
 
   const fetchPlaylistSongList = async (firstFetch) => {
-    let isFirst = localStorage.getItem("isFirstTimeFetched");
-
     try {
-      let response = await getPlaylistSongListApi(firstFetch ?? isFirst);
+      let response = await getPlaylistSongListApi();
       if (response && !response.isError) {
         const { completeList } = response?.data?.content || {};
         setSongList(completeList);
@@ -241,7 +239,7 @@ const WallView = () => {
                   <Logo />
                 </div>
                 <ul>
-                  {songList.map((item, index) => {
+                  {songList?.map((item, index) => {
                     const isLocked = index < 2;
 
                     return item?.requestToPerform ? (
