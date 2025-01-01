@@ -1,19 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Logo } from "../../svgs";
-import { RiFullscreenFill } from "react-icons/ri";
-import { MdOutlineFullscreenExit } from "react-icons/md";
 import {
-  useLazyGetSongsFromPlaylistQuery,
-  useLazyGetSongsFromPlaylistV2Query,
   useLazyGetThemeByTitleQuery,
+  useGetSongsFromPlaylistV2Mutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
 import { CustomLoader } from "@/app/_components/custom_loader";
-import { IntroCounter } from "./intro-counter";
 import Fullscreen from "react-fullscreen-crossbrowser";
 import { useOnlineStatus } from "@/app/_utils/helper";
-import { useGetSongsFromPlaylistV2Mutation } from "../../_utils/redux/slice/emptySplitApi";
 
 const PerformerView = () => {
   const isOnline = useOnlineStatus();
@@ -157,7 +152,7 @@ const PerformerView = () => {
 
   const fetchPlaylistSongList = async (firstFetch) => {
     try {
-      let response = await getPlaylistSongListApi(null);
+      let response = await getPlaylistSongListApi();
       if (response && !response.isError) {
         const { isFavortiteListType, isFixedItems, isNotFixed, completeList } =
           response?.data?.content;
