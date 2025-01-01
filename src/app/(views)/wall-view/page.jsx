@@ -5,7 +5,8 @@ import { RiFullscreenFill } from "react-icons/ri";
 import { MdOutlineFullscreenExit } from "react-icons/md";
 import { CustomLoader } from "@/app/_components/custom_loader";
 import {
-  useLazyGetSongsFromPlaylistV2Query,
+  useGetSongsFromPlaylistV2Mutation,
+  // useLazyGetSongsFromPlaylistV2Query,
   useLazyGetThemeByTitleQuery,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { io } from "socket.io-client";
@@ -17,7 +18,8 @@ import { EllipsisText } from "@/app/_components/ellipsis-text";
 const WallView = () => {
   const handle = useFullScreenHandle();
   const [isConnected, setIsConnected] = useState(false);
-  const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
+  // const [getPlaylistSongListApi] = useLazyGetSongsFromPlaylistV2Query();
+  const [getPlaylistSongListApi] = useGetSongsFromPlaylistV2Mutation();
   const [getThemeByTitleApi] = useLazyGetThemeByTitleQuery();
   const isOnline = useOnlineStatus();
   const [isLoading, setIsLoading] = useState(true);
