@@ -439,35 +439,6 @@ export const deleteSongFromPlaylistById = async (req, res, next) => {
   res.status(200).json(response);
 };
 
-// export const deleteSongFromPlaylistById = async (req, res, next) => {
-//   const id = req.query.id;
-//   if (!id) {
-//     return res.status(400).json({ message: "ID parameter is missing" });
-//   }
-
-//   // Delete the record by ID
-//   await Playlist.findByIdAndDelete(id);
-
-//   // Find active songs
-//   const activeSongs = await Playlist.find({ isDeleted: false });
-
-//   // If there's only one active song, update PlaylistType
-//   if (activeSongs?.length === 1) {
-//     await PlaylistType.updateOne(
-//       {
-//         _id: SETTING_ID, // updating one document to determine what type of list should be visible on Playlist
-//       },
-//       {
-//         $set: { isFirst: true },
-//       }
-//     );
-//   }
-
-//   // Respond with success
-//   const response = new ResponseModel(true, "List Updated Successfully.", null);
-//   res.status(200).json(response);
-// };
-
 export const deleteAllSongsFromPlaylist = async (req, res, next) => {
   await Playlist.updateMany({ isDeleted: false }, { isDeleted: true });
   await PlaylistType.updateOne(
@@ -1186,15 +1157,15 @@ const addSongHandlerV2 = async (
       }
     }
   }
-  const existingItem = await PlaylistV2.findOne({ songData: songId });
-  if (existingItem) {
-    const response = new ResponseModel(
-      false,
-      "Song already available in the list",
-      null
-    );
-    res.status(200).json(response);
-  }
+  // const existingItem = await PlaylistV2.findOne({ songData: songId });
+  // if (existingItem) {
+  //   const response = new ResponseModel(
+  //     false,
+  //     "Song already available in the list",
+  //     null
+  //   );
+  //   res.status(200).json(response);
+  // }
   let playlistCount;
   if (playerToAssign) {
     playlistCount = await PlaylistV2.countDocuments({
@@ -1398,4 +1369,77 @@ export const requestToPerformSong = async (req, res) => {
       })
     );
   }
+};
+
+export const removeDuplication = async (req, res) => {
+  // const playlists = await PlaylistV2.find({ isDeleted: false });
+  // const uniqueSongs = new Set();
+  // const recordsToDelete = [];
+
+  // for (const playlist of playlists) {
+  //   if (uniqueSongs.has(playlist.songData.toString())) {
+  //     // Duplicate found, mark for deletion
+  //     recordsToDelete.push(playlist._id);
+  //   } else {
+  //     // Add unique songData to the set
+  //     uniqueSongs.add(playlist.songData.toString());
+  //   }
+  // }
+  // const deletedCount = recordsToDelete.length;
+  // await PlaylistV2.deleteMany({ _id: { $in: recordsToDelete } });
+
+  const duplicates = await PlaylistV2.aggregate([
+    {
+      $match: { isDeleted: false }, // Only include non-deleted records
+    },
+    {
+      $group: {
+        _id: "$songData", // Group by songData
+        ids: { $push: "$_id" }, // Collect all _id values for this group
+        count: { $sum: 1 }, // Count the number of documents in this group
+      },
+    },
+    {
+      $match: { count: { $gt: 1 } }, // Find groups with more than 1 document
+    },
+  ]);
+
+  // Step 2: Collect IDs to update (retain one ID per group)
+  const idsToMarkAsDeleted = duplicates.flatMap((doc) => doc.ids.slice(1)); // Retain the first ID, mark the rest
+  // Step 3: Update duplicate records to `isDeleted: true`
+  await PlaylistV2.updateMany(
+    { _id: { $in: idsToMarkAsDeleted } },
+    { $set: { isDeleted: true } }
+  );
+
+  const [playlistType, status, playlist, playlistCount] = await Promise.all([
+    PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+    AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+    PlaylistV2.aggregate(songFromPlaylistV2),
+    PlaylistV2.countDocuments({ isDeleted: false }),
+  ]);
+  const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
+  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  if (isFavortiteListType) {
+    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+  }
+
+  const filteredPlaylist = isFavortiteListType
+    ? flattenedPlaylist?.filter((item) => item.isFav)
+    : flattenedPlaylist;
+  const isFixedItems = filteredPlaylist?.filter(
+    (item) => item?.isFixed == true
+  );
+  const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+  res.status(200).json(
+    new ResponseModel(true, "Duplicates removed successfully", {
+      isFixedItems: isFixedItems,
+      isNotFixed: isNotFixedItems,
+      playlistCount,
+      isFavortiteListType,
+      completeList: filteredPlaylist,
+    })
+  );
 };

@@ -16,6 +16,7 @@ import {
   // useAddMultiSongToPlaylistV2Mutation,
   useLazyGetAddEvenSongsToPlaylistQuery,
   useGetSongsFromPlaylistV2Mutation,
+  useRemoveDuplicateSongsFromPlaylistMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -58,6 +59,8 @@ const page = () => {
   // const [songsListApi] = useLazyGetAddSongListForCustomerV2Query();
   // const [addMultiSongsApi] = useAddMultiSongToPlaylistV2Mutation();
   const [addMultipleSongsApi] = useLazyGetAddEvenSongsToPlaylistQuery();
+  const [removeDuplicateSongApi] =
+    useRemoveDuplicateSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);
   const [socket, setSocket] = useState();
   const [isLoading, setIsLoading] = useState(true);
@@ -170,7 +173,48 @@ const page = () => {
     }
   }, [fixedContent]);
 
-  const addMultipleSongsApiHandler = async () => {
+  useEffect(() => {
+    if (nonFixedContent?.length > 0) {
+      const valueArr = nonFixedContent.map((item) => item.songId);
+
+      const isDuplicate = valueArr.some(
+        (item, idx) => valueArr.indexOf(item) !== idx
+      );
+      if (isDuplicate) {
+        removeDuplicateApiHandler();
+      }
+      console.log("Is there a duplicate songId?", isDuplicate); // true
+    }
+  }, [nonFixedContent]);
+
+  const removeDuplicateApiHandler = async () => {
+    const response = await removeDuplicateSongApi();
+    if (response && !response?.isError) {
+      const {
+        isFavortiteListType,
+        isFixedItems,
+        isNotFixed,
+        completeList: fullList,
+      } = response?.data?.content;
+
+      const playlistWithId = isNotFixed?.map((item, index) => ({
+        ...item,
+        id: index, // Add a unique id if it doesn't exist
+      }));
+      setCompleteList(fullList);
+      if (completeList?.length > 0) {
+        setIsFavExist(completeList?.filter((item) => item?.isFav));
+      }
+      setNonFixedContent(playlistWithId || []);
+      setIsFavSongs(isFavortiteListType);
+      socket.emit("insertSongIntoPlaylistRequest-v2", {
+        playlist: fullList,
+        isInsert: false,
+      });
+    }
+  };
+
+  const addMultipleSongsApiHandler = async (socket) => {
     const response = await addMultipleSongsApi();
 
     if (response && !response?.isError) {
@@ -232,7 +276,7 @@ const page = () => {
         setCompleteList(fulllist);
 
         if (fulllist?.length > 1 && fulllist?.length < 30) {
-          addMultipleSongsApiHandler();
+          addMultipleSongsApiHandler(newConnection);
         }
         if (completeList?.length > 0) {
           setIsFavExist(completeList?.filter((item) => item?.isFav));

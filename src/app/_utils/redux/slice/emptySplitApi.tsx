@@ -62,6 +62,7 @@ const endPoints = {
   GET_LOCATION_LIST: "api/location/getLocationList",
   REUEST_TO_PERFORM: "api/songs/requestToPerformSong",
   ADD_EVEN_SONG_TO_PLAYLIST: "api/playlist/addSongsToPlaylistEvenly",
+  REMOVE_DUPLICATE_SONGS: "api/playlist/removeDuplicateSongsFromPlaylist",
 };
 
 // Define a service using a base URL and expected endpoints
@@ -123,7 +124,6 @@ export const emptySplitApi = createApi({
     getStreamRequest: builder.query({
       query: () => endPoints.GET_STREAM_REQUEST,
     }),
-
     getTableViewSongs: builder.mutation({
       query: (body: any) => ({
         url: endPoints.GET_TABLE_VIEW_SONGS,
@@ -131,7 +131,6 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
-
     disbaleSongFromSongBank: builder.mutation({
       query: (body: any) => ({
         url: endPoints.DISABLE_SONG,
@@ -414,6 +413,14 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+
+    removeDuplicateSongsFromPlaylist: builder.mutation({
+      query: (body: any) => ({
+        url: endPoints.REMOVE_DUPLICATE_SONGS,
+        method: "POST",
+        body: body,
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -480,4 +487,5 @@ export const {
   useLazyGetLocationListQuery,
   useRequestToPerformMutation,
   useLazyGetAddEvenSongsToPlaylistQuery,
+  useRemoveDuplicateSongsFromPlaylistMutation,
 } = emptySplitApi;
