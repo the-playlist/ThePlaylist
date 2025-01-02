@@ -383,13 +383,13 @@ const TableView = () => {
     };
 
     const toggleButton = async (isTrue) => {
+      setVotingLoader(true);
       const deviceId = generateDeviceId();
       let updatedPerformer = [...performer];
       let updatedItem = { ...updatedPerformer[index] };
       updatedItem.tableUpVote = isTrue;
       updatedPerformer[index] = updatedItem;
       setPerformers(updatedPerformer);
-      setVotingLoader(true);
 
       await addUpdateVoteAPI({
         customerId: deviceId,
@@ -408,6 +408,7 @@ const TableView = () => {
         isIncrement: isTrue,
         isVoted: item?.tableUpVote === 0 ? false : true,
       });
+      setVotingLoader(false);
     };
 
     return (
