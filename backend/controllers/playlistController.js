@@ -1157,15 +1157,15 @@ const addSongHandlerV2 = async (
       }
     }
   }
-  // const existingItem = await PlaylistV2.findOne({ songData: songId });
-  // if (existingItem) {
-  //   const response = new ResponseModel(
-  //     false,
-  //     "Song already available in the list",
-  //     null
-  //   );
-  //   res.status(200).json(response);
-  // }
+  const existingItem = await PlaylistV2.findOne({ songData: songId });
+  if (existingItem) {
+    const response = new ResponseModel(
+      false,
+      "Song already available in the list",
+      null
+    );
+    res.status(200).json(response);
+  }
   let playlistCount;
   if (playerToAssign) {
     playlistCount = await PlaylistV2.countDocuments({
