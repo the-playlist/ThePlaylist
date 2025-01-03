@@ -547,7 +547,7 @@ export function PlaylistSongItemV2({
       className={` text-center bg-gray-tile text-black shadow rounded-2xl h-20 flex items-center  px-5`}
     >
       <div className="w-1/12 text-start font-extrabold text-lg disable-select dragHandle">
-        {/* <div className=" flex items-center justify-center  cursor-pointer">
+        <div className=" flex items-center justify-center  cursor-pointer">
           {sortByMaster ? (
             loading == item?._id ? (
               <span className="loading loading-spinner loading-md"></span>
@@ -609,7 +609,7 @@ export function PlaylistSongItemV2({
               <HiOutlineArrowsUpDown />
             </div>
           )}
-        </div> */}
+        </div>
       </div>
       <div className="w-2/12 pr-10">
         <EllipsisText color={"text-black"} text={title} length={15} />
