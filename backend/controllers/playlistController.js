@@ -1390,7 +1390,7 @@ export const removeDuplication = async (req, res) => {
 
   const duplicates = await PlaylistV2.aggregate([
     {
-      $match: { isDeleted: false }, // Only include non-deleted records
+      $match: { isDeleted: false, requestToPerform: false }, // Only include non-deleted records
     },
     {
       $group: {
