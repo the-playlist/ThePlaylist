@@ -278,8 +278,8 @@ const page = () => {
         if (fulllist?.length > 1 && fulllist?.length < 30) {
           addMultipleSongsApiHandler(newConnection);
         }
-        if (completeList?.length > 0) {
-          setIsFavExist(completeList?.filter((item) => item?.isFav));
+        if (fulllist?.length > 0) {
+          setIsFavExist(fulllist?.filter((item) => item?.isFav));
         }
 
         if (
@@ -308,7 +308,7 @@ const page = () => {
         setIsFavSongs(isFavortiteListType);
         dispatch(setPlaylistLength(isFixedItems?.length));
         newConnection.emit("insertSongIntoPlaylistRequest-v2", {
-          playlist: completeList,
+          playlist: fulllist,
           isInsert: false,
         });
       }
