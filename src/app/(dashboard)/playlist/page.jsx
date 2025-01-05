@@ -335,6 +335,11 @@ const page = () => {
       dispatch(setCurrentSongSecond(0));
       dispatch(setSongsListUpdate());
     }
+    socket.emit("removeReq-v2", {
+      isFirst: false,
+      playlist: res,
+      time: 10,
+    });
     let response = await deleteSongByIdApi({
       id: id,
       isDeleted: true,
@@ -354,11 +359,11 @@ const page = () => {
     } else {
       toast.error(response?.data?.description || "Something Went Wrong...");
     }
-    socket.emit("removeReq-v2", {
-      isFirst: false,
-      playlist: res,
-      time: 10,
-    });
+    // socket.emit("removeReq-v2", {
+    //   isFirst: false,
+    //   playlist: res,
+    //   time: 10,
+    // });
     fetchPlaylistSongList(true);
     // if (completeList?.length != 0 && completeList?.length < 30) {
     //   await fetchSongsList(res);
