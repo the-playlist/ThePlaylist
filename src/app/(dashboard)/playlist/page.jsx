@@ -14,9 +14,10 @@ import {
   useUpdateSortOrderOfSongsV2Mutation,
   // useLazyGetAddSongListForCustomerV2Query,
   // useAddMultiSongToPlaylistV2Mutation,
-  useLazyGetAddEvenSongsToPlaylistQuery,
+  // useLazyGetAddEvenSongsToPlaylistQuery,
   useGetSongsFromPlaylistV2Mutation,
   useRemoveDuplicateSongsFromPlaylistMutation,
+  useAddEvenSongsToPlaylistMutation,
 } from "@/app/_utils/redux/slice/emptySplitApi";
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
@@ -58,7 +59,7 @@ const page = () => {
   const [deleteSongByIdApi] = useDeleteSongFromPlaylistByIdV2Mutation();
   // const [songsListApi] = useLazyGetAddSongListForCustomerV2Query();
   // const [addMultiSongsApi] = useAddMultiSongToPlaylistV2Mutation();
-  const [addMultipleSongsApi] = useLazyGetAddEvenSongsToPlaylistQuery();
+  const [addMultipleSongsApi] = useAddEvenSongsToPlaylistMutation();
   const [removeDuplicateSongApi] =
     useRemoveDuplicateSongsFromPlaylistMutation();
   const [isFavSongs, setIsFavSongs] = useState(false);

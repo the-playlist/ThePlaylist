@@ -91,9 +91,6 @@ export const emptySplitApi = createApi({
     getSongsFromPlaylist: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_FROM_PLAYLIST}${body}`,
     }),
-    getAddEvenSongsToPlaylist: builder.query({
-      query: (body: any) => `${endPoints.ADD_EVEN_SONG_TO_PLAYLIST}`,
-    }),
     getSongsReportList: builder.query({
       query: (body: any) => `${endPoints.GET_SONGS_REPORT_LIST}${body}`,
     }),
@@ -421,6 +418,13 @@ export const emptySplitApi = createApi({
         body: body,
       }),
     }),
+    addEvenSongsToPlaylist: builder.mutation({
+      query: (body: any) => ({
+        url: `${endPoints.ADD_EVEN_SONG_TO_PLAYLIST}`,
+        method: "POST",
+        body: body,
+      }),
+    }),
   }),
 
   // tag use for invalidate api
@@ -486,6 +490,6 @@ export const {
   useGetTableViewSongsV2Mutation,
   useLazyGetLocationListQuery,
   useRequestToPerformMutation,
-  useLazyGetAddEvenSongsToPlaylistQuery,
+  useAddEvenSongsToPlaylistMutation,
   useRemoveDuplicateSongsFromPlaylistMutation,
 } = emptySplitApi;
