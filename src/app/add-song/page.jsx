@@ -41,7 +41,6 @@ const Typeahead = () => {
   const [songList, setSongList] = useState([]);
   const [socket, setSocket] = useState();
   const [songLimit, setSongLimit] = useState(null);
-  const [requestLimit, setRequestLimit] = useState(null);
 
   const [songDetail, setSongDetail] = useState({
     title: "",
@@ -50,26 +49,35 @@ const Typeahead = () => {
     playingState: false,
     id: null,
   });
+
+  let timer;
+
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
       autoConnect: false,
     });
     socket.on("limitChangeByMasterRes", (item) => {
       getLimitApiHandler();
-      // const { title } = item;
-      // if (limitTitle == title) {
-      //   getLimitByTitleHandler(title);
-      // }
     });
 
     socket.on("songAddByCustomerRes-v2", (item) => {
-      fetchSongsList();
+      // fetchSongsList();
+      timer = setTimeout(() => {
+        fetchSongsList();
+      }, 1000);
     });
     socket.on("insertSongIntoPlaylistResponse-v2", () => {
-      fetchSongsList();
+      clearTimeout(timer);
+
+      timer = setTimeout(() => {
+        fetchSongsList();
+      }, 1000);
     });
     socket.on("RemoveSongFromPlaylistResponse-v2", () => {
-      fetchSongsList();
+      // fetchSongsList();
+      timer = setTimeout(() => {
+        fetchSongsList();
+      }, 1000);
     });
     socket.on("remainingTimeRes-v2", (item) => {
       const { duration, currentSongDetail, playingState } = item;
@@ -83,6 +91,10 @@ const Typeahead = () => {
     });
     socket.connect();
     setSocket(socket);
+
+    return () => {
+      clearTimeout(timer); // Cleanup the timeout if the component is unmounted
+    };
   }, []);
 
   const handleInputChange = (e) => {
@@ -129,14 +141,17 @@ const Typeahead = () => {
   };
 
   const fetchSongsList = async () => {
-    setSelectedSong(null);
-    let response = await songsListApi();
-    if (response && !response.isError) {
-      const songList = response.data?.content;
-      setFilteredOptions(songList);
-      setSongList(songList);
+    try {
+      let response = await songsListApi();
+      if (response && !response.isError) {
+        const songList = response.data?.content;
+        setFilteredOptions(songList);
+        setSongList(songList);
+      }
+      setScreenLoader(false);
+    } catch (error) {
+    } finally {
     }
-    setScreenLoader(false);
   };
 
   const handleSong = (id, song) => {
@@ -235,42 +250,25 @@ const Typeahead = () => {
         (item) => item?.heading == "Perform Request Limit"
       );
 
-      setRequestLimit(requestLimit);
-
       setSongLimit(songLimit);
     }
   };
 
   const handleRequestSong = (payload) => {
     requestToPerformApiHandler(payload);
-    // const currentTime = new Date().getTime();
-    // const prevSongTime = parseInt(localStorage.getItem("prevReqSongTime"), 10);
-    // const songCount = parseInt(localStorage.getItem("reqSongCount"), 10) || 0;
-    // const timeLimit = requestLimit?.time * 60000;
-    // const songCountLimit = requestLimit?.value;
-
-    // if (!prevSongTime) {
-    //   localStorage.setItem("prevReqSongTime", currentTime);
-    //   localStorage.setItem("reqSongCount", 1);
-    //   requestToPerformApiHandler(payload);
-    //   return;
-    // }
-    // const timeDifference = currentTime - prevSongTime;
-    // if (timeDifference > timeLimit) {
-    //   localStorage.setItem("prevReqSongTime", currentTime);
-    //   localStorage.setItem("reqSongCount", 1);
-    //   requestToPerformApiHandler(payload);
-    // } else {
-    //   if (songCount < songCountLimit) {
-    //     localStorage.setItem("reqSongCount", songCount + 1);
-    //     requestToPerformApiHandler(payload);
-    //   } else {
-    //     toast.error(
-    //       requestLimit?.message ?? "Song limit reached. Please try again later."
-    //     );
-    //   }
-    // }
   };
+  useEffect(() => {
+    if (selectedSong != null) {
+      const filterlist = songList?.find(
+        (item) => item?._id == selectedSong?._id
+      );
+      if (filterlist == null) {
+        handleClearClick();
+      }
+      setSelectedSong(filterlist);
+    }
+  }, [songList]);
+
   return screenLoader ? (
     <CustomLoader bgColor={"bg-white"} />
   ) : (
@@ -302,7 +300,7 @@ const Typeahead = () => {
           </svg>
           {inputValue && (
             <button
-              className="absolute right-0 top-1  rounded-r-lg px-4 py-2 "
+              className="absolute right-0 top-1  text-white rounded-r-lg px-4 py-2 "
               onClick={handleClearClick}
             >
               <MdClear size={20} />
@@ -312,7 +310,9 @@ const Typeahead = () => {
       </div>
       {getSongsListResponse?.isFetching || allSongLoader ? (
         <div className="mt-24 flex items-center justify-center">
-          <span className={`loading loading-spinner loading-md `}></span>
+          <span
+            className={`loading loading-spinner loading-md bg-white `}
+          ></span>
         </div>
       ) : filteredOptions?.length > 0 ? (
         <ul className="z-10 w-full  bg-[#1F1F1F] mt-20 mb-32 overflow-y-auto ">
@@ -320,7 +320,9 @@ const Typeahead = () => {
             <div key={index} className="border-b-1 border-[#323335]">
               <button
                 className={`flex w-full items-center rounded-md px-3  py-1 my-1 bg-${
-                  selectedSong == option ? "top-queue-bg" : "[#1F1F1F]"
+                  selectedSong?._id == option?._id
+                    ? "top-queue-bg"
+                    : "[#1F1F1F]"
                 }`}
                 onClick={() => {
                   setInputValue(option.title);
@@ -378,7 +380,7 @@ const Typeahead = () => {
           <div className="flex items-center justify-center">Go Back</div>
         </button>
         <button
-          disabled={inputValue?.length == 0}
+          disabled={selectedSong == null}
           onClick={() => {
             if (request_to_perform == "true") {
               let payload = {
@@ -392,12 +394,12 @@ const Typeahead = () => {
             }
           }}
           className={`flex w-full items-center ml-4 ${
-            inputValue?.length > 0 ? "bg-top-queue-bg" : "bg-gray-200"
+            selectedSong != null ? "bg-top-queue-bg" : "bg-gray-200"
           }   text-black font-bold py-3 px-4 rounded-md justify-center `}
         >
           <span
             className={`text-base text-${
-              inputValue?.length > 0 ? "black" : "white"
+              selectedSong != null ? "black" : "white"
             }`}
           >
             {isLoading || btnLoader ? (

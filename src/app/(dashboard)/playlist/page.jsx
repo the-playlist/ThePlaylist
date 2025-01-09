@@ -176,15 +176,27 @@ const page = () => {
 
   useEffect(() => {
     if (nonFixedContent?.length > 0) {
-      const valueArr = nonFixedContent.map((item) => item.songId);
+      // Filter to include only songs with requestToPerform === false
+      const filteredContent = nonFixedContent.filter(
+        (item) => !item.requestToPerform
+      );
 
+      // Map the filtered content to an array of songId
+      const valueArr = filteredContent.map((item) => item.songId);
+
+      // Check for duplicates in the filtered array
       const isDuplicate = valueArr.some(
         (item, idx) => valueArr.indexOf(item) !== idx
       );
+
       if (isDuplicate) {
         removeDuplicateApiHandler();
       }
-      console.log("Is there a duplicate songId?", isDuplicate); // true
+
+      console.log(
+        "Is there a duplicate songId for requestToPerform === false?",
+        isDuplicate
+      );
     }
   }, [nonFixedContent]);
 
