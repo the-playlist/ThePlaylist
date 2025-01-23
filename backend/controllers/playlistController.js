@@ -1521,7 +1521,10 @@ export const removeDuplication = async (req, res) => {
   // Step 1: Find duplicates
   const duplicates = await PlaylistV2.aggregate([
     {
-      $match: { isDeleted: false }, // Only include non-deleted records
+      $match: {
+        isDeleted: false, // Only include non-deleted records
+        isFixed: { $ne: true }, // Exclude fixed songs from duplication check
+      },
     },
     {
       $group: {
