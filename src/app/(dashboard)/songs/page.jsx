@@ -18,10 +18,24 @@ import { toast } from "react-toastify";
 import { MdClear } from "react-icons/md";
 import { CustomLoader } from "../../_components/custom_loader";
 import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
 
 const ToggleButton = ({ isChecked, item }) => {
   const [isEnable, setIsEnable] = useState(isChecked);
   const [disableSongAPI] = useDisbaleSongFromSongBankMutation();
+  const [socket, setSocket] = useState();
+
+  useEffect(() => {
+    const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL, {
+      autoConnect: false,
+    });
+    socket.connect();
+    setSocket(socket);
+  }, []);
+
+  function sendSignal() {
+    socket.emit("changeSongStatusReq");
+  }
 
   return (
     <input
@@ -33,6 +47,7 @@ const ToggleButton = ({ isChecked, item }) => {
         });
         if (response && response.data.success) {
           toast.success(response?.data?.description);
+          sendSignal();
         }
       }}
       type="checkbox"

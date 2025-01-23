@@ -20,8 +20,6 @@ const Typeahead = () => {
   const request_to_perform = searchParams.get("request_perform");
   const table_no = searchParams.get("table_no");
 
-  let limitTitle = "Song Limit";
-
   const [getLimitByTitleApi] = useLazyGetLimitByTitleQuery();
   const [screenLoader, setScreenLoader] = useState(true);
   const [addSongToPlaylistByUserApi, { isLoading }] =
@@ -74,7 +72,6 @@ const Typeahead = () => {
       }, 1000);
     });
     socket.on("RemoveSongFromPlaylistResponse-v2", () => {
-      // fetchSongsList();
       timer = setTimeout(() => {
         fetchSongsList();
       }, 1000);
@@ -89,6 +86,13 @@ const Typeahead = () => {
         id: currentSongDetail?.id,
       });
     });
+    if (request_to_perform == "true") {
+      console.log("called");
+      socket.on("changeSongStatusRes", () => {
+        fetchAllSongsList();
+      });
+    }
+
     socket.connect();
     setSocket(socket);
 
@@ -130,7 +134,7 @@ const Typeahead = () => {
 
   const fetchAllSongsList = async () => {
     setSelectedSong(null);
-    let response = await getAllSongsListApi();
+    let response = await getAllSongsListApi(false);
 
     if (response && !response.isError) {
       const songList = response.data?.content;

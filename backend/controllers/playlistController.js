@@ -1371,31 +1371,162 @@ export const requestToPerformSong = async (req, res) => {
   }
 };
 
+// export const removeDuplication = async (req, res) => {
+//   const duplicates = await PlaylistV2.aggregate([
+//     {
+//       $match: { isDeleted: false, requestToPerform: false }, // Only include non-deleted records
+//     },
+//     {
+//       $group: {
+//         _id: "$songData", // Group by songData
+//         ids: { $push: "$_id" }, // Collect all _id values for this group
+//         count: { $sum: 1 }, // Count the number of documents in this group
+//       },
+//     },
+//     {
+//       $match: { count: { $gt: 1 } }, // Find groups with more than 1 document
+//     },
+//   ]);
+
+//   // Step 2: Collect IDs to update (retain one ID per group)
+//   const idsToMarkAsDeleted = duplicates.flatMap((doc) => doc.ids.slice(1)); // Retain the first ID, mark the rest
+//   // Step 3: Update duplicate records to `isDeleted: true`
+//   await PlaylistV2.updateMany(
+//     { _id: { $in: idsToMarkAsDeleted } },
+//     { $set: { isDeleted: true } }
+//   );
+
+//   const [playlistType, status, playlist, playlistCount] = await Promise.all([
+//     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+//     AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+//     PlaylistV2.aggregate(songFromPlaylistV2),
+//     PlaylistV2.countDocuments({ isDeleted: false }),
+//   ]);
+//   const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
+//   let flattenedPlaylist = flattenPlaylist(playlist);
+
+//   if (isFavortiteListType) {
+//     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+//   }
+
+//   const filteredPlaylist = isFavortiteListType
+//     ? flattenedPlaylist?.filter((item) => item.isFav)
+//     : flattenedPlaylist;
+//   const isFixedItems = filteredPlaylist?.filter(
+//     (item) => item?.isFixed == true
+//   );
+//   const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+//   res.status(200).json(
+//     new ResponseModel(true, "Duplicates removed successfully", {
+//       isFixedItems: isFixedItems,
+//       isNotFixed: isNotFixedItems,
+//       playlistCount,
+//       isFavortiteListType,
+//       completeList: filteredPlaylist,
+//     })
+//   );
+// };
+
+// export const removeDuplication = async (req, res) => {
+//   // Step 1: Find duplicates
+//   const duplicates = await PlaylistV2.aggregate([
+//     {
+//       $match: { isDeleted: false }, // Only include non-deleted records
+//     },
+//     {
+//       $group: {
+//         _id: "$songData", // Group by songData
+//         items: { $push: "$$ROOT" }, // Collect all records in the group
+//         count: { $sum: 1 }, // Count the number of documents in this group
+//       },
+//     },
+//     {
+//       $match: { count: { $gt: 1 } }, // Find groups with more than 1 document
+//     },
+//   ]);
+
+//   // Step 2: Collect IDs to update (retain preferred version of each group)
+//   const idsToMarkAsDeleted = duplicates.flatMap((doc) => {
+//     const items = doc.items;
+
+//     // Separate items with requestToPerform: true and false
+//     const preferredItems = items.filter(
+//       (item) => item.requestToPerform === true
+//     );
+//     const nonPreferredItems = items.filter(
+//       (item) => item.requestToPerform === false
+//     );
+
+//     let retainedItems;
+//     if (preferredItems.length > 0) {
+//       // Retain one preferred item if any exist
+//       retainedItems = [preferredItems[0]];
+//     } else {
+//       // Retain one non-preferred item if no preferred items exist
+//       retainedItems = [nonPreferredItems[0]];
+//     }
+
+//     // If all items are preferred, retain only one
+//     if (preferredItems.length > 1) {
+//       retainedItems = [preferredItems[0]];
+//     }
+
+//     const retainedIds = retainedItems.map((item) => item._id.toString());
+//     return items
+//       .filter((item) => !retainedIds.includes(item._id.toString()))
+//       .map((item) => item._id);
+//   });
+
+//   await PlaylistV2.updateMany(
+//     { _id: { $in: idsToMarkAsDeleted } },
+//     { $set: { isDeleted: true } }
+//   );
+
+//   // Fetch updated playlist data
+//   const [playlistType, status, playlist, playlistCount] = await Promise.all([
+//     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+//     AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+//     PlaylistV2.aggregate(songFromPlaylistV2),
+//     PlaylistV2.countDocuments({ isDeleted: false }),
+//   ]);
+//   const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
+
+//   let flattenedPlaylist = flattenPlaylist(playlist);
+
+//   if (isFavortiteListType) {
+//     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+//   }
+
+//   const filteredPlaylist = isFavortiteListType
+//     ? flattenedPlaylist?.filter((item) => item.isFav)
+//     : flattenedPlaylist;
+//   const isFixedItems = filteredPlaylist?.filter(
+//     (item) => item?.isFixed == true
+//   );
+//   const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+//   res.status(200).json(
+//     new ResponseModel(true, "Duplicates removed successfully", {
+//       isFixedItems: isFixedItems,
+//       isNotFixed: isNotFixedItems,
+//       playlistCount,
+//       isFavortiteListType,
+//       completeList: filteredPlaylist,
+//     })
+//   );
+// };
+
 export const removeDuplication = async (req, res) => {
-  // const playlists = await PlaylistV2.find({ isDeleted: false });
-  // const uniqueSongs = new Set();
-  // const recordsToDelete = [];
-
-  // for (const playlist of playlists) {
-  //   if (uniqueSongs.has(playlist.songData.toString())) {
-  //     // Duplicate found, mark for deletion
-  //     recordsToDelete.push(playlist._id);
-  //   } else {
-  //     // Add unique songData to the set
-  //     uniqueSongs.add(playlist.songData.toString());
-  //   }
-  // }
-  // const deletedCount = recordsToDelete.length;
-  // await PlaylistV2.deleteMany({ _id: { $in: recordsToDelete } });
-
+  // Step 1: Find duplicates
   const duplicates = await PlaylistV2.aggregate([
     {
-      $match: { isDeleted: false, requestToPerform: false }, // Only include non-deleted records
+      $match: { isDeleted: false }, // Only include non-deleted records
     },
     {
       $group: {
         _id: "$songData", // Group by songData
-        ids: { $push: "$_id" }, // Collect all _id values for this group
+        items: { $push: "$$ROOT" }, // Collect all records in the group
         count: { $sum: 1 }, // Count the number of documents in this group
       },
     },
@@ -1404,22 +1535,113 @@ export const removeDuplication = async (req, res) => {
     },
   ]);
 
-  // Step 2: Collect IDs to update (retain one ID per group)
-  const idsToMarkAsDeleted = duplicates.flatMap((doc) => doc.ids.slice(1)); // Retain the first ID, mark the rest
-  // Step 3: Update duplicate records to `isDeleted: true`
+  // Step 2: Collect IDs to update (retain preferred version of each group)
+  const idsToMarkAsDeleted = duplicates.flatMap((doc) => {
+    const items = doc.items;
+
+    // Separate items with requestToPerform: true and false
+    const preferredItems = items.filter(
+      (item) => item.requestToPerform === true
+    );
+    const nonPreferredItems = items.filter(
+      (item) => item.requestToPerform === false
+    );
+
+    let retainedItems;
+    if (preferredItems.length > 0) {
+      retainedItems = [preferredItems[0]]; // Retain one preferred item
+    } else {
+      retainedItems = [nonPreferredItems[0]]; // Retain one non-preferred item
+    }
+
+    const retainedIds = retainedItems.map((item) => item._id.toString());
+    return items
+      .filter((item) => !retainedIds.includes(item._id.toString()))
+      .map((item) => item._id);
+  });
+
   await PlaylistV2.updateMany(
     { _id: { $in: idsToMarkAsDeleted } },
     { $set: { isDeleted: true } }
   );
 
-  const [playlistType, status, playlist, playlistCount] = await Promise.all([
+  // Step 1: Fetch all non-deleted songs from the playlist
+  const playlist = await PlaylistV2.find({ isDeleted: false }).sort({
+    sortOrder: 1,
+  });
+
+  // Step 2: Separate requestToPerform and nonRequestToPerform songs
+  const requestToPerformSongs = [];
+  const nonRequestToPerformSongs = [];
+
+  playlist.forEach((item) => {
+    if (item.requestToPerform) {
+      requestToPerformSongs.push(item);
+    } else {
+      nonRequestToPerformSongs.push(item);
+    }
+  });
+
+  // Step 3: Create a new order for the playlist
+  let currentSortOrder = 0;
+  const updatedPlaylist = [];
+
+  // Copy arrays to avoid modifying the originals
+  const nonRequestQueue = [...nonRequestToPerformSongs];
+  const requestQueue = [...requestToPerformSongs];
+
+  // Distribute songs in the desired order
+  while (nonRequestQueue.length > 0) {
+    // Add up to two non-request songs
+    for (let i = 0; i < 2; i++) {
+      if (nonRequestQueue.length > 0) {
+        const nonRequestSong = nonRequestQueue.shift();
+        updatedPlaylist.push({
+          _id: nonRequestSong._id,
+          sortOrder: currentSortOrder,
+        });
+        currentSortOrder += 1;
+      }
+    }
+
+    // Add one request-to-perform song
+    if (requestQueue.length > 0) {
+      const requestSong = requestQueue.shift();
+      updatedPlaylist.push({
+        _id: requestSong._id,
+        sortOrder: currentSortOrder,
+      });
+      currentSortOrder += 1;
+    }
+  }
+
+  // Add remaining request-to-perform songs
+  while (requestQueue.length > 0) {
+    const requestSong = requestQueue.shift();
+    updatedPlaylist.push({ _id: requestSong._id, sortOrder: currentSortOrder });
+    currentSortOrder += 1;
+  }
+
+  // Step 4: Update the playlist in bulk with new sortOrder
+  const bulkOps = updatedPlaylist.map((item) => ({
+    updateOne: {
+      filter: { _id: item._id },
+      update: { $set: { sortOrder: item.sortOrder } },
+    },
+  }));
+
+  await PlaylistV2.bulkWrite(bulkOps);
+
+  // Fetch updated playlist data
+  const [playlistType, status, list, playlistCount] = await Promise.all([
     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
     AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
     PlaylistV2.aggregate(songFromPlaylistV2),
     PlaylistV2.countDocuments({ isDeleted: false }),
   ]);
   const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
-  let flattenedPlaylist = flattenPlaylist(playlist);
+
+  let flattenedPlaylist = flattenPlaylist(list);
 
   if (isFavortiteListType) {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);

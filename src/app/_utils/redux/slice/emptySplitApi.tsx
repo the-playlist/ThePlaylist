@@ -98,7 +98,7 @@ export const emptySplitApi = createApi({
       query: () => endPoints.GET_ASSIGN_SONGS_WITH_PLAYERS,
     }),
     getSongsList: builder.query({
-      query: () => endPoints.GET_SONGS_LIST,
+      query: (body: any) => `${endPoints.GET_SONGS_LIST}?isDisabled=${body}`,
     }),
     getFavSongList: builder.query({
       query: () => endPoints.GET_ALL_FAV_SONGS,

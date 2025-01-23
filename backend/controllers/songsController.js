@@ -10,9 +10,10 @@ import {
 } from "../aggregation/playlist";
 import { convertTimeToSeconds, formatTime } from "@/app/_utils/helper";
 import PlaylistType from "../models/playlistType";
-import { SETTING_ID } from "./playlistController";
+import { algoStatusId, SETTING_ID } from "./playlistController";
 import PlaylistV2 from "../models/playlistV2";
 import { flattenPlaylist } from "./helper";
+import AlgorithmStatus from "../models/algorithStatus";
 
 export const addUpdateSong = async (req, res, next) => {
   const id = req?.body?.id;
@@ -56,11 +57,25 @@ export const markSongAsFav = async (req, res, next) => {
 
 export const getAllSongs = async (req, res, next) => {
   let data;
-  const { keyword, id } = req.query;
+
+  const { keyword, id, isDisabled } = req.query;
+
   if (keyword) {
     data = await Songs.find({ title: { $regex: new RegExp(keyword, "i") } });
   } else {
-    let pipeline = [
+    let pipeline = [];
+
+    if (isDisabled != "undefined") {
+      pipeline.push({
+        $match: {
+          $or: [
+            { isDisabled: { $eq: false } }, // Include records where isDisabled is explicitly false
+            { isDisabled: { $exists: false } }, // Include records where isDisabled doesn't exist
+          ],
+        },
+      });
+    }
+    pipeline.push(
       {
         $lookup: {
           from: "players", // Assuming the collection name for players is "players"
@@ -101,8 +116,8 @@ export const getAllSongs = async (req, res, next) => {
           },
           qualifiedCount: 1,
         },
-      },
-    ];
+      }
+    );
     if (id) {
       if (id) {
         pipeline.push({
@@ -426,7 +441,7 @@ export const deleteSongById = async (req, res, next) => {
   }
 
   await Songs.findByIdAndDelete(id);
-  const songs = await Songs.find();
+  // const songs = await Songs.find();
   const response = new ResponseModel(true, "Song Deleted Successfully.", null);
   res.status(200).json(response);
 };
@@ -434,8 +449,22 @@ export const deleteSongById = async (req, res, next) => {
 export const disableSongById = async (req, res, next) => {
   const id = req.body.id;
   const status = req.body.status;
+
   if (!id) {
     return res.status(400).json({ message: "ID parameter is missing" });
+  }
+  if (status) {
+    await PlaylistV2.findOneAndUpdate(
+      { songData: id },
+      { $set: { isDeleted: true } },
+      { new: true }
+    );
+
+    await AlgorithmStatus.findByIdAndUpdate(
+      algoStatusId,
+      { isApplied: true },
+      { new: true }
+    );
   }
 
   await Songs.findByIdAndUpdate(id, { isDisabled: status });

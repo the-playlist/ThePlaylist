@@ -177,12 +177,12 @@ const page = () => {
   useEffect(() => {
     if (nonFixedContent?.length > 0) {
       // Filter to include only songs with requestToPerform === false
-      const filteredContent = nonFixedContent.filter(
-        (item) => !item.requestToPerform
-      );
+      // const filteredContent = nonFixedContent.filter(
+      //   (item) => !item.requestToPerform
+      // );
 
       // Map the filtered content to an array of songId
-      const valueArr = filteredContent.map((item) => item.songId);
+      const valueArr = nonFixedContent.map((item) => item.songId);
 
       // Check for duplicates in the filtered array
       const isDuplicate = valueArr.some(
