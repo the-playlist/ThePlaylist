@@ -926,20 +926,36 @@ export const managePlaylist = async (req, res, next) => {
       }
     );
 
-    const selectedPlayer =
+    let selectedPlayer =
       filteredPlayersWithoutLastAssigned?.length > 0
         ? filteredPlayersWithoutLastAssigned[0]
         : null;
 
-    // Step 9: Extract the player ID
-    const onDutyPlayerIds = selectedPlayer ? [selectedPlayer._id] : [];
+    let filteredSongs = [];
+    while (selectedPlayer && filteredSongs.length === 0) {
+      // Step 9: Extract the player ID
+      const onDutyPlayerIds = selectedPlayer ? [selectedPlayer._id] : [];
 
-    // Step 10: Filter the songs based on assignedPlayers._id matching with onDutyPlayerIds
-    const filteredSongs = data.filter((song) => {
-      return song.assignedPlayers.some((player) =>
-        onDutyPlayerIds.some((onDutyId) => onDutyId.equals(player._id))
-      );
-    });
+      // Step 10: Filter the songs based on assignedPlayers._id matching with onDutyPlayerIds
+      filteredSongs = data.filter((song) => {
+        return song.assignedPlayers.some((player) =>
+          onDutyPlayerIds.some((onDutyId) => onDutyId.equals(player._id))
+        );
+      });
+
+      if (filteredSongs.length === 0) {
+        // If no songs are available for the selected player, select the next eligible player
+        filteredPlayersWithoutLastAssigned.shift();
+        selectedPlayer =
+          filteredPlayersWithoutLastAssigned?.length > 0
+            ? filteredPlayersWithoutLastAssigned[0]
+            : null;
+      }
+    }
+
+    if (!selectedPlayer) {
+      throw new Error("No eligible players with available songs.");
+    }
 
     let selectedSong = null;
     if (filteredSongs.length > 0) {
