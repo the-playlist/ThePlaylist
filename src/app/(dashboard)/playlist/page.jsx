@@ -289,7 +289,7 @@ const page = () => {
         setCompleteList(fulllist);
 
         if (fulllist?.length > 1 && fulllist?.length < 30) {
-          addMultipleSongsApiHandler(newConnection);
+          // addMultipleSongsApiHandler(newConnection);
         }
         if (fulllist?.length > 0) {
           setIsFavExist(fulllist?.filter((item) => item?.isFav));
