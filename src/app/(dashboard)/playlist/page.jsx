@@ -336,6 +336,7 @@ const page = () => {
       if (counter > 0) {
         setCounter((prev) => prev - 1); // Decrement the counter
       }
+      setIsLoading(false);
     }
   };
 
