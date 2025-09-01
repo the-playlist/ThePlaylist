@@ -678,33 +678,6 @@ async function updateSongsInDatabase(songs) {
   );
 }
 
-// export const getSongsFromPlaylistV2 = async (req, res, next) => {
-//   const playlistItem = await PlaylistV2.aggregate(songFromPlaylistV2);
-//   const playListType = await PlaylistType.findOne({ _id: SETTING_ID }).lean();
-//   const totalCount = await PlaylistV2.countDocuments({ isDeleted: false });
-//   const { isFavortiteListType } = playListType;
-//   let flattenedPlaylist = flattenPlaylist(playlistItem);
-
-//   if (isFavortiteListType) {
-//     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-//   }
-//   const isFixedItems = flattenedPlaylist?.filter(
-//     (item) => item?.isFixed == true
-//   );
-
-//   const isNotFixedItems = flattenedPlaylist?.filter((item) => !item?.isFixed);
-
-//   res.status(200).json(
-//     new ResponseModel(true, "Songs fetched successfully.", {
-//       isFixedItems: isFixedItems,
-//       isNotFixed: isNotFixedItems,
-//       totalCount,
-//       isFavortiteListType,
-//       completeList: flattenedPlaylist,
-//     })
-//   );
-// };
-
 export const getSongsFromPlaylistV2 = async (req, res, next) => {
   const [playlistType, status, playlist, playlistCount] = await Promise.all([
     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
@@ -725,11 +698,10 @@ export const getSongsFromPlaylistV2 = async (req, res, next) => {
 
   if (status?.isApplied || lastSong?.playerName == secondLastSong?.playerName) {
     // const finalPlaylist = flattenedPlaylist;
-    // const finalPlaylist = playlistAlgorithmV2(
-    //   isFirstTimeFetched,
-    //   flattenedPlaylist
-    // );
-    const finalPlaylist = flattenedPlaylist;
+    const finalPlaylist = playlistAlgorithmV2(
+      isFirstTimeFetched,
+      flattenedPlaylist
+    );
 
     const updatedSongs = mapSongsWithSortOrder(finalPlaylist);
     await updateSongsInDatabase(updatedSongs);
@@ -837,8 +809,7 @@ export const getSongsForTableViewV2 = async (req, res, next) => {
     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
   }
   if (status?.isApplied) {
-    // const finalPlaylist = playlistAlgorithmV2(false, flattenedPlaylist);
-    const finalPlaylist = flattenedPlaylist;
+    const finalPlaylist = playlistAlgorithmV2(false, flattenedPlaylist);
     const updatedSongs = finalPlaylist.map((song, index) => ({
       ...song,
       sortOrder: index,
