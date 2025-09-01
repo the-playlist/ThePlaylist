@@ -679,13 +679,14 @@ async function updateSongsInDatabase(songs) {
 }
 
 export const getSongsFromPlaylistV2 = async (req, res, next) => {
-  const [playlistType, status, playlist, playlistCount] = await Promise.all([
+  const [playlistType, status, playlist] = await Promise.all([
     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
     AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
     PlaylistV2.aggregate(songFromPlaylistV2),
-    PlaylistV2.countDocuments({ isDeleted: false }),
+    // PlaylistV2.countDocuments({ isDeleted: false }),
   ]);
 
+  const playlistCount = playlist?.length;
   const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
   let flattenedPlaylist = flattenPlaylist(playlist);
 
