@@ -480,42 +480,168 @@ export const songFromPlaylistV2 = [
   },
 ];
 
+// export const songsForTableViewV2 = [
+//   {
+//     $match: { isDeleted: false }, // Match documents where isDeleted is false
+//   },
+//   {
+//     $lookup: {
+//       from: "songs", // Assuming the name of the collection is "songs"
+//       localField: "songData",
+//       foreignField: "_id",
+//       as: "songData",
+//     },
+//   },
+//   {
+//     $unwind: "$songData", // Unwind the array if necessary
+//   },
+//   {
+//     $lookup: {
+//       from: "players", // Assuming the name of the collection is "players"
+//       localField: "assignedPlayer",
+//       foreignField: "_id",
+//       as: "assignedPlayer",
+//     },
+//   },
+//   {
+//     $unwind: {
+//       path: "$assignedPlayer", // Unwind the array if necessary
+//       preserveNullAndEmptyArrays: true, // Include documents even if assignedPlayer is null
+//     },
+//   },
+//   {
+//     $match: {
+//       $or: [
+//         { "assignedPlayer.duty.status": true },
+//         { assignedPlayer: { $eq: null } }, // Include documents where assignedPlayer is null
+//       ],
+//     },
+//   },
+//   {
+//     $project: {
+//       _id: 1,
+//       "songData.title": 1,
+//       "songData.artist": 1,
+//       "songData.introSec": 1,
+//       "songData.location": 1,
+//       "songData.songDuration": 1,
+//       "songData.category": 1,
+//       "songData.isFav": 1,
+//       "songData._id": 1,
+//       "assignedPlayer.firstName": 1,
+//       "assignedPlayer.lastName": 1,
+//       "assignedPlayer._id": 1,
+//       "assignedPlayer.duty.status": 1,
+//       sortOrder: 1,
+//       upVote: 1,
+//       downVote: 1,
+//       sortOrder: 1,
+//       sortByMaster: 1,
+//       addByCustomer: 1,
+//       isFixed: 1,
+//       applySwap: 1,
+//       requestToPerform: 1,
+//       tableNo: 1,
+//     },
+//   },
+//   {
+//     $sort: { sortOrder: 1 }, // Sort the results
+//   },
+//   {
+//     $lookup: {
+//       from: "votes",
+//       localField: "songData._id",
+//       foreignField: "songId",
+//       as: "VoteCountData",
+//     },
+//   },
+//   {
+//     $addFields: {
+//       upVoteCount: {
+//         $size: {
+//           $filter: {
+//             input: "$VoteCountData",
+//             as: "vote",
+//             cond: {
+//               $and: [
+//                 { $eq: ["$$vote.isUpVote", true] },
+//                 { $eq: ["$$vote.playlistItemId", "$_id"] },
+//               ],
+//             },
+//           },
+//         },
+//       },
+//       downVoteCount: {
+//         $size: {
+//           $filter: {
+//             input: "$VoteCountData",
+//             as: "vote",
+//             cond: {
+//               $and: [
+//                 { $eq: ["$$vote.isUpVote", false] },
+//                 { $eq: ["$$vote.playlistItemId", "$_id"] },
+//               ],
+//             },
+//           },
+//         },
+//       },
+//     },
+//   },
+// ];
+
 export const songsForTableViewV2 = [
   {
-    $match: { isDeleted: false }, // Match documents where isDeleted is false
+    $match: { isDeleted: false }, // Filter deleted documents
   },
   {
     $lookup: {
-      from: "songs", // Assuming the name of the collection is "songs"
+      from: "songs",
       localField: "songData",
       foreignField: "_id",
       as: "songData",
+      pipeline: [
+        {
+          $project: {
+            title: 1,
+            artist: 1,
+            introSec: 1,
+            location: 1,
+            songDuration: 1,
+            category: 1,
+            isFav: 1,
+            _id: 1,
+          },
+        },
+      ], // Limit fields from songs
     },
   },
   {
-    $unwind: "$songData", // Unwind the array if necessary
+    $unwind: "$songData", // Unwind if songData is an array
   },
   {
     $lookup: {
-      from: "players", // Assuming the name of the collection is "players"
+      from: "players",
       localField: "assignedPlayer",
       foreignField: "_id",
       as: "assignedPlayer",
+      pipeline: [
+        { $project: { firstName: 1, lastName: 1, _id: 1, "duty.status": 1 } },
+      ], // Limit fields from players
     },
   },
   {
     $unwind: {
-      path: "$assignedPlayer", // Unwind the array if necessary
-      preserveNullAndEmptyArrays: true, // Include documents even if assignedPlayer is null
+      path: "$assignedPlayer",
+      preserveNullAndEmptyArrays: true, // Handle null assignedPlayer
     },
   },
   {
     $match: {
       $or: [
         { "assignedPlayer.duty.status": true },
-        { assignedPlayer: { $eq: null } }, // Include documents where assignedPlayer is null
+        { assignedPlayer: { $eq: null } },
       ],
-    },
+    }, // Filter by player duty status
   },
   {
     $project: {
@@ -535,7 +661,6 @@ export const songsForTableViewV2 = [
       sortOrder: 1,
       upVote: 1,
       downVote: 1,
-      sortOrder: 1,
       sortByMaster: 1,
       addByCustomer: 1,
       isFixed: 1,
@@ -545,13 +670,25 @@ export const songsForTableViewV2 = [
     },
   },
   {
-    $sort: { sortOrder: 1 }, // Sort the results
+    $sort: { sortOrder: 1 }, // Sort by sortOrder
   },
   {
     $lookup: {
       from: "votes",
-      localField: "songData._id",
-      foreignField: "songId",
+      let: { songId: "$songData._id", playlistItemId: "$_id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$songId", "$$songId"] },
+                { $eq: ["$playlistItemId", "$$playlistItemId"] },
+              ],
+            },
+          },
+        },
+        { $project: { isUpVote: 1 } }, // Limit fields
+      ],
       as: "VoteCountData",
     },
   },
@@ -561,13 +698,7 @@ export const songsForTableViewV2 = [
         $size: {
           $filter: {
             input: "$VoteCountData",
-            as: "vote",
-            cond: {
-              $and: [
-                { $eq: ["$$vote.isUpVote", true] },
-                { $eq: ["$$vote.playlistItemId", "$_id"] },
-              ],
-            },
+            cond: { $eq: ["$$this.isUpVote", true] },
           },
         },
       },
@@ -575,13 +706,7 @@ export const songsForTableViewV2 = [
         $size: {
           $filter: {
             input: "$VoteCountData",
-            as: "vote",
-            cond: {
-              $and: [
-                { $eq: ["$$vote.isUpVote", false] },
-                { $eq: ["$$vote.playlistItemId", "$_id"] },
-              ],
-            },
+            cond: { $eq: ["$$this.isUpVote", false] },
           },
         },
       },
