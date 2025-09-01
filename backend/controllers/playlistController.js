@@ -660,101 +660,204 @@ function mapSongsWithSortOrder(songs) {
   }));
 }
 
+// async function updateSongsInDatabase(songs) {
+//   await Promise.all(
+//     songs.map((song) =>
+//       PlaylistV2.updateOne(
+//         { _id: song._id },
+//         {
+//           $set: {
+//             sortOrder: song.sortOrder,
+//             isFixed: song.isFixed,
+//             addByCustomer: false,
+//             applySwap: false,
+//           },
+//         }
+//       )
+//     )
+//   );
+// }
 async function updateSongsInDatabase(songs) {
-  await Promise.all(
-    songs.map((song) =>
-      PlaylistV2.updateOne(
-        { _id: song._id },
-        {
-          $set: {
-            sortOrder: song.sortOrder,
-            isFixed: song.isFixed,
-            addByCustomer: false,
-            applySwap: false,
-          },
-        }
-      )
-    )
-  );
+  const bulkOps = songs.map((song) => ({
+    updateOne: {
+      filter: { _id: song._id },
+      update: {
+        $set: {
+          sortOrder: song.sortOrder,
+          isFixed: song.isFixed,
+          addByCustomer: false,
+          applySwap: false,
+        },
+      },
+    },
+  }));
+  await PlaylistV2.bulkWrite(bulkOps);
 }
+function partitionPlaylist(playlist, isFavoriteListType) {
+  const filtered = isFavoriteListType
+    ? playlist.filter((item) => item.isFav)
+    : playlist;
+  const isFixedItems = [];
+  const isNotFixedItems = [];
 
+  filtered.forEach((item) => {
+    (item.isFixed ? isFixedItems : isNotFixedItems).push(item);
+  });
+
+  return { isFixedItems, isNotFixedItems, filtered };
+}
 export const getSongsFromPlaylistV2 = async (req, res, next) => {
-  const [playlistType, status, playlist] = await Promise.all([
-    PlaylistType.findOne({ _id: SETTING_ID }).lean(),
-    AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
-    PlaylistV2.aggregate(songFromPlaylistV2),
-    // PlaylistV2.countDocuments({ isDeleted: false }),
-  ]);
+  try {
+    const [playlistType, status, playlist] = await Promise.all([
+      PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+      AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+      PlaylistV2.aggregate(songFromPlaylistV2),
+    ]);
 
-  const playlistCount = playlist?.length;
-  const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
-  let flattenedPlaylist = flattenPlaylist(playlist);
+    if (!playlistType || !playlist) {
+      return res
+        .status(404)
+        .json(new ResponseModel(false, "Playlist or type not found"));
+    }
 
-  if (isFavortiteListType) {
-    flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
-  }
+    const playlistCount = playlist.length;
+    const { isFirst: isFirstTimeFetched, isFavoriteListType } = playlistType;
+    let flattenedPlaylist = flattenPlaylist(playlist);
 
-  const tempNonFix = flattenedPlaylist.filter((item) => !item.isFixed);
-  const [secondLastSong, lastSong] = tempNonFix.slice(-2);
+    const {
+      isFixedItems,
+      isNotFixedItems,
+      filtered: finalPlaylist,
+    } = partitionPlaylist(flattenedPlaylist, isFavoriteListType);
 
-  if (status?.isApplied || lastSong?.playerName == secondLastSong?.playerName) {
-    // const finalPlaylist = flattenedPlaylist;
-    const finalPlaylist = playlistAlgorithmV2(
-      isFirstTimeFetched,
-      flattenedPlaylist
-    );
+    if (
+      status?.isApplied ||
+      (isNotFixedItems.length >= 2 &&
+        isNotFixedItems.at(-1)?.playerName ===
+          isNotFixedItems.at(-2)?.playerName)
+    ) {
+      const updatedPlaylist = playlistAlgorithmV2(
+        isFirstTimeFetched,
+        flattenedPlaylist
+      );
+      const updatedSongs = mapSongsWithSortOrder(updatedPlaylist);
+      await updateSongsInDatabase(updatedSongs);
 
-    const updatedSongs = mapSongsWithSortOrder(finalPlaylist);
-    await updateSongsInDatabase(updatedSongs);
+      // Re-partition the updated playlist instead of re-running aggregation
+      const {
+        isFixedItems: updatedFixed,
+        isNotFixedItems: updatedNotFixed,
+        filtered: updatedFinal,
+      } = partitionPlaylist(updatedSongs, isFavoriteListType);
 
-    const newFlattenedPlaylist = flattenPlaylist(
-      await PlaylistV2.aggregate(songFromPlaylistV2)
-    );
+      await AlgorithmStatus.findByIdAndUpdate(
+        algoStatusId,
+        { isApplied: false },
+        { new: true }
+      );
 
-    const filteredPlaylist = isFavortiteListType
-      ? newFlattenedPlaylist.filter((item) => item.isFav)
-      : newFlattenedPlaylist;
-
-    const isFixedItems = filteredPlaylist?.filter(
-      (item) => item?.isFixed == true
-    );
-
-    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
-
-    res.status(200).json(
-      new ResponseModel(true, "Songs fetched successfully.", {
-        isFixedItems: isFixedItems,
-        isNotFixed: isNotFixedItems,
-        playlistCount,
-        isFavortiteListType,
-        completeList: filteredPlaylist,
-      })
-    );
-    await AlgorithmStatus.findByIdAndUpdate(
-      algoStatusId,
-      { isApplied: false },
-      { new: true }
-    );
-  } else {
-    const filteredPlaylist = isFavortiteListType
-      ? flattenedPlaylist?.filter((item) => item.isFav)
-      : flattenedPlaylist;
-    const isFixedItems = filteredPlaylist?.filter(
-      (item) => item?.isFixed == true
-    );
-    const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+      return res.status(200).json(
+        new ResponseModel(true, "Songs fetched successfully.", {
+          isFixedItems: updatedFixed,
+          isNotFixed: updatedNotFixed,
+          playlistCount,
+          isFavoriteListType,
+          completeList: updatedFinal,
+        })
+      );
+    }
 
     res.status(200).json(
       new ResponseModel(true, "Songs fetched successfully.", {
-        isFixedItems: isFixedItems,
+        isFixedItems,
         isNotFixed: isNotFixedItems,
         playlistCount,
-        isFavortiteListType,
-        completeList: filteredPlaylist,
+        isFavoriteListType,
+        completeList: finalPlaylist,
       })
     );
+  } catch (error) {
+    next(error); // Pass to error-handling middleware
   }
 };
+
+// export const getSongsFromPlaylistV2 = async (req, res, next) => {
+//   const [playlistType, status, playlist] = await Promise.all([
+//     PlaylistType.findOne({ _id: SETTING_ID }).lean(),
+//     AlgorithmStatus.findById(algoStatusId, "isApplied").lean(),
+//     PlaylistV2.aggregate(songFromPlaylistV2),
+//     // PlaylistV2.countDocuments({ isDeleted: false }),
+//   ]);
+
+//   const playlistCount = playlist?.length;
+//   const { isFirst: isFirstTimeFetched, isFavortiteListType } = playlistType;
+//   let flattenedPlaylist = flattenPlaylist(playlist);
+
+//   if (isFavortiteListType) {
+//     flattenedPlaylist = flattenedPlaylist.filter((item) => item.isFav);
+//   }
+
+//   const tempNonFix = flattenedPlaylist.filter((item) => !item.isFixed);
+//   const [secondLastSong, lastSong] = tempNonFix.slice(-2);
+
+//   if (status?.isApplied || lastSong?.playerName == secondLastSong?.playerName) {
+//     // const finalPlaylist = flattenedPlaylist;
+//     const finalPlaylist = playlistAlgorithmV2(
+//       isFirstTimeFetched,
+//       flattenedPlaylist
+//     );
+
+//     const updatedSongs = mapSongsWithSortOrder(finalPlaylist);
+//     await updateSongsInDatabase(updatedSongs);
+
+//     const newFlattenedPlaylist = flattenPlaylist(
+//       await PlaylistV2.aggregate(songFromPlaylistV2)
+//     );
+
+//     const filteredPlaylist = isFavortiteListType
+//       ? newFlattenedPlaylist.filter((item) => item.isFav)
+//       : newFlattenedPlaylist;
+
+//     const isFixedItems = filteredPlaylist?.filter(
+//       (item) => item?.isFixed == true
+//     );
+
+//     const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+//     res.status(200).json(
+//       new ResponseModel(true, "Songs fetched successfully.", {
+//         isFixedItems: isFixedItems,
+//         isNotFixed: isNotFixedItems,
+//         playlistCount,
+//         isFavortiteListType,
+//         completeList: filteredPlaylist,
+//       })
+//     );
+//     await AlgorithmStatus.findByIdAndUpdate(
+//       algoStatusId,
+//       { isApplied: false },
+//       { new: true }
+//     );
+//   } else {
+//     const filteredPlaylist = isFavortiteListType
+//       ? flattenedPlaylist?.filter((item) => item.isFav)
+//       : flattenedPlaylist;
+//     const isFixedItems = filteredPlaylist?.filter(
+//       (item) => item?.isFixed == true
+//     );
+//     const isNotFixedItems = filteredPlaylist?.filter((item) => !item?.isFixed);
+
+//     res.status(200).json(
+//       new ResponseModel(true, "Songs fetched successfully.", {
+//         isFixedItems: isFixedItems,
+//         isNotFixed: isNotFixedItems,
+//         playlistCount,
+//         isFavortiteListType,
+//         completeList: filteredPlaylist,
+//       })
+//     );
+//   }
+// };
 
 export const getSongsForTableViewV2 = async (req, res, next) => {
   const { id: deviceId, firstFetch } = req?.body;
